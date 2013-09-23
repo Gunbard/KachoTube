@@ -1,0 +1,506 @@
+body
+{
+    font-family:        Trebuchet MS, Tahoma;
+    background-color:   black;
+    color:              white;
+    background:         url("/styles/default/bkg.jpg") fixed;
+}
+
+#centerer
+{
+    width:              1200;
+    margin-left:        auto;
+    margin-right:       auto;
+}
+
+#header
+{
+    width:              1200;
+    height:             250;
+    /*border-style:       solid;
+    border-color:       white;
+    border-width:       1;*/
+}
+
+#footer
+{
+    float:              left;
+    width:              1200;
+    text-align:         center;
+    padding:            2;
+    /*border-style:       solid;
+    border-color:       white;
+    border-width:       1;*/
+}
+
+#banner
+{
+    width:              1150;
+    height:             200;
+    float:              left;
+    /*border-style:       solid;
+    border-color:       white;
+    border-width:       1;*/
+}
+
+#serverMessageContainer
+{
+    width:              460;
+    height:             100;
+    float:              left;
+    overflow:           auto;
+    /*border-style:       solid;
+    border-color:       white;
+    border-width:       1;*/
+}
+
+#serverMessages
+{
+    
+}
+
+#videoTitle
+{
+    font-size:          24;
+    width:              1150;
+    height:             36;
+}
+
+#videoAndListContainer
+{
+    
+}
+
+/* Normal: [640, 385], Large: [854, 480] */
+#videoDivContainer
+{
+    width:              640;
+    height:             385;
+    float:              left;
+    /*margin-left:        163;*/
+}
+
+#playlistStuff
+{
+    width:              510;
+    height:             440;
+    float:              left;
+    border-style:       solid;
+    border-width:       0;
+    border-color:       white;
+}
+
+#playlistControls
+{
+    display:            inline-block;
+    width:              460;
+    float:              left;
+    text-align:         center;
+}
+
+#skipContainer
+{
+    display:            inline-block;
+    float:              right;
+    clear:              both;
+    text-align:         center;
+}
+
+#skipButton
+{
+    width:              60;
+    height:             40;
+    text-align:         center;
+}
+
+#videoList
+{
+    resize:             vertical;
+    overflow:           auto;
+    width:              460;
+    height:             265;
+}
+
+#NNDOverlay
+{
+    position:           absolute;
+    clear:              both;
+    width:              640;
+    height:             385;
+    overflow:           hidden;
+    pointer-events:     none;
+    border-style:       solid; 
+    border-width:       25px;
+    border-color:       rgba(0, 0, 0, 0);
+}
+
+#NNDOverlay span
+{
+    position:           absolute;
+    clear:              both;
+    color:              white;
+    white-space:        nowrap;
+    font-size:          24;
+    
+}
+
+.nnd-user-msg
+{
+    border-style:       solid;
+    border-width:       1;   
+    border-color:       yellow;
+}
+
+li.ui-state-default
+{
+    color:              white !important;
+    background:         none !important;
+    border-width:       1 !important;
+    border-top-style:   solid !important;
+    border-bottom-style:none !important;
+    border-left-style:  none !important;
+    border-right-style: none !important;
+}
+
+.video-title, .video-duration, .video-addedBy, .url-button, .delete-button, .dragger, .video-number, .play-button
+{
+    display:            inline-block;
+    text-align:         center;
+    height:             20;
+    font-size:          14;
+    /*color:              white !important;
+    border-style:       solid !important;
+    border-width:       1 !important;*/
+}
+
+.playing-indicator
+{
+    float:              right;
+    display:            inline-block;
+    text-align:         center;
+    width:              32;
+    height:             40;
+    padding-top:        10;
+    font-size:          16;
+}
+
+.video-title
+{
+    width:              325;
+}
+
+.video-number
+{
+    width:              60;
+}
+
+.url-button
+{
+    width:              30;
+}
+
+.play-button
+{
+    width:              30;
+}
+
+.dragger
+{
+    width:              40;
+    height:             20;
+    text-align:         right;
+}
+
+.video-duration
+{
+    width:              80;
+}
+
+.video-addedBy
+{
+    width:              160;
+}
+
+.delete-button
+{
+    width:              32;
+}
+
+.window-title
+{
+    position:           absolute;
+    font-size:          12;
+    font-weight:        bold;
+    clear:              both;
+    font-variant:       small-caps;
+}
+
+.drop-shadow
+{
+    -moz-box-shadow:    6px 6px 6px rgba(0, 0, 0, 0.5);
+    -webkit-box-shadow: 6px 6px 6px rgba(0, 0, 0, 0.5);
+    box-shadow:         6px 6px 6px rgba(0, 0, 0, 0.5);
+}
+
+.text-outline
+{
+    /*text-shadow:        0px 0px 6px rgba(0, 0, 0, 1);*/
+    text-shadow:
+    -2px -2px 4px rgba(0, 0, 0, 1),
+    2px -2px 4px rgba(0, 0, 0, 1),
+    -2px 2px 4px rgba(0, 0, 0, 1),
+    2px 2px 4px rgba(0, 0, 0, 1);  
+}
+
+.server-msg
+{
+    padding-bottom:     6;
+}
+
+
+
+.tinypic-img
+{
+    /*max-width:          20;
+    max-height:         20;*/
+}
+
+#iframePopup
+{
+    position:           absolute;
+    clear:              both;
+    background-color:   rgba(0, 0, 0, 0.8);
+    display:            none;
+    width:              480;
+    height:             420;
+    cursor:             auto;
+    text-align:         center;
+}
+
+#saveVidPopup, #loadVidPopup
+{
+    position:           absolute;
+    clear:              both;
+    background-color:   rgba(0, 0, 0, 0.8);
+    display:            none;
+    cursor:             auto;
+    width:              300;
+    text-align:         center;
+}
+
+#settingsPopup, #roomSettingsPopup, #userPopup
+{
+    position:           absolute;
+    clear:              both;
+    background-color:   rgba(0, 0, 0, 0.8);
+    display:            none;
+    cursor:             auto;
+    text-align:         center;
+}
+
+#settingsPopup, #roomSettingsPopup
+{
+    width:              300;
+}
+
+#userPopup
+{
+    width:              200;
+}
+
+
+#settingsDiv, #roomSettingsDiv
+{
+    text-align:         left;
+    cursor:             auto;
+}
+
+#saveHelpText, #loadHelpText
+{
+    font-size:          12;
+}
+
+#iframePopup:hover, #saveVidPopup:hover, #loadVidPopup:hover, #settingsPopup:hover,
+#roomSettingsPopup:hover, #userPopup:hover
+{
+    cursor:             move;
+}
+
+#closeIframe, #closeSaveVid, #closeSettings, #closeRoomSettings, #closeLoadVid, #closeUserPopup
+{
+    display:            inline-block;
+    float:              right;
+    clear:              both;
+}
+
+.clickable
+{
+    cursor:             auto;
+}
+
+.clickable:hover
+{
+    cursor:             pointer;
+}
+
+.hidden
+{
+    display:            none;
+}
+
+#thumbnailPopup
+{
+    width:              488;
+    position:           absolute;
+    display:            none;
+    clear:              both;
+    font-size:          18;
+    color:              white;
+    background-color:   black;
+    padding:            4;
+    -webkit-box-sizing: border-box; 
+    -moz-box-sizing:    border-box;    
+    box-sizing:         border-box;        
+    text-align:         center;
+}
+
+#thumbnailPopup > img
+{
+    display:            block;
+    margin-left:        auto;
+    margin-right:       auto;
+}
+
+#chatContainer
+{
+    float:              left;
+    border-style:       solid;
+    border-width:       0;
+    border-color:       white;
+    width:              690;
+}
+
+#chatList
+{
+    resize:             vertical;
+    overflow:           auto;
+    width:              440;
+    height:             220;
+    padding:            0;
+    float:              left;
+}
+
+#userList
+{
+    resize:             vertical;
+    overflow:           auto;
+    text-align:         center;
+    width:              150;
+    height:             220;
+    padding:            0;
+    float:              left;
+}
+
+#chatInputContainer
+{
+    float:              left;
+    text-align:         center;
+    width:              640;
+}
+
+#totalUsersContainer
+{
+    margin-left:        24;
+}
+
+input[type=text]
+{
+    font-family:        inherit;
+    color:              inherit;
+    background:         transparent;
+    border-radius:         5px;
+    -moz-border-radius:    5px;
+    -webkit-border-radius: 5px;
+}
+
+#chatInput
+{
+    min-width:          50%;
+}
+
+.chat-name
+{
+    color:              #999999;
+}
+
+.chat-time
+{
+    font-size:          12;
+}
+
+.user-list-user
+{
+    /*font-size:          14;*/
+}
+
+input[type=button]
+{
+    font-family:        inherit;
+}
+
+#chatList, #userList, #videoDivContainer, #videoList, #iframePopup, #saveVidPopup, #loadVidPopup, #chatInputContainer, #playlistControls, #serverMessageContainer, #settingsPopup, #roomSettingsPopup, #banner, #userPopup
+{
+    border-style:           solid; 
+    border-width:           25px; 
+    -moz-border-image:      url('/styles/default/border.png') 25 repeat; 
+    -webkit-border-image:   url('/styles/default/border.png') 25 repeat; 
+    -o-border-image:        url('/styles/default/border.png') 25 repeat; 
+    border-image:           url('/styles/default/border.png') 25 fill repeat;
+    background-color:       rgba(0, 0, 0, 0.75);
+    border-radius:          10px;
+    -moz-border-radius:     10px;
+    -webkit-border-radius:  10px;
+}
+
+#funZoneContainer
+{
+    /*border-style:           solid;
+    border-width:           1;
+    color:                  white;*/
+    width:                  480;
+    height:                 350;
+    float:                  left;
+}
+
+
+.sortable 
+{ 
+    list-style-type:        none; 
+    margin:                 0; 
+    padding:                0; 
+    width:                  100%; 
+}
+
+.sortable li 
+{ 
+    margin:                 0 5px 5px 5px; 
+    padding:                5px; 
+    font-size:              12; 
+}
+
+.ui-state-highlight 
+{ 
+    border-style:           solid; 
+    border-width:           1;
+}
+
+.greentext 
+{ 
+    color:                  #789922; 
+}
+
+.whisper
+{
+    font-style:             italic !important;
+    color:                  #666666 !important;
+}

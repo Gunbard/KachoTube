@@ -1,0 +1,181 @@
+<HTML>
+    <HEAD>
+        <TITLE>Sinktub</TITLE>
+        <SCRIPT Src = "/socket.io/socket.io.js"></SCRIPT>
+        <SCRIPT Src = "https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></SCRIPT>
+        <SCRIPT Src = "https://ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></SCRIPT>
+        <SCRIPT Src = "http://www.google.com/jsapi" Type = "text/javascript"></SCRIPT>
+        <SCRIPT Src = "main.js" Type = "text/javascript"></SCRIPT>
+        <LINK Rel = "stylesheet" Href = "http://code.jquery.com/ui/1.10.3/themes/overcast/jquery-ui.css">
+        <link href="http://netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
+        <LINK Rel = "stylesheet" Href = "/styles/default/default.css">
+        
+        <!--TinyPic Plugin-->
+        <script type="text/javascript">
+            tinypic_layout = 'wide';
+            tinypic_type = 'both';
+            tinypic_links = 'url';
+            tinypic_language = 'en';
+            tinypic_search = 'true';
+            tinypic_autoload = false;
+        </script>
+        <script src="http://plugin.tinypic.com/j/plugin.js" type="text/javascript"></script>
+    </HEAD>
+
+    <BODY>
+        <DIV Id = "centerer">
+            <DIV Id = "header">
+                <DIV Id = "banner" Class = "drop-shadow">Banner</DIV>
+            </DIV>
+            
+            <!--Sync: <SPAN Id = "masterTime">Time</SPAN>
+            You: <SPAN Id = "username">Name</SPAN>
+            Master: <SPAN Id = "masteruser">Master Username</SPAN>-->
+            <DIV Class = "text-outline" Id = "videoTitle"></DIV>
+            
+            <DIV Id = "NNDOverlay"></DIV>
+            <DIV Class = "drop-shadow" Id = "videoDivContainer">
+                <DIV Id = "videoDiv"></DIV>
+            </DIV>
+            <DIV Id = "playlistStuff">
+                <SPAN Class = "window-title text-outline" Style = "margin-left: 16; margin-top: 4">Playlist</SPAN>
+                <DIV Class = "drop-shadow" Id = "videoList"></DIV>
+                
+                <DIV Class = "drop-shadow" Id = "playlistControls">
+                    <DIV Id = "skipContainer">
+                        <INPUT Id = "skipButton" Type = "button" Value = "SKIP" OnClick = "toggleSkip();">
+                        <BR>
+                        <SPAN Id = "skipVote">0/0</SPAN>
+                    </DIV>    
+                    
+                    <DIV Id = "videoListInfo"></DIV>
+                    
+                    <INPUT Type = "button" Value = "Add Video" Title = "Currently supported:&#10;YouTube&#10;Dailymotion" OnClick = "toggleAddVideo();">
+                    <INPUT Type = "Text" Id = "addVideoInput" Size = "45" Style = "display:none;">
+
+                    <BR>
+                    
+                    <SPAN Class = "clickable icon-save icon-large" Id = "playlistSaveButton" OnClick = "generatePlaylistSaveData();" Title = "Save Playlist"></SPAN>
+                    <SPAN Class = "master-control hidden clickable icon-upload-alt icon-large" Id = "playlistLoadButton" OnClick = "openLoadPopup();" Title = "Load Playlist"></SPAN>
+                    <SPAN Class = "master-control hidden clickable icon-trash icon-large" OnClick = "clearPlaylist();" Title = "Clear Playlist"></SPAN>
+                    <SPAN Class = "master-control hidden clickable icon-magic icon-large" OnClick = "cleanPlaylist();" Title = "Clean Playlist (Delete up to currently playing video)"></SPAN>
+                    <SPAN Class = "master-control hidden clickable icon-random icon-large" OnClick = "shufflePlaylist();" Title = "Shuffle Playlist"></SPAN>
+                    <SPAN Class = "clickable icon-cogs icon-large" Id = "settingsButton" OnClick = "showSettings();" Title = "Settings"></SPAN>
+                    <SPAN Class = "master-control hidden clickable icon-cog icon-large" Id = "roomSettingsButton" OnClick = "showRoomSettings();" Title = "Room Settings"></SPAN>
+                </DIV>
+            </DIV>
+            
+            
+            
+            <DIV Id = "chatContainer">
+                <DIV Class = "drop-shadow" Id = "chatList"></DIV>
+                <DIV Class = "drop-shadow" Id = "userList"></DIV>
+                <DIV Class = "drop-shadow" Id = "chatInputContainer">
+                    <SPAN Id = "username">Name</SPAN>
+                    <INPUT Type = "Text" Id = "chatInput" MaxLength = "200">
+                    <INPUT Type ="button" Id = "openTinypicButton" Value = "TinyPic" OnClick ="openTinypic();" Title = "Open TinyPic plugin. Chat can display TinyPic URLs."> <SPAN Id = "totalUsersContainer">Viewers: <SPAN Id = "totalUsers"></SPAN></SPAN>
+                </DIV>
+            </DIV>
+            
+            <DIV Id = "funZoneContainer">
+                <DIV Class = "drop-shadow" Id = "serverMessageContainer">
+                    <SPAN Class = "window-title text-outline" Style = "margin-left: -6; margin-top: -20">Server Messages</SPAN>
+                    <SPAN Id = "serverMessages"></SPAN>
+                </DIV>
+            </DIV>
+            
+            <DIV Class = "text-outline" Id = "footer">
+                There's a footer here.<BR><BR>
+            </DIV>
+        </DIV>
+        
+        <DIV Class = "drop-shadow" Id = "thumbnailPopup"></DIV>
+        
+        <DIV Class = "drop-shadow" Id = "iframePopup">
+            TinyPic<SPAN Class = "clickable icon-remove-circle icon-large" Id = "closeIframe"></SPAN>
+        </DIV>
+        
+        <DIV Class = "drop-shadow" Id = "saveVidPopup">
+            Save<SPAN Class = "clickable icon-remove-circle icon-large" Id = "closeSaveVid"></SPAN>
+            <TEXTAREA Id = "playlistSave" Rows = "5" Cols = "30"></TEXTAREA>
+            <DIV Id = "saveHelpText">Save by copying and pasting into a text editor (Select all with Ctrl-A, if you forgot)</DIV>
+        </DIV>
+        
+        <DIV Class = "drop-shadow" Id = "loadVidPopup">
+            Load<SPAN Class = "clickable icon-remove-circle icon-large" Id = "closeLoadVid"></SPAN>
+            <TEXTAREA Id = "playlistLoad" Rows = "5" Cols = "30"></TEXTAREA>
+            <DIV Id = "loadHelpText">Paste (Ctrl-V) a series of video URLs that you made or a previously saved playlist and press load!<BR><BR>Note: Videos will be appended to the list, so clear it first if you want to load a new playlist.<BR>
+            <INPUT Type = "Button" Value = "Load" onClick = "sendPlaylistSaveData()"></DIV>
+        </DIV>
+        
+        <DIV Class = "drop-shadow" Id = "settingsPopup">
+            Settings<SPAN Class = "clickable icon-remove-circle icon-large" Id = "closeSettings"></SPAN>
+            
+            <DIV Id = "settingsDiv">
+                Change name: <INPUT Type = "Text" Id = "changeNameInput" Title = "Tripcode how-to:&#10;yourName#yourSecretWord"><BR> 
+                <LABEL For = "syncTimeDiff">Sync within </LABEL>
+                <SELECT Name = "syncTimeDiff" Id = "syncTimeDiff">
+                    <OPTION>2 seconds</OPTION>
+                    <OPTION Selected = "selected">5 seconds</OPTION>
+                    <OPTION>10 seconds</OPTION>
+                    <OPTION>20 seconds</OPTION>
+                    <OPTION>Do not sync</OPTION>
+                </SELECT>
+                <BR>
+                
+                <LABEL For = "chatDisplayMode">Chat text display mode: </LABEL>
+                <SELECT Name = "chatDisplayMode" Id = "chatTextDisplay">
+                    <OPTION>Normal</OPTION>
+                    <OPTION Selected = "selected">Typewriter</OPTION>
+                    <OPTION>Fade-in</OPTION>
+                </SELECT>
+                <BR>
+                
+                Player size: 
+                <INPUT Type = "radio" Name = "playerSize" Id = "settingPlayerSizeSm" checked> SM
+                <INPUT Type = "radio" Name = "playerSize" Id = "settingPlayerSizeLg"> LG<BR>
+                
+                Chat image size: 
+                <INPUT Type = "radio" Name = "chatImgSize" Id = "settingChatImgSizeSm"> SM
+                <INPUT Type = "radio" Name = "chatImgSize" Id = "settingChatImgSizeMed" checked> MED
+                <INPUT Type = "radio" Name = "chatImgSize" Id = "settingChatImgSizeLg"> LG<BR>
+                
+                
+                <INPUT Type = "checkbox" Id = "settingShowChatImages" Checked> Show chat images<BR>
+                <INPUT Type = "checkbox" Id = "settingShowChatVideos" Checked> Show chat videos<BR>
+                <INPUT Type = "checkbox" Id = "settingNNDToggle" Checked> Display Nico Nico style commments<BR>
+                <INPUT Type = "checkbox" Id = "settingShowTimestamp"> Show timestamps (hover for full time)<BR>
+                <INPUT Type = "checkbox" Id = "settingDisplayTrips" Checked> Display tripcodes<BR>
+                <INPUT Type = "checkbox" Id = "settingShowChat" Checked> Show chat<BR>
+            </DIV>
+            
+            <INPUT Type = "button" Id = "saveSettings" Value = "Save" onClick = "saveSettings();"><INPUT Type = "button" Id = "resetSettings" Value = "Reset" onClick = "resetSettings();">
+        </DIV>
+        
+        
+        <DIV Class = "drop-shadow" Id = "roomSettingsPopup">
+            Room Settings<SPAN Class = "clickable icon-remove-circle icon-large" Id = "closeRoomSettings"></SPAN>
+            <DIV Id = "roomSettingsDiv" Class = "master-control">
+                <INPUT Type = "checkbox" Id = "settingLockPlaylist"> Lock playlist<BR>
+                <INPUT Type = "checkbox" Id = "settingAllowSkips" Checked> Allow skips<BR>
+                <INPUT Type = "radio" name = "skipType" Id = "settingSkipByPercent" checked> Skip by percent: <INPUT Type = "number" Size = "2"  Value = "66" Id = "skipPercent"><BR>
+                <INPUT Type = "radio" name = "skipType" Id = "settingSkipByVotes"> Skip by votes: <INPUT Type = "number" Size = "2" Value = "0" Id = "skipVotes"><BR>                
+            </DIV>
+            
+            <INPUT Type = "Button" Id = "roomSettingsApply" Value = "Apply" OnClick = "applySkipSettings();">
+
+        </DIV>
+       
+        <DIV Class = "drop-shadow" Id = "userPopup">
+            <SPAN Class = "clickable icon-remove-circle icon-large" Id = "closeUserPopup"></SPAN>
+            <DIV Id = "userPopupDiv">
+                <SPAN Id = "userPopupName"></SPAN><BR><SPAN Class = "mute-button clickable icon-volume-up icon-large" Title = "Mute user" onClick = "toggleUserMute();"></SPAN> <SPAN Class = "pm-button clickable icon-envelope-alt icon-large" onClick = "setPrivateMessage();" Title = "Send whisper"></SPAN>
+            </DIV>
+        </DIV>
+
+        <!--Firefox only-->
+        <MENU Type = "context" Id = "videoContextMenu">
+            <MENUITEM Label = "Show YouTube URL" OnClick = "alert(rightClickVid)"></MENUITEM>
+        </MENU>
+    </BODY>
+</HTML>
