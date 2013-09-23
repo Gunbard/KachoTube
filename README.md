@@ -1,6 +1,5 @@
 ##KachoTube
 =========
-
 Quick and easy to deploy single-room SynchTube clone built on socket.io and node.js.
 
 ###Features
@@ -16,6 +15,8 @@ Quick and easy to deploy single-room SynchTube clone built on socket.io and node
   * All users may add videos to an unlocked playlist as well as save the entire playlist
   * Master users may also delete, load, re-arrange, shuffle, clear, and clean (delete up to currently playing video)
   * Videos are verified before being added
+  * Show URL
+  * Thumbnail preview on hover
 * Users 
   * Semi-anonymous, users may change names
   * Zero-registration
@@ -34,4 +35,11 @@ Quick and easy to deploy single-room SynchTube clone built on socket.io and node
 
 
 ###To deploy
-TODO
+* Clone project somewhere
+* Install node.js using your favorite package manager or from the website
+  * Installing node.js should also install its package manager, npm
+* "cd" to cloned project directory
+* "npm install express request socket.io"
+* "node server.js"
+
+Your room will be running on port 8880 by default.
