@@ -206,9 +206,9 @@ li.ui-state-default
 
 .dragger
 {
-    width:              40;
+    width:              60;
     height:             20;
-    text-align:         right;
+    text-align:         center;
 }
 
 .video-duration

@@ -436,7 +436,8 @@ socket.on('deleteVideoSync', function (index)
         $('.video-item#' + i).find('.video-number').html(newId + '.');
         $('.video-item#' + i).attr({id: newId - 1});
     }
-
+    
+    updatePlayTime();
 });
 
 // Message for adding a video to the playlist
@@ -444,6 +445,7 @@ socket.on('addVideoSync', function (videoObj)
 {
     videoPlaylist.push(videoObj);
     $('.video-list').append(generatePlaylistItem(videoPlaylist.length - 1));
+    updatePlayTime();
 });
 
 // Message for swapping videos on the playlist
@@ -1872,5 +1874,18 @@ function userIdByName(username)
     }
     
     return -1;
+}
+
+// Updates the play time display 
+function updatePlayTime()
+{
+    playlistTotalTime = 0;
+    for (var i = 0; i < videoPlaylist.length; i++)
+    {
+        playlistTotalTime += parseInt(videoPlaylist[i].duration);
+    }
+    
+    $('#playlistTime').html(secondsToTime(playlistTotalTime));
+    $('#playlistLength').html(videoPlaylist.length);
 }
 
