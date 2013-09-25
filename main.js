@@ -1781,15 +1781,28 @@ function resetSettings()
 }
 
 // Toggle add video input box
-function toggleAddVideo()
+function toggleAddVideo(type)
 {
+    if (type == 0) // Normal video
+    {
+        $('#addVideoButton').removeAttr('disabled');
+        $('#loadStreamButton').attr('disabled', true);
+    }
+    else if (type == 1) // Stream
+    {
+        $('#loadStreamButton').removeAttr('disabled');
+        $('#addVideoButton').attr('disabled', true);
+    }
+    
     if ($('#addVideoInput').is(':hidden'))
     {
-        $('#addVideoInput').show().css({ width: 0 }).animate({ width: 300 }, 'fast');
+        $('#addVideoInput').show().css({ width: 0 }).animate({ width: 200 }, 'fast');
     }
     else
     {
-        $('#addVideoInput').css({ width: 300 }).animate({ width: 0 }, 'fast', 'swing', 
+        $('#addVideoButton').removeAttr('disabled');        
+        $('#loadStreamButton').removeAttr('disabled');
+        $('#addVideoInput').css({ width: 200 }).animate({ width: 0 }, 'fast', 'swing', 
         function () {
             $(this).hide();
         });

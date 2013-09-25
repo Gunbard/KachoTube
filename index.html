@@ -50,9 +50,11 @@
                     
                     <DIV Id = "videoListInfo"></DIV>
                     
-                    <INPUT Type = "button" Value = "Add Video" Title = "Currently supported:&#10;YouTube&#10;Dailymotion" OnClick = "toggleAddVideo();">
+                    <INPUT Type = "button" Value = "Add Video" Id = "addVideoButton" Title = "Currently supported:&#10;YouTube&#10;Dailymotion" OnClick = "toggleAddVideo(0);">
                     <INPUT Type = "Text" Id = "addVideoInput" Size = "45" Style = "display:none;">
-
+                    <INPUT Class = "master-control" Type = "button" Id = "loadStreamButton" Value = "Load Stream" Title = "Currently supported:&#10;" OnClick = "toggleAddVideo(1);">
+                    
+                    
                     <BR>
                     
                     <SPAN Class = "clickable icon-save icon-large" Id = "playlistSaveButton" OnClick = "generatePlaylistSaveData();" Title = "Save Playlist"></SPAN>
@@ -80,7 +82,7 @@
                     <SPAN Class = "window-title text-outline" Style = "margin-left: -6; margin-top: -20">Server Messages</SPAN>
                     <SPAN Id = "serverMessages"></SPAN>
                 </DIV>
-                <DIV Class = "drop-shadow" Id = "funContainer">asdf</DIV>
+                <DIV Class = "drop-shadow" Id = "funContainer"></DIV>
             </DIV>
             
             <DIV Class = "text-outline" Id = "footer">
