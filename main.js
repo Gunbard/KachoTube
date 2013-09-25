@@ -1012,8 +1012,8 @@ function arraySwap(arr, index1, index2)
 // Displays a server message that fades after a bit
 function serverMsg(msg, fadeDelay, fadeTime)
 {
-    $newSpan = $('<SPAN>', {html: msg + ' ', class: 'server-msg'});
-    $('#serverMessages').prepend($newSpan);
+    $newDiv = $('<DIV>', {html: msg + ' ', class: 'server-msg'});
+    $('#serverMessages').prepend($newDiv);
     $newSpan.hide().fadeIn("fast");
     $newSpan.delay(fadeDelay).fadeOut(fadeTime, function() { $(this).remove(); });
 }

@@ -55,6 +55,18 @@ body
     border-width:       1;*/
 }
 
+#funContainer
+{
+    width:              100%;
+    height:             164;
+    float:              left;
+    overflow:           auto;
+    /*border-style:       solid;
+    border-color:       white;
+    border-width:       1;*/
+}
+
+
 #serverMessages
 {
     
@@ -449,7 +461,7 @@ input[type=button]
     font-family:        inherit;
 }
 
-#chatList, #userList, #videoDivContainer, #videoList, #iframePopup, #saveVidPopup, #loadVidPopup, #chatInputContainer, #playlistControls, #serverMessageContainer, #settingsPopup, #roomSettingsPopup, #banner, #userPopup
+#chatList, #userList, #videoDivContainer, #videoList, #iframePopup, #saveVidPopup, #loadVidPopup, #chatInputContainer, #playlistControls, #serverMessageContainer, #settingsPopup, #roomSettingsPopup, #banner, #userPopup, #funContainer
 {
     border-style:           solid; 
     border-width:           25px; 
