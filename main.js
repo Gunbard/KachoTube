@@ -309,7 +309,7 @@ socket.on('chatSync', function (chatLine)
     {
         if (chatDisplayMode == "fade")
         {
-            $('#chatList span').last().hide().fadeIn();
+            $('.chat-line').last().hide().fadeIn();
         }
         else if (chatDisplayMode == "type")
         {
