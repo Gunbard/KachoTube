@@ -45,8 +45,9 @@ body
 
 #serverMessageContainer
 {
-    width:              460;
-    height:             100;
+    resize:             vertical;
+    width:              100%;
+    height:             80;
     float:              left;
     overflow:           auto;
     /*border-style:       solid;
@@ -186,7 +187,7 @@ li.ui-state-default
 
 .video-title
 {
-    width:              325;
+    width:              330;
 }
 
 .video-number
@@ -467,7 +468,7 @@ input[type=button]
     /*border-style:           solid;
     border-width:           1;
     color:                  white;*/
-    width:                  480;
+    width:                  460;
     height:                 350;
     float:                  left;
 }
