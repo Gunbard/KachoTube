@@ -86,6 +86,8 @@ var masterUser      = "";
 var masterUserId    = "";
 var masterTime      = 0;
 var currentVideo    = "";           // Id of video
+var streamSource    = "";
+var videoIsStream   = false;
 var masterless      = false;        // aka TV mode
 var paused          = false;
 var validatedVideos = 0;
@@ -482,7 +484,7 @@ io.sockets.on('connection', function (socket)
         socket.broadcast.emit('masterVideoPause', paused);
     }
     
-    // Send everyone the id of the video to immediately change to
+    // Send everyone the id of the video to immediately change to on the playlist
     function sendVideoChange(videoId)
     {
         io.sockets.emit('videoChangeSync', videoId);
@@ -491,9 +493,18 @@ io.sockets.on('connection', function (socket)
     // Send everyone the id of master's current video 
     function sendCurrentVideo()
     {
-        // Get type
-        var curVidIndex = indexById(currentVideo);
-        var source = videoList[curVidIndex].source;
+        var curVidIndex;
+        var source;
+        
+        if (!videoIsStream)
+        {
+            curVidIndex = indexById(currentVideo);
+            source = videoList[curVidIndex].source;
+        }
+        else
+        {
+            source = streamSource;
+        }
         
         io.sockets.emit('videoSync', currentVideo, source);
     }
@@ -674,6 +685,7 @@ io.sockets.on('connection', function (socket)
 
                 if (nextVideo)
                 {
+                    videoIsStream = false;
                     currentVideo = nextVideo;
                     sendVideoChange(currentVideo);
                     sendCurrentVideo();
@@ -808,18 +820,25 @@ io.sockets.on('connection', function (socket)
         // Tell new guy his new name
         io.sockets.socket(socket.id).emit('nameSync', username);
         
-        // Tell new guy state of skips
-        //io.sockets.socket(socket.id).emit('skipSync', skipList.length, skipsNeeded);
-
         // Update skips
         syncSkips();
           
         // Send current video, if exists
         if (currentVideo != "" && videoList.length > 0)
         {
-            // Get type
-            var curVidIndex = indexById(currentVideo);
-            var source = videoList[curVidIndex].source;
+            var curVidIndex;
+            var source;
+            
+            if (!videoIsStream)
+            {
+                curVidIndex = indexById(currentVideo);
+                source = videoList[curVidIndex].source;
+            }
+            else
+            {
+                source = streamSource;
+            }
+            
             io.sockets.socket(socket.id).emit('videoSync', currentVideo, source);
         }
         
@@ -979,22 +998,25 @@ io.sockets.on('connection', function (socket)
         var videoId;
         var sourceType;
         var ytIdMatch = url.match(/(\?|&)v=((\w|\W)*)/);
+        var dmIdMatch = url.match(/video\/([^_]+)/);
+        var usIdMatch = url.match(/ustream.tv\/channel\/(\d+)/);
         
         if (ytIdMatch)
         {
             videoId = ytIdMatch[2];
             sourceType = "yt";
-        }
-        else
+        }    
+        else if (dmIdMatch)
         {
-            var dmIdMatch = url.match(/video\/([^_]+)/);
-            if (dmIdMatch)
-            {
-                videoId = dmIdMatch[1];
-                sourceType = "dm";
-            }
+            videoId = dmIdMatch[1];
+            sourceType = "dm";
         }
-
+        else if (usIdMatch)
+        {
+            videoId = usIdMatch[1];
+            sourceType = "us";
+        }
+        
         if (!videoId)
         {
             sendServerMsgUser("Not a valid video URL");
@@ -1003,9 +1025,23 @@ io.sockets.on('connection', function (socket)
         
         if (validUser() && sourceType && !checkDupeVideo(videoId))
         {
-            var vidInfo = [];
-            vidInfo.push({id: videoId, source: sourceType});
-            validateVideo(vidInfo);
+            if (sourceType != "us")
+            {
+                var vidInfo = [];
+                vidInfo.push({id: videoId, source: sourceType});
+                validateVideo(vidInfo);
+            }
+            else
+            {
+                // Auto load streams, but check for masterUser
+                if (validUser() && masterUser == username && masterUserId == userId)
+                {
+                    videoIsStream = true;
+                    currentVideo = videoId;
+                    streamSource = sourceType;
+                    sendCurrentVideo();
+                }
+            }
         }
 	});   
    
@@ -1068,6 +1104,7 @@ io.sockets.on('connection', function (socket)
     
         if (validUser() && masterUser == username && masterUserId == userId)
         {
+            videoIsStream = false;
             currentVideo = videoId;
             sendCurrentVideo();
         }
@@ -1080,6 +1117,7 @@ io.sockets.on('connection', function (socket)
         
         if (validUser() && masterUser == username && masterUserId == userId)
         {
+            videoIsStream = false;
             currentVideo = videoId;
             sendVideoChange(currentVideo);
             sendCurrentVideo();

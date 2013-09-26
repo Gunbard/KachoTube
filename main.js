@@ -16,7 +16,7 @@ var firstScroll = true;
 var origIndex = 0; // Used for sorting
 var timeDiff = 5;
 var rightClickVid = "";
-var APImode = "dm"; // YT = YouTube, DM = DailyMotion
+var APImode = "dm"; // YT = YouTube, DM = DailyMotion, US = UStream
 var chatImgWidth = 120;
 var chatImgWidthSm = 80;
 var chatImgWidthMed = 120;
@@ -416,10 +416,14 @@ socket.on('videoSync', function (id, source)
         playerWidth = parseInt($('#videoDivContainer').css('width'));
         playerHeight = parseInt($('#videoDivContainer').css('height'));
         $('#NNDOverlay').css({width: playerWidth, height: playerHeight});
-        loadPlayerAPI(source, currentVideo);
-        
-        setPlayingIndicator();
     }
+    
+    if (source != APImode)
+    {
+        loadPlayerAPI(source, currentVideo);
+    }
+    
+    setPlayingIndicator();
 });
 
 // Message for deleting a video from the playlist
@@ -1221,8 +1225,7 @@ function togglePlaylistLocked(locked)
 function loadPlayerAPI(newSource, videoId)
 {
     swfobject.removeSWF("videoPlayer");
-    
-    $('#videoDiv').remove();
+    $('#videoDiv, #videoPlayer').remove();
     
     // Need to make new videoDiv
     $videoDiv = $('<DIV>').attr({id: "videoDiv"});
@@ -1243,13 +1246,21 @@ function loadPlayerAPI(newSource, videoId)
         var atts = { id: "videoPlayer" };
         swfobject.embedSWF("http://www.dailymotion.com/swf/" + videoId + "&enableApi=1&playerapiid=videoPlayer&autoplay=1&logo=0",
                        "videoDiv", "100%", "100%", "9", null, null, params, atts);
-
+    }
+    else if (newSource == "us")
+    {
+        var embed = "<iframe id = \"videoPlayer\" width=\"100%\" height=\"100%\" src=\"http://www.ustream.tv/embed/" + "6540154" + "?v=3&wmode=transparent&autoplay=true\" scrolling=\"no\" frameborder=\"0\" style=\"border: 0px none transparent;\"></iframe>";
+        
+        // Change title
+        $('#videoTitle').html("UStream Live");
+        
+        $('body').append(embed);
     }
      
     $('#videoDivContainer').append($('#videoPlayer'));
-     
     APImode = newSource;    
 }
+
 
 // Show who's master or admin user in the user list
 function setMasterDisplay()
@@ -1781,28 +1792,17 @@ function resetSettings()
 }
 
 // Toggle add video input box
-function toggleAddVideo(type)
+function toggleAddVideo()
 {
-    if (type == 0) // Normal video
-    {
-        $('#addVideoButton').removeAttr('disabled');
-        $('#loadStreamButton').attr('disabled', true);
-    }
-    else if (type == 1) // Stream
-    {
-        $('#loadStreamButton').removeAttr('disabled');
-        $('#addVideoButton').attr('disabled', true);
-    }
-    
     if ($('#addVideoInput').is(':hidden'))
     {
-        $('#addVideoInput').show().css({ width: 0 }).animate({ width: 200 }, 'fast');
+        $('#addVideoInput').show().css({ width: 0 }).animate({ width: 300 }, 'fast');
     }
     else
     {
         $('#addVideoButton').removeAttr('disabled');        
         $('#loadStreamButton').removeAttr('disabled');
-        $('#addVideoInput').css({ width: 200 }).animate({ width: 0 }, 'fast', 'swing', 
+        $('#addVideoInput').css({ width: 300 }).animate({ width: 0 }, 'fast', 'swing', 
         function () {
             $(this).hide();
         });
@@ -1901,4 +1901,3 @@ function updatePlayTime()
     $('#playlistTime').html(secondsToTime(playlistTotalTime));
     $('#playlistLength').html(videoPlaylist.length);
 }
-
