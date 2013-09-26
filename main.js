@@ -1018,8 +1018,8 @@ function serverMsg(msg, fadeDelay, fadeTime)
 {
     $newDiv = $('<DIV>', {html: msg + ' ', class: 'server-msg'});
     $('#serverMessages').prepend($newDiv);
-    $newSpan.hide().fadeIn("fast");
-    $newSpan.delay(fadeDelay).fadeOut(fadeTime, function() { $(this).remove(); });
+    $newDiv.hide().fadeIn("fast");
+    $newDiv.delay(fadeDelay).fadeOut(fadeTime, function() { $(this).remove(); });
 }
 
 // Toggles master controls
@@ -1249,7 +1249,7 @@ function loadPlayerAPI(newSource, videoId)
     }
     else if (newSource == "us")
     {
-        var embed = "<iframe id = \"videoPlayer\" width=\"100%\" height=\"100%\" src=\"http://www.ustream.tv/embed/" + "6540154" + "?v=3&wmode=transparent&autoplay=true\" scrolling=\"no\" frameborder=\"0\" style=\"border: 0px none transparent;\"></iframe>";
+        var embed = "<iframe id = \"videoPlayer\" width=\"100%\" height=\"100%\" src=\"http://www.ustream.tv/embed/" + videoId + "?v=3&wmode=transparent&autoplay=true\" scrolling=\"no\" frameborder=\"0\" style=\"border: 0px none transparent;\"></iframe>";
         
         // Change title
         $('#videoTitle').html("UStream Live");

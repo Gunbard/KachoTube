@@ -1041,6 +1041,10 @@ io.sockets.on('connection', function (socket)
                     streamSource = sourceType;
                     sendCurrentVideo();
                 }
+                else
+                {
+                    sendServerMsgUser("Sorry, normal users cannot load streams");
+                }
             }
         }
 	});   
