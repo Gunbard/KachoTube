@@ -16,7 +16,7 @@ var firstScroll = true;
 var origIndex = 0; // Used for sorting
 var timeDiff = 5;
 var rightClickVid = "";
-var APImode = "dm"; 
+var APImode = ""; 
 // YT = YouTube, DM = DailyMotion, US = UStream, LS = Livestream, TW = Twitch
 var chatImgWidth = 120;
 var chatImgWidthSm = 80;
