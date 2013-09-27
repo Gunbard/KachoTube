@@ -420,6 +420,7 @@ socket.on('videoSync', function (id, source)
     
     if (source != APImode)
     {
+        currentVideo = id;
         loadPlayerAPI(source, currentVideo);
     }
     
@@ -1253,6 +1254,15 @@ function loadPlayerAPI(newSource, videoId)
         
         // Change title
         $('#videoTitle').html("UStream Live");
+        
+        $('body').append(embed);
+    }
+    else if (newSource == "ls")
+    {
+        var embed = "<iframe id = \"videoPlayer\" width=\"100%\" height=\"100%\" src=\"http://cdn.livestream.com/embed/" + videoId + "?layout=4&wmode=transparent&autoplay=true\" scrolling=\"no\" frameborder=\"0\" style=\"border: 0px none transparent;\"></iframe>";
+        
+        // Change title
+        $('#videoTitle').html("Livestream Live");
         
         $('body').append(embed);
     }
