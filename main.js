@@ -16,7 +16,8 @@ var firstScroll = true;
 var origIndex = 0; // Used for sorting
 var timeDiff = 5;
 var rightClickVid = "";
-var APImode = "dm"; // YT = YouTube, DM = DailyMotion, US = UStream
+var APImode = "dm"; 
+// YT = YouTube, DM = DailyMotion, US = UStream, LS = Livestream, TW = Twitch
 var chatImgWidth = 120;
 var chatImgWidthSm = 80;
 var chatImgWidthMed = 120;
@@ -1265,6 +1266,17 @@ function loadPlayerAPI(newSource, videoId)
         $('#videoTitle').html("Livestream Live");
         
         $('body').append(embed);
+    }
+    else if (newSource == "tw")
+    {
+        var params = { allowScriptAccess: "always", allowFullScreen: "true", wmode: "opaque", scale: "exactFit", allowNetworking: "all", flashvars: "hostname=www.twitch.tv&channel=" + videoId + "&auto_play=true&start_volume=25" };
+        var atts = { id: "videoPlayer" };
+        swfobject.embedSWF("http://www.twitch.tv/widgets/live_embed_player.swf?channel=" + videoId, "videoDiv", "100%", "100%", "9", null, null, params, atts);
+        
+        // Change title
+        $('#videoTitle').html("Twitch.tv Live");
+        
+        //$('body').append(embed);
     }
      
     $('#videoDivContainer').append($('#videoPlayer'));

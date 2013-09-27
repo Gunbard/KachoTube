@@ -1001,6 +1001,7 @@ io.sockets.on('connection', function (socket)
         var dmIdMatch = url.match(/video\/([^_]+)/);
         var usIdMatch = url.match(/ustream.tv\/channel\/(\d+)/);
         var lsIdMatch = url.match(/livestream.com\/(\w+)/);
+        var twIdMatch = url.match(/twitch.tv\/(\w+)/);
         
         if (ytIdMatch)
         {
@@ -1022,6 +1023,11 @@ io.sockets.on('connection', function (socket)
             videoId = lsIdMatch[1];
             sourceType = "ls";
         }
+        else if (twIdMatch)
+        {
+            videoId = twIdMatch[1];
+            sourceType = "tw";
+        }
         
         if (!videoId)
         {
@@ -1031,7 +1037,7 @@ io.sockets.on('connection', function (socket)
         
         if (validUser() && sourceType && !checkDupeVideo(videoId))
         {
-            if (sourceType != "us" && sourceType != "ls")
+            if (sourceType != "us" && sourceType != "ls" && sourceType != "tw")
             {
                 var vidInfo = [];
                 vidInfo.push({id: videoId, source: sourceType});
