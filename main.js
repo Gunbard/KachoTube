@@ -405,23 +405,21 @@ socket.on('videoListSync', function (videoList)
 });
 
 // Message for syncing just video id from server
-socket.on('videoSync', function (id, source)
-{
-    serverVideo = id;
-    
+socket.on('videoSync', function (videoId, source)
+{   
     if (currentVideo == "")
-    {
-        currentVideo = serverVideo;
-        
+    {        
         // Get initial player size from css container
         playerWidth = parseInt($('#videoDivContainer').css('width'));
         playerHeight = parseInt($('#videoDivContainer').css('height'));
         $('#NNDOverlay').css({width: playerWidth, height: playerHeight});
     }
     
+    currentVideo = videoId;
+    
     if (source != APImode)
     {
-        currentVideo = id;
+
         loadPlayerAPI(source, currentVideo);
     }
     
@@ -1275,8 +1273,6 @@ function loadPlayerAPI(newSource, videoId)
         
         // Change title
         $('#videoTitle').html("Twitch.tv Live");
-        
-        //$('body').append(embed);
     }
      
     $('#videoDivContainer').append($('#videoPlayer'));
