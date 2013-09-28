@@ -8,6 +8,7 @@ var fs = require('fs');                         // For file I/O
 var crypto = require("crypto");                 // For tripcode generation
 
 server.listen(8880);
+io.set('log level', 1);                         // Log warnings and errors only
 
 // PLAYLIST API
 //http://gdata.youtube.com/feeds/api/playlists/[ID without PL]/?v=2&alt=json
