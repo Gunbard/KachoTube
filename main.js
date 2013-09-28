@@ -1258,7 +1258,9 @@ function loadPlayerAPI(newSource, videoId)
     }
     else if (newSource == "ls")
     {
-        var embed = "<iframe id = \"videoPlayer\" width=\"100%\" height=\"100%\" src=\"http://cdn.livestream.com/embed/" + videoId + "?layout=4&wmode=transparent&autoplay=true\" scrolling=\"no\" frameborder=\"0\" style=\"border: 0px none transparent;\"></iframe>";
+        var params = { wmode: "opaque", scale: "exactFit"};
+        var atts = { id: "videoPlayer" };
+        swfobject.embedSWF("http://cdn.livestream.com/grid/LSPlayer.swf?channel=" + videoId + "&clip=&time=&wmode=o&autoplay=true", "videoDiv", "100%", "100%", "9", null, null, params, atts);
         
         // Change title
         $('#videoTitle').html("Livestream Live");
