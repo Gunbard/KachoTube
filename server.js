@@ -670,6 +670,13 @@ io.sockets.on('connection', function (socket)
             // Automatically go to next video
             console.log("Skip limit reached, skipping video");
             var videoIdx = indexById(currentVideo);
+            
+            // Override for skipping streams
+            if (videoIdx < 0 && videoList.length > 0)
+            {
+                videoIdx = 0;
+            }
+            
             if (videoIdx > -1)
             {
                 console.log(videoIdx);
