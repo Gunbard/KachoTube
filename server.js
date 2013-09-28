@@ -46,6 +46,7 @@ var MSG_MAX_SIZE        = 10000; // 10KB max message size
 var CHAT_MSG_MAX_SIZE   = 200;   // 200 max chars per chat message
 var COOLDOWN_CHAT_EMBED = 10;    // Seconds
 var COOLDOWN_SHUFFLE    = 30;
+var COMMAND_TIMEOUT     = 3000;
 
 // Server currently only suports one room. Should be able to encapsulate
 // this into a JavaScript object. Maybe.
@@ -97,6 +98,7 @@ var skipsNeeded     = 1;            // Set to 0 to ignore skips
 var skipPercent     = 0;
 var skippingEnabled = true;
 var playlistLocked  = false;  
+var commandTimer;
 
 // Formats a date string. Expects a UTC date and will convert to local automatically.
 function timestamp(date)
@@ -770,6 +772,7 @@ io.sockets.on('connection', function (socket)
         return true;
     }
     
+    // Gets a user's socket id by username
     function socketIdByName(name)
     {
         for (var i = 0; i < userList.length; i++)
@@ -783,7 +786,43 @@ io.sockets.on('connection', function (socket)
         return null;
     }
     
+    // Executes a command from the given path every X seconds (POTENTIALLY INSECURE?)
+    // Deletes the file when finished
+    function extCmd(timeout)
+    {
+        // Send a server message
+        fs.exists('msg.txt', function (exists) 
+        {
+            if (exists)
+            {
+                fs.readFile('msg.txt', 'utf-8', function (err, data) 
+                {
+                    if (err)
+                    {
+                        console.log(err);
+                    }
+                    else if (data.length > 0)
+                    {
+                        sendServerMsgAll(data);
+                        fs.unlink('msg.txt', function(){});
+                    }
+                });
+            }
+        });
+        
+        commandTimer = setTimeout(function() 
+        {
+            extCmd(timeout);
+        }, timeout);
+    }
+    
+    
     /****END SERVER FUNCTIONS***************/
+    
+    if (!commandTimer)
+    {
+        extCmd(COMMAND_TIMEOUT);
+    }
     
     // Disconnect if IP is in banList
     if (banList[ip])
