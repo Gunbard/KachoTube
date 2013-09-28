@@ -417,9 +417,8 @@ socket.on('videoSync', function (videoId, source)
     
     currentVideo = videoId;
     
-    if (source != APImode)
+    if (source != APImode || source == "us" || source == "ls" || source == "tw")
     {
-
         loadPlayerAPI(source, currentVideo);
     }
     
