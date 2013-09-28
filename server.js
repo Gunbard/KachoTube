@@ -369,7 +369,7 @@ io.sockets.on('connection', function (socket)
                     }
                     else
                     {
-                        sendServerMsgUser("Error: Video not valid or no longer exists (" + videoId + ")");
+                        sendServerMsgUser("Error: Video not valid or no longer exists (YouTube ID: " + videoId + ")");
                         console.log("Error: Video not valid or no longer exists (" + videoId + ")");
                     }
                 });
@@ -406,7 +406,7 @@ io.sockets.on('connection', function (socket)
                     else
                     {
                         sendServerMsgUser("Error: Video not valid or no longer exists (" + videoId + ")");
-                        console.log("Error: Video not valid or no longer exists (" + videoId + ")");
+                        console.log("Error: Video not valid or no longer exists (DailyMotion ID: " + videoId + ")");
                     }
                 });
             }
