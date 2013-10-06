@@ -71,7 +71,7 @@ var skipList        = [];
 // item {string username, string text, string timestamp}
 var chatLog         = [];
 
-// ip list {ip. usernames, date of expiration}
+// ip list {ip, date of expiration}
 var banList         = [];
 
 // list of tripcodes
@@ -370,7 +370,7 @@ io.sockets.on('connection', function (socket)
                     else
                     {
                         sendServerMsgUser("Error: Video not valid or no longer exists (YouTube ID: " + videoId + ")");
-                        console.log("Error: Video not valid or no longer exists (" + videoId + ")");
+                        console.log("Error: Video not valid or no longer exists (YouTube ID: " + videoId + ")");
                     }
                 });
             }
@@ -405,7 +405,7 @@ io.sockets.on('connection', function (socket)
                     }
                     else
                     {
-                        sendServerMsgUser("Error: Video not valid or no longer exists (" + videoId + ")");
+                        sendServerMsgUser("Error: Video not valid or no longer exists (DailyMotion ID: " + videoId + ")");
                         console.log("Error: Video not valid or no longer exists (DailyMotion ID: " + videoId + ")");
                     }
                 });
@@ -479,6 +479,16 @@ io.sockets.on('connection', function (socket)
     function sendServerMsgOther(msg)
     {
         socket.broadcast.emit('serverMsg', msg);
+    }
+    
+    // Sends a server message to a specific user
+    function sendServerMsgSpecific(msg, user)
+    {
+        var targetId = socketIdByName(user);
+        if (targetId)
+        {
+            io.sockets.socket(targetId).emit('serverMsg', msg);
+        }
     }
     
     // Send masterUser pause message to everyone
@@ -709,26 +719,6 @@ io.sockets.on('connection', function (socket)
         io.sockets.emit('skipSync', skipList.length, skipsNeeded);
     }
     
-    function warnUser(name)
-    {
-    
-    }
-    
-    function bootUser(name)
-    {
-    
-    }
-    
-    function banUser(name)
-    {
-    
-    }
-    
-    function removeBan(ip)
-    {
-        
-    }
-    
     // Detects and executes a command
     // Returns null if nothing detected
     function detectCommand(queryString)
@@ -825,10 +815,11 @@ io.sockets.on('connection', function (socket)
     }
     
     // Disconnect if IP is in banList
-    if (banList[ip])
+    if (banList.indexOf(ip) != -1)
     {
         sendServerMsgUser("BANNED");
         socket.disconnect();
+        return;
     }
 
     // Disconnect if room is full
@@ -1187,16 +1178,20 @@ io.sockets.on('connection', function (socket)
         }
     });
     
-    // Message for updating the video list when master changes/sorts it
-    socket.on('videoListSwap', function (index1, index2)
+    // Message for updating the video list when a video is moved
+    socket.on('videoListMove', function (index1, index2)
     {
         var totalSize = index1.length + index2.length;
         spammingCheck(totalSize, "");
     
         if (validUser() && masterUser == username && masterUserId == userId)
         {
-            arraySwap(videoList, index1, index2);
-            io.sockets.emit('swapVideoSync', index1, index2);
+            var savedObj = videoList.splice(index2, 1);
+            if (savedObj[0])
+            {
+                videoList.splice(index1, 0, savedObj[0]);
+                io.sockets.emit('moveVideoSync', index1, index2);
+            }
         }
     });
     
@@ -1384,6 +1379,22 @@ io.sockets.on('connection', function (socket)
             }
             
             syncSkips();
+        }
+    });
+    
+    // Message for booting a user
+    socket.on('bootUser', function (name)
+    {
+        spammingCheck(0, "");
+        
+        if (validUser() && masterUser == username && masterUserId == userId)
+        {
+            var targetId = socketIdByName(name);
+            if (targetId)
+            {
+                sendServerMsgSpecific("You have been booted!", name);
+                io.sockets.socket(targetId).disconnect();
+            }
         }
     });
 

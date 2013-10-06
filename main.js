@@ -451,13 +451,33 @@ socket.on('addVideoSync', function (videoObj)
     updatePlayTime();
 });
 
-// Message for swapping videos on the playlist
-socket.on('swapVideoSync', function (index1, index2)
+// Message for moving videos on the playlist
+socket.on('moveVideoSync', function (index1, index2)
 {   
-    arraySwap(videoPlaylist, index1, index2);
-    $('.video-item#' + index1).replaceWith(generatePlaylistItem(index1));
-    $('.video-item#' + index2).replaceWith(generatePlaylistItem(index2));
-    setPlayingIndicator();
+    // Save and remove object at index2 and insert at index1
+    var savedObj = videoPlaylist.splice(index2, 1);
+    if (savedObj[0])
+    {
+        videoPlaylist.splice(index1, 0, savedObj[0]);
+        $('.video-item#' + index2).remove();
+        
+        if (index1 < index2)
+        {
+            $('.video-item#' + index1).before(generatePlaylistItem(index1));
+        }
+        else
+        {
+            $('.video-item#' + index1).after(generatePlaylistItem(index1));
+        }
+        
+        $('LI.video-item').each(function(i) 
+        {
+            $(this).attr({id: parseInt(i)});
+            $(this).find('.video-number').html(parseInt(i + 1) + '.');
+        });
+        
+        setPlayingIndicator();
+    }
 });
 
 
@@ -802,12 +822,12 @@ function sendTimeSync()
     setTimeout(sendTimeSync, 2000);
 }
 
-// Send playlist swap request
-function serverSwapVideo(index1, index2)
+// Send playlist move request
+function serverMoveVideo(index1, index2)
 {
     if (myName == masterUser || superUser)
     {
-        socket.emit('videoListSwap', index1, index2);
+        socket.emit('videoListMove', index1, index2);
     }
 }
 
@@ -1105,19 +1125,19 @@ function generatePlaylistSaveData()
     
     // Show popup
     var buttonLeft = $('#playlistSaveButton').offset().left;
-    var buttonTop = $('#playlistSaveButton').offset().top;
+    var buttonTop = $('#videoList').offset().top;
     var winWidth = $('#saveVidPopup').width() / 2;
 
-    openPopup(buttonLeft-winWidth, buttonTop+50, '#saveVidPopup');
+    openPopup(buttonLeft-winWidth, buttonTop, '#saveVidPopup');
 }
 
 function openLoadPopup()
 {
     var buttonLeft = $('#playlistLoadButton').offset().left;
-    var buttonTop = $('#playlistLoadButton').offset().top;
+    var buttonTop = $('#videoList').offset().top;
     var winWidth = $('#loadVidPopup').width() / 2;
     
-    openPopup(buttonLeft-winWidth, buttonTop+50, '#loadVidPopup');
+    openPopup(buttonLeft-winWidth, buttonTop, '#loadVidPopup');
 }
 
 // Send saved playlist to server
@@ -1146,10 +1166,10 @@ function showSettings()
 {
     // Show popup
     var buttonLeft = $('#settingsButton').offset().left;
-    var buttonTop = $('#settingsButton').offset().top;
+    var buttonTop = $('#videoList').offset().top;
     var winWidth = $('#settingsPopup').width() / 2;
         
-    openPopup(buttonLeft-winWidth, buttonTop+50, '#settingsPopup');
+    openPopup(buttonLeft-winWidth, buttonTop, '#settingsPopup');
 }
 
 // Show room settings
@@ -1157,10 +1177,10 @@ function showRoomSettings()
 {
     // Show popup
     var buttonLeft = $('#roomSettingsButton').offset().left;
-    var buttonTop = $('#roomSettingsButton').offset().top;
+    var buttonTop = $('#videoList').offset().top;
     var winWidth = $('#roomSettingsPopup').width() / 2;
         
-    openPopup(buttonLeft-winWidth, buttonTop+50, '#roomSettingsPopup');
+    openPopup(buttonLeft-winWidth, buttonTop, '#roomSettingsPopup');
 }
 
 // Clears the playlist 
@@ -1551,9 +1571,7 @@ function buildPlaylist()
                 origIndex = ui.item.index();
             },
             update: function(event, ui) {
-                // Tell server to swap the elements
-                //alert("Swapping " + ui.item.index() + " and " + origIndex);
-                serverSwapVideo(ui.item.index(), origIndex);
+                serverMoveVideo(ui.item.index(), origIndex);
                 
                 // Cancel actually modifying locally
                 $('.sortable').sortable('cancel');
@@ -1872,6 +1890,7 @@ function toggleUserMute()
     userSettingsCheck();
 }
 
+// Sets up input text for sending a whisper command
 function setPrivateMessage()
 {
     var username = userList[userPopupId].name;
@@ -1880,6 +1899,16 @@ function setPrivateMessage()
     $('#chatInput').focus().val(str);
 }
 
+// Boots a user from the room
+function bootUser()
+{
+    if (myName == masterUser || superUser)
+    {
+        var username = userList[userPopupId].name;
+        socket.emit('bootUser', username);
+        $('#closeUserPopup').click();
+    }   
+}
 
 // Sets the views user popup settings
 function userSettingsCheck()
