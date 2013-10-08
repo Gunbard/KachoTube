@@ -1833,13 +1833,13 @@ function toggleAddVideo()
 {
     if ($('#addVideoInput').is(':hidden'))
     {
-        $('#addVideoInput').show().css({ width: 0 }).animate({ width: 300 }, 'fast');
+        $('#addVideoInput').show().css({ width: 0 }).animate({ width: 250 }, 'fast');
     }
     else
     {
         $('#addVideoButton').removeAttr('disabled');        
         $('#loadStreamButton').removeAttr('disabled');
-        $('#addVideoInput').css({ width: 300 }).animate({ width: 0 }, 'fast', 'swing', 
+        $('#addVideoInput').css({ width: 250 }).animate({ width: 0 }, 'fast', 'swing', 
         function () {
             $(this).hide();
         });
