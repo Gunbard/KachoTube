@@ -38,6 +38,8 @@ body
     width:              1150;
     height:             200;
     float:              left;
+    font-size:          56;
+    text-align:         right;
     /*border-style:       solid;
     border-color:       white;
     border-width:       1;*/
@@ -363,7 +365,7 @@ li.ui-state-default
 
 #thumbnailPopup
 {
-    width:              488;
+    width:              400;
     position:           absolute;
     display:            none;
     clear:              both;
@@ -382,6 +384,7 @@ li.ui-state-default
     display:            block;
     margin-left:        auto;
     margin-right:       auto;
+    width:              100%;
 }
 
 #chatContainer
