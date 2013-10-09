@@ -432,13 +432,11 @@ socket.on('deleteVideoSync', function (index)
     $('.video-item#' + index).remove();
     
     // Fix ids and display numbers
-    var ind = parseInt(index) + 1;
-    for (var i = ind; i < videoPlaylist.length + 1; i++)
+    $('LI.video-item').each(function(i) 
     {
-        var newId = parseInt(i);
-        $('.video-item#' + i).find('.video-number').html(newId + '.');
-        $('.video-item#' + i).attr({id: newId - 1});
-    }
+        $(this).attr({id: parseInt(i)});
+        $(this).find('.video-number').html(parseInt(i + 1) + '.');
+    });
     
     updatePlayTime();
 });
@@ -634,7 +632,7 @@ $(function ()
     
     // Make thumbnail popup follow mouse    
     $(document).mousemove(function(e){
-        $('#thumbnailPopup').offset({left:e.pageX-160,top:e.pageY+20});    
+        $('#thumbnailPopup').offset({left:e.pageX-180,top:e.pageY+20});    
     });
                
     // Make a slider for time diff
@@ -1734,7 +1732,7 @@ function generatePlaylistItem(index)
         $('#thumbnailPopup').append($thumbnail);
        
         hoverTimeout = setTimeout(function() {
-            $('#thumbnailPopup').show().offset({left:e.pageX-160,top:e.pageY+20}).fadeTo(1, 0.8);
+            $('#thumbnailPopup').show().offset({left:e.pageX-180,top:e.pageY+20}).fadeTo(1, 0.8);
         }, 1000);
     }, function() {
         $(this).css('cursor','auto');
