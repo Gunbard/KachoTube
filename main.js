@@ -25,7 +25,7 @@ var chatImgWidthLg = 160;
 var chatVidWidth = 200;
 var chatVidHeight = 180;
 var NNDHeight = 40;
-var NNDInputCursor = -NNDHeight;
+var NNDInputCursor = 0;
 var NNDCommentCount = 0;
 var chatDisplayMode = "type";
 var prefixYoutube = 'http://www.youtube.com/watch?v=';
@@ -35,6 +35,7 @@ var disconnected = false;
 var showChatImages = true;
 var showChatVideos = true;
 var userPopupId = -1;
+var imageEmbedOpacity = 0.5;
 
 // Command types
 var WHISPER_CMD = 0;
@@ -343,30 +344,10 @@ socket.on('chatSync', function (chatLine)
         $newNNDText.addClass("nnd-user-msg");
     }
     
-    if (tinypicImage)
+    // Check input cursor
+    if ((tinypicImage && NNDInputCursor > (playerHeight - picHeight)) || (!tinypicVideo && NNDInputCursor > (playerHeight - NNDHeight)))
     {
-        // Add images, but make them transparent
-        $newNNDText.css({opacity: 0.5});
-    
-        if (NNDInputCursor < playerHeight - picHeight)
-        {
-            NNDInputCursor += picHeight;   
-        }
-        else
-        {
-            NNDInputCursor = 0;
-        }
-    }
-    else if (!tinypicVideo)
-    {
-        if (NNDInputCursor < playerHeight - NNDHeight)
-        {
-            NNDInputCursor += NNDHeight;   
-        }
-        else
-        {
-            NNDInputCursor = 0;
-        }
+        NNDInputCursor = 0;
     }
     
     // Start at right and move left
@@ -380,7 +361,32 @@ socket.on('chatSync', function (chatLine)
         $newNNDText.remove();
     });
     
+    // Move input cursor
+    if (tinypicImage)
+    {
+        // Add images, but make them transparent
+        $newNNDText.css({opacity: imageEmbedOpacity});
     
+        if (NNDInputCursor < (playerHeight - picHeight))
+        {
+            NNDInputCursor += picHeight;   
+        }
+        else
+        {
+            NNDInputCursor = 0;
+        }
+    }
+    else if (!tinypicVideo)
+    {
+        if (NNDInputCursor < (playerHeight - NNDHeight))
+        {
+            NNDInputCursor += NNDHeight;   
+        }
+        else
+        {
+            NNDInputCursor = 0;
+        }
+    }
 });
 
 // Message for updating videoList
@@ -608,8 +614,6 @@ $(function ()
             $(this).parent().append($(this));
         }
     });
-    
-    //$('#a-div').parent().append($('#a-div'));
     
     $('#iframePopup').append($('#tinypic_plugin_'+id));
     
