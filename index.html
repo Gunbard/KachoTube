@@ -54,6 +54,7 @@
 
                     <BR>
                     
+                    <SPAN Class = "clickable icon-search icon-large" Id = "searchButton" OnClick = "openSearch();" Title = "Search for Videos on YouTube"></SPAN>
                     <SPAN Class = "clickable icon-save icon-large" Id = "playlistSaveButton" OnClick = "generatePlaylistSaveData();" Title = "Save Playlist"></SPAN>
                     <SPAN Class = "master-control hidden clickable icon-upload-alt icon-large" Id = "playlistLoadButton" OnClick = "openLoadPopup();" Title = "Load Playlist"></SPAN>
                     <SPAN Class = "master-control hidden clickable icon-trash icon-large" OnClick = "clearPlaylist();" Title = "Clear Playlist"></SPAN>
@@ -61,6 +62,7 @@
                     <SPAN Class = "master-control hidden clickable icon-random icon-large" OnClick = "shufflePlaylist();" Title = "Shuffle Playlist"></SPAN>
                     <SPAN Class = "clickable icon-cogs icon-large" Id = "settingsButton" OnClick = "showSettings();" Title = "Settings"></SPAN>
                     <SPAN Class = "master-control hidden clickable icon-cog icon-large" Id = "roomSettingsButton" OnClick = "showRoomSettings();" Title = "Room Settings"></SPAN>
+
                 </DIV>
                 
                 <SPAN Class = "window-title text-outline" Style = "margin-top:125; margin-left:-485">Playlist</SPAN>
@@ -95,7 +97,8 @@
         <DIV Class = "drop-shadow" Id = "thumbnailPopup"></DIV>
         
         <DIV Class = "drop-shadow" Id = "iframePopup">
-            TinyPic<SPAN Class = "clickable icon-remove-circle icon-large" Id = "closeIframe"></SPAN>
+            <SPAN Id = "iframePopupTitle" Class = "default-popup-control"></SPAN><SPAN Class = "clickable icon-remove-circle icon-large default-popup-control" Id = "closeIframe"></SPAN>
+            <DIV Id = "iframePopupContent" Class = "default-popup-control"></DIV>
         </DIV>
         
         <DIV Class = "drop-shadow" Id = "saveVidPopup">

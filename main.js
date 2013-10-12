@@ -614,9 +614,7 @@ $(function ()
             $(this).parent().append($(this));
         }
     });
-    
-    $('#iframePopup').append($('#tinypic_plugin_'+id));
-    
+        
     $('#closeSettings, #closeRoomSettings, #closeSaveVid, #closeLoadVid, #closeIframe, #closeUserPopup').click(function ()
     {
         $(this).parent().fadeOut(300, function () {
@@ -1374,12 +1372,148 @@ function sendImage()
 // Shows the Tinypic popup box
 function openTinypic()
 {
+    $('#iframePopup').children(':not(.default-popup-control)').remove();
+
+    $('#iframePopupTitle').html('TinyPic');
+    $('#iframePopupContent').empty();
+    $('#iframePopupContent').append($('#tinypic_plugin_'+id));
+    
     showTinypicPlugin();
         
-    var buttonTop = $('#openTinypicButton').offset().top;
+    /*var buttonTop = $('#openTinypicButton').offset().top;
     var buttonLeft = $('#openTinypicButton').offset().left;
     var height = $('#iframePopup').height();
-    $('#iframePopup').css({left:buttonLeft+100, top:buttonTop-height}).show("fold", null, 500);
+    
+    
+    $('#iframePopup').css({left:buttonLeft+100, top:buttonTop-height}).show("fold", null, 500);*/
+    
+    // Show popup
+    var left = $('#videoList').offset().left;
+    var top = $('#videoList').offset().top;
+
+    openPopup(left, top, '#iframePopup');
+}
+
+// Shows the mini search popup
+function openSearch()
+{
+    $('#iframePopup').children(':not(.default-popup-control)').remove();
+    
+    $('#iframePopupTitle').html('YouTube QuickSearch');
+    $('#iframePopupContent').empty();
+
+    // Make a search input
+    $searchBar = $('<INPUT>').attr({id: 'searchInput'});
+    $searchBar.css({width: 200});
+    $searchBar.keypress(function (e) 
+    {
+        if (e.which == 13) // Enter key
+        {
+            var message = $searchBar.val();
+            if (message.length > 0)
+            {
+                $('#iframePopupContent').empty();
+                executeSearch(message, 1);
+            }
+        }
+    });
+    
+    // Make a search button
+    $searchButton = $('<INPUT>').attr({id: 'searchInputButton', type: 'button', value: 'Search'});
+    $searchButton.click(function () 
+    {        
+        var message = $searchBar.val();
+        if (message.length > 0)
+        {
+            $('#iframePopupContent').empty();
+            executeSearch(message, 1);
+        }   
+    });
+    
+    $('#iframePopupContent').before('<BR>');
+    $('#iframePopupContent').before($searchBar);
+    $searchBar.after($searchButton);
+
+    // Show popup
+    var left = $('#videoList').offset().left;
+    var top = $('#videoList').offset().top;
+
+    openPopup(left, top, '#iframePopup');
+}
+
+// Performs an ajax vidoe search and adds results to the popup
+function executeSearch(query, startIndex)
+{
+    $('#iframePopupContent').empty().append('Searching...');
+    $('#searchPrevButton, #searchNextButton').remove();
+    
+    
+    var MAX_RESULTS = 10;
+    $.ajax({
+        type: 'get',
+        url: 'https://gdata.youtube.com/feeds/api/videos',
+        dataType: 'jsonp',
+        data: 
+        {
+            'alt': 'jsonc',
+            'q': query,
+            'orderby': 'relevance',
+            'start-index': startIndex,
+            'max-results': MAX_RESULTS,
+            'v': 2
+        },
+        success: function (responseObj) 
+        {
+            $('#iframePopupContent').empty();
+            
+            // Format returned data for display
+            if (responseObj.data.totalItems < 1)
+            {
+                $('#iframePopupContent').append('No results found for "' + query + '"');
+                return;
+            }
+            
+            for (var i = 0; i < responseObj.data.items.length; i++)
+            {
+                var currentItem = responseObj.data.items[i];
+                var url = 'http://www.youtube.com/watch?v=' + currentItem.id;
+                
+                $itemContainer = $('<DIV>').attr({class: 'searchResultItem'});
+                $thumbnail = $('<IMG>').attr({src: currentItem.thumbnail.sqDefault}).css({float: 'left', verticalAlign: 'text-top', marginRight: '10'});
+                
+                $vidLink = $('<A>').attr({href: url}).html(currentItem.title);
+                
+                $copyInput = $('<INPUT>').attr({readonly: 'true'}).css({width: '300'}).val(url);
+                
+                $itemContainer.append($thumbnail).append($vidLink).append($copyInput);
+                
+                $('#iframePopupContent').append($itemContainer);
+            }
+            
+            // Add prev/next buttons
+            $prevButton = $('<INPUT>').attr({id: 'searchPrevButton', type: 'button', value: 'Prev'}); 
+            $prevButton.click(function () 
+            {
+                executeSearch(query, startIndex - MAX_RESULTS);
+            });
+            
+            $nextButton = $('<INPUT>').attr({id: 'searchNextButton', type: 'button', value: 'Next'}); 
+            $nextButton.click(function () 
+            {
+                executeSearch(query, startIndex + MAX_RESULTS);
+            });
+            
+            if (startIndex > MAX_RESULTS)
+            {
+                $('#iframePopup').append($prevButton);
+            }
+            
+            if (startIndex < responseObj.data.totalItems - MAX_RESULTS)
+            {
+                $('#iframePopup').append($nextButton);
+            }
+        }
+    });
 }
 
 // Type out a string character-by-character
@@ -1840,7 +1974,6 @@ function toggleAddVideo()
     else
     {
         $('#addVideoButton').removeAttr('disabled');        
-        $('#loadStreamButton').removeAttr('disabled');
         $('#addVideoInput').css({ width: 250 }).animate({ width: 0 }, 'fast', 'swing', 
         function () {
             $(this).hide();

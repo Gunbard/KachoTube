@@ -6,6 +6,25 @@ body
     background:         url("/styles/default/bkg.jpg") fixed;
 }
 
+a
+{
+	Text-Decoration: 	Underline;
+	Color: 				#CCCCCC;
+}
+
+a:Visited
+{
+	Text-Decoration: 	None;
+	Color: 				Gray;
+}
+
+a:Hover 
+{
+	Text-Decoration: 	None;
+	Background-Color: 	Black;
+	Color: 				White;
+}
+
 #centerer
 {
     width:              1200;
@@ -272,8 +291,6 @@ li.ui-state-default
     padding-bottom:     6;
 }
 
-
-
 .tinypic-img
 {
     /*max-width:          20;
@@ -290,6 +307,22 @@ li.ui-state-default
     height:             420;
     cursor:             auto;
     text-align:         center;
+}
+
+#iframePopupContent
+{
+    overflow:           auto;
+    height:             350;
+    text-align:         left;
+}
+
+.searchResultItem
+{
+    margin-top:         4;
+    margin-bottom:      4;
+    width:              100%;
+    float:              left;
+    background-color:   rgba(50, 50, 50, 0.8);
 }
 
 #saveVidPopup, #loadVidPopup
