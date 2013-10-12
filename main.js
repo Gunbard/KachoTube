@@ -55,8 +55,8 @@ socket.on('playerTimeSync', function (time, masterUser)
     // Don't sync if I am the masterUser
     if (myName != masterUser)
     {
-        //var timeDiv = document.getElementById("masterTime");
-        //timeDiv.innerHTML = time;
+        var timeDiv = document.getElementById("masterTime");
+        timeDiv.innerHTML = time;
         
         // Sync only if I'm faster/slower than masterUser by X seconds
         if (timeDiff > 0 && Math.abs(time - videoPlayer.getCurrentTime()) > timeDiff)
@@ -422,6 +422,7 @@ socket.on('videoSync', function (videoId, source)
     }
     
     currentVideo = videoId;
+    serverVideo = currentVideo;
     
     if (source != APImode || source == "us" || source == "ls" || source == "tw")
     {
@@ -465,7 +466,7 @@ socket.on('moveVideoSync', function (index1, index2)
         videoPlaylist.splice(index1, 0, savedObj[0]);
         $('.video-item#' + index2).remove();
         
-        if (index1 < index2)
+        if (parseInt(index1) < parseInt(index2))
         {
             $('.video-item#' + index1).before(generatePlaylistItem(index1));
         }
