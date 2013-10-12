@@ -1377,16 +1377,11 @@ function openTinypic()
 
     $('#iframePopupTitle').html('TinyPic');
     $('#iframePopupContent').empty();
-    $('#iframePopupContent').append($('#tinypic_plugin_'+id));
+    $('#tinypic_plugin_'+id).remove();
+    
+    $('#iframePopupContent').append("<iframe id='tinypic_plugin_"+id+"' frameborder='0' style='display: none;' scrolling='no'></iframe><br/>");
     
     showTinypicPlugin();
-        
-    /*var buttonTop = $('#openTinypicButton').offset().top;
-    var buttonLeft = $('#openTinypicButton').offset().left;
-    var height = $('#iframePopup').height();
-    
-    
-    $('#iframePopup').css({left:buttonLeft+100, top:buttonTop-height}).show("fold", null, 500);*/
     
     // Show popup
     var left = $('#videoList').offset().left;
