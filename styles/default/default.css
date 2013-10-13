@@ -235,7 +235,12 @@ li.ui-state-default
 
 .play-button
 {
-    width:              30;
+    width:              20;
+}
+
+.bump-button
+{
+    width:              32;
 }
 
 .dragger
@@ -252,7 +257,7 @@ li.ui-state-default
 
 .video-addedBy
 {
-    width:              160;
+    width:              150;
 }
 
 .delete-button
@@ -322,7 +327,7 @@ li.ui-state-default
     margin-bottom:      4;
     width:              100%;
     float:              left;
-    background-color:   rgba(50, 50, 50, 0.8);
+    background-color:   rgba(50, 50, 50, 0.5);
 }
 
 #saveVidPopup, #loadVidPopup

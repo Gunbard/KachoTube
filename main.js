@@ -55,8 +55,8 @@ socket.on('playerTimeSync', function (time, masterUser)
     // Don't sync if I am the masterUser
     if (myName != masterUser)
     {
-        var timeDiv = document.getElementById("masterTime");
-        timeDiv.innerHTML = time;
+        //var timeDiv = document.getElementById("masterTime");
+        //timeDiv.innerHTML = time;
         
         // Sync only if I'm faster/slower than masterUser by X seconds
         if (timeDiff > 0 && Math.abs(time - videoPlayer.getCurrentTime()) > timeDiff)
@@ -1048,19 +1048,11 @@ function displayMasterControls(showControls)
     if (showControls)
     {
         $('.sortable').sortable({ disabled: false });
-        $('.delete-button').show();
-        $('.play-button').show();
-        $('.dragger').show();
-        $('.make-master-user').show();
         $('.master-control').show();
     }
     else
     {
         $('.sortable').sortable({ disabled: true });
-        $('.delete-button').hide();
-        $('.play-button').hide();
-        $('.dragger').hide(); 
-        $('.make-master-user').hide();
         $('.master-control').hide();
     }
 }
@@ -1731,16 +1723,18 @@ function generatePlaylistItem(index)
     
     $newListItem = $('<LI>').attr({class: "ui-state-default video-item", id: index});
     
-    $dragger = $('<SPAN>').attr({class: "dragger icon-sort icon-large"});
+    $dragger = $('<SPAN>').attr({class: "dragger icon-sort icon-large master-control"});
     
     $number = $('<SPAN>').attr({class: "video-number"});
     $number.append(index + 1 + '.');
     
-    $playButton = $('<SPAN>').attr({class: "play-button icon-play-circle icon-large clickable", id: "tit" + index, title: "Play this video"});
+    $playButton = $('<SPAN>').attr({class: "play-button icon-play-circle icon-large clickable master-control", id: "tit" + index, title: "Play this video"});
     
     $urlButton = $('<SPAN>').attr({class: "url-button icon-link icon-large", id: index, title: "Link to video"});
     
-    $deleteButton = $('<SPAN>').attr({class: "delete-button icon-remove icon-large", id: index, title: "Double-click to delete"});
+    $deleteButton = $('<SPAN>').attr({class: "delete-button icon-remove icon-large master-control", id: index, title: "Double-click to delete"});
+    
+    $bumpButton = $('<SPAN>').attr({class: "bump-button icon-arrow-up icon-large clickable master-control", id: index, title: "Bump as next video to play"});
     
     $playingIndicator = $('<SPAN>').attr({class: "playing-indicator icon-youtube-play icon-large", id: index});
     
@@ -1764,6 +1758,7 @@ function generatePlaylistItem(index)
     
     $newListItem.append($playButton);
     $newListItem.append($urlButton);
+    $newListItem.append($bumpButton);
     $newListItem.append($deleteButton);
     $playingIndicator.hide();
     
@@ -1800,6 +1795,11 @@ function generatePlaylistItem(index)
             var id = getIdForVideoItem(this);
             $(this).effect("pulsate", null, 100);
             serverChangeVideo(id);
+        });
+        
+        $bumpButton.click(function() {
+            var id = getIdForVideoItem(this);
+            serverMoveVideo(1, id);
         });
     }
     else
