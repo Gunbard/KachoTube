@@ -42,564 +42,6 @@ var WHISPER_CMD = 0;
 
 google.load("swfobject", "2.1");
 
-// Message for server disconnection
-socket.on('disconnect', function () 
-{
-    serverMsg("Server disconnected!", 99999, 99999);
-});
-
-
-// Message for setting my player's time to the masterUser's time
-socket.on('playerTimeSync', function (time, masterUser) 
-{
-    // Don't sync if I am the masterUser
-    if (myName != masterUser)
-    {
-        //var timeDiv = document.getElementById("masterTime");
-        //timeDiv.innerHTML = time;
-        
-        // Sync only if I'm faster/slower than masterUser by X seconds
-        if (timeDiff > 0 && Math.abs(time - videoPlayer.getCurrentTime()) > timeDiff)
-        {
-            // Sync only if I'm not paused and I'm playing master's video
-            if (videoPlayer.getPlayerState() != 2 && currentVideo == serverVideo)
-            {
-                if (APImode == "yt")
-                {
-                    videoPlayer.seekTo(time, true);
-                }
-                else if (APImode == "dm")
-                {
-                    videoPlayer.seekTo(time);
-                }
-            }
-        }
-    }
-});
-
-// Message for updating the list of users in room
-socket.on('userListSync', function (users) 
-{
-    userList = users;
-    var userListDiv = document.getElementById("userList");
-    $('#userList').html('');
-    
-    for (var i = 0; i < userList.length; i++)
-    {
-        $user = $('<SPAN>').attr({class: "user-list-user clickable", id:"user" + i});
-        
-        var namePart, tripPart;
-        
-        var tripFound = userList[i].name.match(/!/g);
-        if (tripFound)
-        {
-            var splitName = userList[i].name.split("!");
-            namePart = splitName[0];
-            tripPart = "!" + splitName[1];
-        }
-        
-        $makeMaster = $('<SPAN>').attr({class: "make-master-user clickable icon-flag icon-large", id: userList[i].name, title: "Give master"});
-        
-        $user.append("<SPAN Class = 'master-display icon-star-empty icon-large' Title = 'Master User'></SPAN> ");
-        
-        $user.append("<SPAN Class = 'admin-display icon-heart icon-large' Title = 'This user is an administrator.'></SPAN>");
-
-        if (tripFound && namePart && tripPart)
-        {
-            $user.append("<SPAN Class = 'name-display'>" + namePart + "<SPAN Class = 'trip-display greentext'>" + tripPart + "</SPAN></SPAN>");
-        }
-        else
-        {
-            $user.append("<SPAN Class = 'name-display'>" + userList[i].name + "</SPAN> ");
-        }
-
-        if (myName != userList[i].name && !userList[i].adminFlag)
-        {
-           $user.append($makeMaster);
-        }
-        
-        $user.append("<BR>");
-        
-        $user.click(function ()
-        {
-            var userPopupIdString = this.id.replace('user', '');
-            userPopupId = parseInt(userPopupIdString);
-            
-            var name = $(this).find('.name-display').html();
-            $('#userPopupName').html(name);
-            
-            if (name == myName)
-            {
-                $('.pm-button').hide();
-            }
-            else
-            {
-                $('.pm-button').show();
-            }
-            
-            userSettingsCheck();
-            
-            openPopup($(this).offset().left + 20, $(this).offset().top, '#userPopup');
-        });
-        
-        $('#userList').append($user);
-    }
-    
-    if (myName != masterUser)
-    {
-        $('.make-master-user').hide();   
-    }
-    
-    $('.make-master-user').click(function() {
-        masterUserPassOff(this.id);
-    });
-     
-    setMasterDisplay();
-    checkSettings();
-    
-    // Update number
-    $('#totalUsers').html(userList.length);
-});
-
-// Message for setting my name
-socket.on('nameSync', function (username, superuser)
-{
-    myName = username;
-
-    var splitName = username.split("!");
-    var namePart = splitName[0];
-    var tripPart = "!" + splitName[1];
-    
-    var nameDiv = document.getElementById("username");
-    
-    if (splitName[1])
-    {
-        nameDiv.innerHTML = '<SPAN Class = "name-display">' + namePart + '</SPAN>'  +  '<SPAN Class = "trip-display greentext">' + tripPart + '</SPAN>';
-    }
-    else
-    {
-        nameDiv.innerHTML = myName;
-    }
-   
-    superUser = superuser;
-    displayMasterControls(superUser);
-
-    checkSettings();
-});
-
-// Message for setting who the masterUser is
-socket.on('masterUserSync', function (user)
-{
-    masterUser = user;
-    //var masterUserDiv = document.getElementById("masteruser");
-    //masterUserDiv.innerHTML = masterUser;
-    
-    if (myName == masterUser || superUser)
-    {
-        displayMasterControls(true);
-    }
-    else
-    {
-        displayMasterControls(false);
-    }
-    
-    // Show in chat
-    setMasterDisplay();
-});
-
-// Message for generic server message
-socket.on('serverMsg', function (msg)
-{
-    serverMsg(msg, serverMsgFadeDelay, serverMsgFadeTime);
-});
-
-// Message for updating chat
-socket.on('chatSync', function (chatLine)
-{
-    var name = chatLine.username;
-    
-    var userId = userIdByName(name);
-    if (userId > -1 && userList[userId].muted)
-    {
-        return;
-    }
-    
-    var text = chatLine.text;
-    
-    var whisper = '';
-    var whisperTarget = '';
-    if (chatLine.whisper)
-    {
-        whisper = 'whisper';
-        if (name == myName && chatLine.whisperTarget)
-        {
-            whisperTarget = ' [To ' + chatLine.whisperTarget + ']';
-        }
-    }
-    
-    var time = chatLine.timestamp;
-    timeStr = timestamp(time, "long");
-    timeStrShort = timestamp (time, "short");
-    
-    var namePart, tripPart;
-        
-    var tripFound = name.match(/!/g);
-    if (tripFound)
-    {
-        var splitName = name.split("!");
-        namePart = splitName[0];
-        tripPart = "!" + splitName[1];
-    }
-    
-    var tinypicImage = text.match(/(http:\/\/.*.tinypic.com\/.*(.jpg|.gif|.png))/);
-    if (tinypicImage && showChatImages)
-    {
-        text = text.replace(tinypicImage[0], "<IMG Class = \"tinypic-img\" Width = \"" + chatImgWidth + "\" Src = \"" + tinypicImage[0] + "\">");
-    }
-    
-    var tinypicVideo = text.match(/http:\/\/tinypic.com\/r\/(.*)\/(\d*)/);
-    if (tinypicVideo && showChatVideos)
-    {
-        text = text.replace(tinypicVideo[0], "<embed class = \"tinypic-vid\" width=\"" + chatVidWidth + "\" height=\"" + chatVidHeight + "\" type=\"application/x-shockwave-flash\" src=\"http://v5.tinypic.com/player.swf?file=" + tinypicVideo[1] + "&s=" + tinypicVideo[2] + ">");
-    }
-    
-    if (tripFound && namePart && tripPart)
-    {
-        $('#chatList').append('<DIV Class = \"chat-line ' + whisper + '\" Title = \"' + timeStr + '\"><SPAN Class = \"chat-name\">' + namePart + '<SPAN Class = "trip-display greentext">' + tripPart + whisperTarget + '</SPAN><SPAN Class = \"chat-time\"> (' + timeStrShort + ')</SPAN>:</SPAN> <SPAN Class = \"chat-text\">' + text + '</SPAN></DIV>');
-    }
-    else
-    {
-        $('#chatList').append('<DIV Class = \"chat-line ' + whisper + '\" Title = \"' + timeStr + '\"><SPAN Class = \"chat-name\">' + name + whisperTarget + '<SPAN Class = \"chat-time\"> (' + timeStrShort + ')</SPAN>:</SPAN> <SPAN Class = \"chat-text\">' + text + '</SPAN></DIV>');
-    }
-    
-    checkSettings();
-    
-    var greentext = text.match(/^&gt;.*/);
-    if (greentext)
-    {
-        //text = '<SPAN Class = "greentext">' + text + '</SPAN>';
-        text = text.replace(/&gt;/g, ">");
-        $('#chatList span').last().addClass('greentext');
-    }
-    
-    
-    var picHeight = $('.tinypic-img').last().height();
-    if (!picHeight)
-    {
-        picHeight = 0;
-    }
-    
-    var vidHeight = $('.tinypic-vid').last().height();
-    if (!tinypicVideo)
-    {
-        vidHeight = 0;
-    }
-    
-    var textHeight = $('#chatList span').last().height() + 16;
-    if (tinypicImage || tinypicVideo)
-    {
-        textHeight = 0;
-    }
-    
-    // Keep scrolled at bottom only if bar is already at bottom
-    if ($('#chatList')[0].scrollHeight - $('#chatList').scrollTop() <= $('#chatList').outerHeight() + textHeight + picHeight + vidHeight)
-    {
-        $('#chatList').animate({ scrollTop: $(document).height() * 3 }, 'slow');
-    }
-    
-    if (!tinypicImage && !tinypicVideo)
-    {
-        if (chatDisplayMode == "fade")
-        {
-            $('.chat-line').last().hide().fadeIn();
-        }
-        else if (chatDisplayMode == "type")
-        {
-            $line = $('#chatList span').last().filter('.chat-text');
-            $line.html('');
-            typewrite($line, text, 0);
-        }
-    }
-    
-    // Add to NND overlay, if enabled
-    if (tinypicVideo || $('#NNDOverlay').is(':hidden') || !showChatImages)
-    {
-        // Do not display videos
-        return;
-    }
-    
-    NNDCommentCount += 1;
-    var $newNNDText = $('<SPAN>').attr({ class: "NNDComment text-outline", id: NNDCommentCount });
-    
-    if (chatLine.whisper)
-    {
-        $newNNDText.addClass('whisper');
-    }
-    
-    $newNNDText.append(text);
-    $newNNDText.wrapInner('<b>');
-    
-    if (name == myName)
-    {
-        $newNNDText.addClass("nnd-user-msg");
-    }
-    
-    // Check input cursor
-    if ((tinypicImage && NNDInputCursor > (playerHeight - picHeight)) || (!tinypicVideo && NNDInputCursor > (playerHeight - NNDHeight)))
-    {
-        NNDInputCursor = 0;
-    }
-    
-    // Start at right and move left
-    $newNNDText.css({left: playerWidth, top: NNDInputCursor});
-    
-    $('#NNDOverlay').append($newNNDText);
-    
-    var size = getInnerWidth('.NNDComment#'+NNDCommentCount);
-    $newNNDText.animate({left: -size*2}, 8000, 'linear', function () 
-    {
-        $newNNDText.remove();
-    });
-    
-    // Move input cursor
-    if (tinypicImage)
-    {
-        // Add images, but make them transparent
-        $newNNDText.css({opacity: imageEmbedOpacity});
-    
-        if (NNDInputCursor < (playerHeight - picHeight))
-        {
-            NNDInputCursor += picHeight;   
-        }
-        else
-        {
-            NNDInputCursor = 0;
-        }
-    }
-    else if (!tinypicVideo)
-    {
-        if (NNDInputCursor < (playerHeight - NNDHeight))
-        {
-            NNDInputCursor += NNDHeight;   
-        }
-        else
-        {
-            NNDInputCursor = 0;
-        }
-    }
-});
-
-// Message for updating videoList
-socket.on('videoListSync', function (videoList)
-{
-    var id, title, duration, addedBy;
-    
-    videoPlaylist = [];
-    
-    for (var i = 0; i < videoList.length; i++)
-    {
-        id          = htmlEscape(videoList[i].id);
-        title       = htmlEscape(videoList[i].title);
-        duration    = htmlEscape(videoList[i].duration);
-        source      = htmlEscape(videoList[i].source);
-        addedBy     = htmlEscape(videoList[i].addedBy);
-
-        videoPlaylist.push({id: id, title: title, duration: duration, addedBy: addedBy, source: source});
-    }
-    
-    buildPlaylist();
-});
-
-// Message for syncing just video id from server
-socket.on('videoSync', function (videoId, source)
-{   
-    if (currentVideo == "")
-    {        
-        // Get initial player size from css container
-        playerWidth = parseInt($('#videoDivContainer').css('width'));
-        playerHeight = parseInt($('#videoDivContainer').css('height'));
-        $('#NNDOverlay').css({width: playerWidth, height: playerHeight});
-    }
-    
-    currentVideo = videoId;
-    serverVideo = currentVideo;
-    
-    if (source != APImode || source == "us" || source == "ls" || source == "tw")
-    {
-        loadPlayerAPI(source, currentVideo);
-    }
-    
-    setPlayingIndicator();
-});
-
-// Message for deleting a video from the playlist
-socket.on('deleteVideoSync', function (index)
-{
-    videoPlaylist.splice(index, 1);
-    $('.video-item#' + index).remove();
-    
-    // Fix ids and display numbers
-    $('LI.video-item').each(function(i) 
-    {
-        $(this).attr({id: parseInt(i)});
-        $(this).find('.video-number').html(parseInt(i + 1) + '.');
-    });
-    
-    updatePlayTime();
-});
-
-// Message for adding a video to the playlist
-socket.on('addVideoSync', function (videoObj)
-{
-    videoPlaylist.push(videoObj);
-    $('.video-list').append(generatePlaylistItem(videoPlaylist.length - 1));
-    updatePlayTime();
-});
-
-// Message for moving videos on the playlist
-socket.on('moveVideoSync', function (index1, index2)
-{   
-    // Save and remove object at index2 and insert at index1
-    var savedObj = videoPlaylist.splice(index2, 1);
-    if (savedObj[0])
-    {
-        videoPlaylist.splice(index1, 0, savedObj[0]);
-        $('.video-item#' + index2).remove();
-        
-        if (parseInt(index1) < parseInt(index2))
-        {
-            $('.video-item#' + index1).before(generatePlaylistItem(index1));
-        }
-        else
-        {
-            $('.video-item#' + index1).after(generatePlaylistItem(index1));
-        }
-        
-        $('LI.video-item').each(function(i) 
-        {
-            $(this).attr({id: parseInt(i)});
-            $(this).find('.video-number').html(parseInt(i + 1) + '.');
-        });
-        
-        setPlayingIndicator();
-    }
-});
-
-
-// Message for changing to specific video from master
-socket.on('videoChangeSync', function (videoId)
-{
-    changeVideo(videoId);
-});
-
-// Message for enabling/disabling skip button
-socket.on('skipEnabledSync', function (enabled)
-{
-    if (enabled)
-    {
-        $('#skipButton').removeAttr('disabled');
-    } 
-    else 
-    {
-        $('#skipButton').attr('disabled', true);
-    }
-});
-
-// Message for changing playlist lock icon
-socket.on('lockPlaylistSync', function (locked)
-{
-    if (locked)
-    {
-        $('#lockPlaylistButton').removeClass("icon-unlock").addClass("icon-lock");
-    } 
-    else 
-    {
-        $('#lockPlaylistButton').removeClass("icon-lock").addClass("icon-unlock");
-    }
-});
-
-
-// Message for getting current log of chat when first entering room
-socket.on('chatLogSync', function (chatLog)
-{
-    var chatListDiv = document.getElementById("chatList");
-    var str = "";
-    var time;
-    
-    for (var i = 0; i < chatLog.length; i++)
-    {
-        var namePart, tripPart;
-        
-        var tripFound = chatLog[i].username.match(/!/g);
-        if (tripFound)
-        {
-            var splitName = chatLog[i].username.split("!");
-            namePart = splitName[0];
-            tripPart = "!" + splitName[1];
-        }
-    
-        time = chatLog[i].timestamp;
-        var greentext = chatLog[i].text.match(/^&gt;.*/);
-        if (greentext)
-        {
-            chatLog[i].text = '<SPAN Class = "greentext">' + chatLog[i].text + '</SPAN>';
-        }
-        
-        var tinypicImage = chatLog[i].text.match(/(http:\/\/.*.tinypic.com\/.*(.jpg|.gif|.png))/);
-        if (tinypicImage)
-        {
-            chatLog[i].text = chatLog[i].text.replace(tinypicImage[0], "<IMG Class = \"tinypic-img\" Width = \"" + chatImgWidth + "\" Src = \"" + tinypicImage[0] + "\">");
-        }
-        
-        var tinypicVideo = chatLog[i].text.match(/http:\/\/tinypic.com\/r\/(.*)\/(\d*)/);
-        if (tinypicVideo)
-        {
-            chatLog[i].text = chatLog[i].text.replace(tinypicVideo[0], "<embed class = \"tinypic-vid\" width=\"" + chatVidWidth + "\" height=\"" + chatVidHeight + "\" type=\"application/x-shockwave-flash\" src=\"http://v5.tinypic.com/player.swf?file=" + tinypicVideo[1] + "&s=" + tinypicVideo[2] + "><SPAN Class = \"hide-vid\">[Hide]</SPAN>");
-        }
-        
-        var timeStr = timestamp(time, "long");
-        var timeStrShort = timestamp (time, "short");
-        
-        if (tripFound && namePart && tripPart)
-        {
-            str += '<DIV Class = \"chat-line\" Title = \"' + timeStr + '\"><SPAN Class = \"chat-name\">' + namePart + '<SPAN Class = "trip-display greentext">' + tripPart + '</SPAN><SPAN Class = \"chat-time\"> (' + timeStrShort + ')</SPAN>:</SPAN> <SPAN Class = \"chat-text\">' + chatLog[i].text + '</SPAN></DIV>';
-        }
-        else
-        {
-            str += '<DIV Class = \"chat-line\" Title = \"' + timeStr + '\"><SPAN Class = \"chat-name\">' + chatLog[i].username + '<SPAN Class = \"chat-time\"> (' + timeStrShort + ')</SPAN>:</SPAN> <SPAN Class = \"chat-text\">' + chatLog[i].text + '</SPAN></DIV>';
-        }
-    }
-    chatListDiv.innerHTML = str;
-    
-    checkSettings();
-});
-
-// Message for updating view of number of skips on current video
-socket.on('skipSync', function (skips, maxSkips)
-{
-    var str = skips + '/' + maxSkips;
-    $('#skipVote').html(str); 
-    
-    if (skips == 0)
-    {
-        // Skips were reset
-        $('#skipButton').val('SKIP');
-    }
-});
-
-// Message for getting current log of chat when first entering room
-socket.on('masterVideoPause', function (paused)
-{
-    if (paused)
-    {
-        videoPlayer.pauseVideo();
-    }
-    else
-    {
-        videoPlayer.playVideo();
-    }
-});
-
 // Page finished loading
 $(function () 
 {    
@@ -746,6 +188,567 @@ $(function ()
             }
         }
     });
+    
+    
+    // Message for server disconnection
+    socket.on('disconnect', function () 
+    {
+        serverMsg("Server disconnected!", 99999, 99999);
+    });
+
+
+    // Message for setting my player's time to the masterUser's time
+    socket.on('playerTimeSync', function (time, masterUser) 
+    {
+        // Don't sync if I am the masterUser
+        if (myName != masterUser)
+        {
+            //var timeDiv = document.getElementById("masterTime");
+            //timeDiv.innerHTML = time;
+            
+            // Sync only if I'm faster/slower than masterUser by X seconds
+            if (timeDiff > 0 && Math.abs(time - videoPlayer.getCurrentTime()) > timeDiff)
+            {
+                // Sync only if I'm not paused and I'm playing master's video
+                if (videoPlayer.getPlayerState() != 2 && currentVideo == serverVideo)
+                {
+                    if (APImode == "yt")
+                    {
+                        videoPlayer.seekTo(time, true);
+                    }
+                    else if (APImode == "dm")
+                    {
+                        videoPlayer.seekTo(time);
+                    }
+                }
+            }
+        }
+    });
+
+    // Message for updating the list of users in room
+    socket.on('userListSync', function (users) 
+    {
+        userList = users;
+        var userListDiv = document.getElementById("userList");
+        $('#userList').html('');
+        
+        for (var i = 0; i < userList.length; i++)
+        {
+            $user = $('<SPAN>').attr({class: "user-list-user clickable", id:"user" + i});
+            
+            var namePart, tripPart;
+            
+            var tripFound = userList[i].name.match(/!/g);
+            if (tripFound)
+            {
+                var splitName = userList[i].name.split("!");
+                namePart = splitName[0];
+                tripPart = "!" + splitName[1];
+            }
+            
+            $makeMaster = $('<SPAN>').attr({class: "make-master-user clickable icon-flag icon-large", id: userList[i].name, title: "Give master"});
+            
+            $user.append("<SPAN Class = 'master-display icon-star-empty icon-large' Title = 'Master User'></SPAN> ");
+            
+            $user.append("<SPAN Class = 'admin-display icon-heart icon-large' Title = 'This user is an administrator.'></SPAN>");
+
+            if (tripFound && namePart && tripPart)
+            {
+                $user.append("<SPAN Class = 'name-display'>" + namePart + "<SPAN Class = 'trip-display greentext'>" + tripPart + "</SPAN></SPAN>");
+            }
+            else
+            {
+                $user.append("<SPAN Class = 'name-display'>" + userList[i].name + "</SPAN> ");
+            }
+
+            if (myName != userList[i].name && !userList[i].adminFlag)
+            {
+               $user.append($makeMaster);
+            }
+            
+            $user.append("<BR>");
+            
+            $user.click(function ()
+            {
+                var userPopupIdString = this.id.replace('user', '');
+                userPopupId = parseInt(userPopupIdString);
+                
+                var name = $(this).find('.name-display').html();
+                $('#userPopupName').html(name);
+                
+                if (name == myName)
+                {
+                    $('.pm-button').hide();
+                }
+                else
+                {
+                    $('.pm-button').show();
+                }
+                
+                userSettingsCheck();
+                
+                openPopup($(this).offset().left + 20, $(this).offset().top, '#userPopup');
+            });
+            
+            $('#userList').append($user);
+        }
+        
+        if (myName != masterUser)
+        {
+            $('.make-master-user').hide();   
+        }
+        
+        $('.make-master-user').click(function() {
+            masterUserPassOff(this.id);
+        });
+         
+        setMasterDisplay();
+        checkSettings();
+        
+        // Update number
+        $('#totalUsers').html(userList.length);
+    });
+
+    // Message for setting my name
+    socket.on('nameSync', function (username, superuser)
+    {
+        myName = username;
+
+        var splitName = username.split("!");
+        var namePart = splitName[0];
+        var tripPart = "!" + splitName[1];
+        
+        var nameDiv = document.getElementById("username");
+        
+        if (splitName[1])
+        {
+            nameDiv.innerHTML = '<SPAN Class = "name-display">' + namePart + '</SPAN>'  +  '<SPAN Class = "trip-display greentext">' + tripPart + '</SPAN>';
+        }
+        else
+        {
+            nameDiv.innerHTML = myName;
+        }
+       
+        superUser = superuser;
+        displayMasterControls(superUser);
+
+        checkSettings();
+    });
+
+    // Message for setting who the masterUser is
+    socket.on('masterUserSync', function (user)
+    {
+        masterUser = user;
+        //var masterUserDiv = document.getElementById("masteruser");
+        //masterUserDiv.innerHTML = masterUser;
+        
+        if (myName == masterUser || superUser)
+        {
+            displayMasterControls(true);
+        }
+        else
+        {
+            displayMasterControls(false);
+        }
+        
+        // Show in chat
+        setMasterDisplay();
+    });
+
+    // Message for generic server message
+    socket.on('serverMsg', function (msg)
+    {
+        serverMsg(msg, serverMsgFadeDelay, serverMsgFadeTime);
+    });
+
+    // Message for updating chat
+    socket.on('chatSync', function (chatLine)
+    {
+        var name = chatLine.username;
+        
+        var userId = userIdByName(name);
+        if (userId > -1 && userList[userId].muted)
+        {
+            return;
+        }
+        
+        var text = chatLine.text;
+        
+        var whisper = '';
+        var whisperTarget = '';
+        if (chatLine.whisper)
+        {
+            whisper = 'whisper';
+            if (name == myName && chatLine.whisperTarget)
+            {
+                whisperTarget = ' [To ' + chatLine.whisperTarget + ']';
+            }
+        }
+        
+        var time = chatLine.timestamp;
+        timeStr = timestamp(time, "long");
+        timeStrShort = timestamp (time, "short");
+        
+        var namePart, tripPart;
+            
+        var tripFound = name.match(/!/g);
+        if (tripFound)
+        {
+            var splitName = name.split("!");
+            namePart = splitName[0];
+            tripPart = "!" + splitName[1];
+        }
+        
+        var tinypicImage = text.match(/(http:\/\/.*.tinypic.com\/.*(.jpg|.gif|.png))/);
+        if (tinypicImage && showChatImages)
+        {
+            text = text.replace(tinypicImage[0], "<IMG Class = \"tinypic-img\" Width = \"" + chatImgWidth + "\" Src = \"" + tinypicImage[0] + "\">");
+        }
+        
+        var tinypicVideo = text.match(/http:\/\/tinypic.com\/r\/(.*)\/(\d*)/);
+        if (tinypicVideo && showChatVideos)
+        {
+            text = text.replace(tinypicVideo[0], "<embed class = \"tinypic-vid\" width=\"" + chatVidWidth + "\" height=\"" + chatVidHeight + "\" type=\"application/x-shockwave-flash\" src=\"http://v5.tinypic.com/player.swf?file=" + tinypicVideo[1] + "&s=" + tinypicVideo[2] + ">");
+        }
+        
+        if (tripFound && namePart && tripPart)
+        {
+            $('#chatList').append('<DIV Class = \"chat-line ' + whisper + '\" Title = \"' + timeStr + '\"><SPAN Class = \"chat-name\">' + namePart + '<SPAN Class = "trip-display greentext">' + tripPart + whisperTarget + '</SPAN><SPAN Class = \"chat-time\"> (' + timeStrShort + ')</SPAN>:</SPAN> <SPAN Class = \"chat-text\">' + text + '</SPAN></DIV>');
+        }
+        else
+        {
+            $('#chatList').append('<DIV Class = \"chat-line ' + whisper + '\" Title = \"' + timeStr + '\"><SPAN Class = \"chat-name\">' + name + whisperTarget + '<SPAN Class = \"chat-time\"> (' + timeStrShort + ')</SPAN>:</SPAN> <SPAN Class = \"chat-text\">' + text + '</SPAN></DIV>');
+        }
+        
+        checkSettings();
+        
+        var greentext = text.match(/^&gt;.*/);
+        if (greentext)
+        {
+            //text = '<SPAN Class = "greentext">' + text + '</SPAN>';
+            text = text.replace(/&gt;/g, ">");
+            $('#chatList span').last().addClass('greentext');
+        }
+        
+        
+        var picHeight = $('.tinypic-img').last().height();
+        if (!picHeight)
+        {
+            picHeight = 0;
+        }
+        
+        var vidHeight = $('.tinypic-vid').last().height();
+        if (!tinypicVideo)
+        {
+            vidHeight = 0;
+        }
+        
+        var textHeight = $('#chatList span').last().height() + 16;
+        if (tinypicImage || tinypicVideo)
+        {
+            textHeight = 0;
+        }
+        
+        // Keep scrolled at bottom only if bar is already at bottom
+        if ($('#chatList')[0].scrollHeight - $('#chatList').scrollTop() <= $('#chatList').outerHeight() + textHeight + picHeight + vidHeight)
+        {
+            $('#chatList').animate({ scrollTop: $(document).height() * 3 }, 'slow');
+        }
+        
+        if (!tinypicImage && !tinypicVideo)
+        {
+            if (chatDisplayMode == "fade")
+            {
+                $('.chat-line').last().hide().fadeIn();
+            }
+            else if (chatDisplayMode == "type")
+            {
+                $line = $('#chatList span').last().filter('.chat-text');
+                $line.html('');
+                typewrite($line, text, 0);
+            }
+        }
+        
+        // Add to NND overlay, if enabled
+        if (tinypicVideo || $('#NNDOverlay').is(':hidden') || !showChatImages)
+        {
+            // Do not display videos
+            return;
+        }
+        
+        NNDCommentCount += 1;
+        var $newNNDText = $('<SPAN>').attr({ class: "NNDComment text-outline", id: NNDCommentCount });
+        
+        if (chatLine.whisper)
+        {
+            $newNNDText.addClass('whisper');
+        }
+        
+        $newNNDText.append(text);
+        $newNNDText.wrapInner('<b>');
+        
+        if (name == myName)
+        {
+            $newNNDText.addClass("nnd-user-msg");
+        }
+        
+        // Check input cursor
+        if ((tinypicImage && NNDInputCursor > (playerHeight - picHeight)) || (!tinypicVideo && NNDInputCursor > (playerHeight - NNDHeight)))
+        {
+            NNDInputCursor = 0;
+        }
+        
+        // Start at right and move left
+        $newNNDText.css({left: playerWidth, top: NNDInputCursor});
+        
+        $('#NNDOverlay').append($newNNDText);
+        
+        var size = getInnerWidth('.NNDComment#'+NNDCommentCount);
+        $newNNDText.animate({left: -size*2}, 8000, 'linear', function () 
+        {
+            $newNNDText.remove();
+        });
+        
+        // Move input cursor
+        if (tinypicImage)
+        {
+            // Add images, but make them transparent
+            $newNNDText.css({opacity: imageEmbedOpacity});
+        
+            if (NNDInputCursor < (playerHeight - picHeight))
+            {
+                NNDInputCursor += picHeight;   
+            }
+            else
+            {
+                NNDInputCursor = 0;
+            }
+        }
+        else if (!tinypicVideo)
+        {
+            if (NNDInputCursor < (playerHeight - NNDHeight))
+            {
+                NNDInputCursor += NNDHeight;   
+            }
+            else
+            {
+                NNDInputCursor = 0;
+            }
+        }
+    });
+
+    // Message for updating videoList
+    socket.on('videoListSync', function (videoList)
+    {
+        var id, title, duration, addedBy;
+        
+        videoPlaylist = [];
+        
+        for (var i = 0; i < videoList.length; i++)
+        {
+            id          = htmlEscape(videoList[i].id);
+            title       = htmlEscape(videoList[i].title);
+            duration    = htmlEscape(videoList[i].duration);
+            source      = htmlEscape(videoList[i].source);
+            addedBy     = htmlEscape(videoList[i].addedBy);
+
+            videoPlaylist.push({id: id, title: title, duration: duration, addedBy: addedBy, source: source});
+        }
+        
+        buildPlaylist();
+    });
+
+    // Message for syncing just video id from server
+    socket.on('videoSync', function (videoId, source)
+    {   
+        if (currentVideo == "")
+        {        
+            // Get initial player size from css container
+            playerWidth = parseInt($('#videoDivContainer').css('width'));
+            playerHeight = parseInt($('#videoDivContainer').css('height'));
+            $('#NNDOverlay').css({width: playerWidth, height: playerHeight});
+        }
+        
+        currentVideo = videoId;
+        serverVideo = currentVideo;
+        
+        if (source != APImode || source == "us" || source == "ls" || source == "tw")
+        {
+            loadPlayerAPI(source, currentVideo);
+        }
+        
+        setPlayingIndicator();
+    });
+
+    // Message for deleting a video from the playlist
+    socket.on('deleteVideoSync', function (index)
+    {
+        videoPlaylist.splice(index, 1);
+        $('.video-item#' + index).remove();
+        
+        // Fix ids and display numbers
+        $('LI.video-item').each(function(i) 
+        {
+            $(this).attr({id: parseInt(i)});
+            $(this).find('.video-number').html(parseInt(i + 1) + '.');
+        });
+        
+        updatePlayTime();
+    });
+
+    // Message for adding a video to the playlist
+    socket.on('addVideoSync', function (videoObj)
+    {
+        videoPlaylist.push(videoObj);
+        $('.video-list').append(generatePlaylistItem(videoPlaylist.length - 1));
+        updatePlayTime();
+    });
+
+    // Message for moving videos on the playlist
+    socket.on('moveVideoSync', function (index1, index2)
+    {   
+        // Save and remove object at index2 and insert at index1
+        var savedObj = videoPlaylist.splice(index2, 1);
+        if (savedObj[0])
+        {
+            videoPlaylist.splice(index1, 0, savedObj[0]);
+            $('.video-item#' + index2).remove();
+            
+            if (parseInt(index1) < parseInt(index2))
+            {
+                $('.video-item#' + index1).before(generatePlaylistItem(index1));
+            }
+            else
+            {
+                $('.video-item#' + index1).after(generatePlaylistItem(index1));
+            }
+            
+            $('LI.video-item').each(function(i) 
+            {
+                $(this).attr({id: parseInt(i)});
+                $(this).find('.video-number').html(parseInt(i + 1) + '.');
+            });
+            
+            setPlayingIndicator();
+        }
+    });
+
+
+    // Message for changing to specific video from master
+    socket.on('videoChangeSync', function (videoId)
+    {
+        changeVideo(videoId);
+    });
+
+    // Message for enabling/disabling skip button
+    socket.on('skipEnabledSync', function (enabled)
+    {
+        if (enabled)
+        {
+            $('#skipButton').removeAttr('disabled');
+        } 
+        else 
+        {
+            $('#skipButton').attr('disabled', true);
+        }
+    });
+
+    // Message for changing playlist lock icon
+    socket.on('lockPlaylistSync', function (locked)
+    {
+        if (locked)
+        {
+            $('#lockPlaylistButton').removeClass("icon-unlock").addClass("icon-lock");
+        } 
+        else 
+        {
+            $('#lockPlaylistButton').removeClass("icon-lock").addClass("icon-unlock");
+        }
+    });
+
+
+    // Message for getting current log of chat when first entering room
+    socket.on('chatLogSync', function (chatLog)
+    {
+        var chatListDiv = document.getElementById("chatList");
+        var str = "";
+        var time;
+        
+        for (var i = 0; i < chatLog.length; i++)
+        {
+            var namePart, tripPart;
+            
+            var tripFound = chatLog[i].username.match(/!/g);
+            if (tripFound)
+            {
+                var splitName = chatLog[i].username.split("!");
+                namePart = splitName[0];
+                tripPart = "!" + splitName[1];
+            }
+        
+            time = chatLog[i].timestamp;
+            var greentext = chatLog[i].text.match(/^&gt;.*/);
+            if (greentext)
+            {
+                chatLog[i].text = '<SPAN Class = "greentext">' + chatLog[i].text + '</SPAN>';
+            }
+            
+            var tinypicImage = chatLog[i].text.match(/(http:\/\/.*.tinypic.com\/.*(.jpg|.gif|.png))/);
+            if (tinypicImage)
+            {
+                chatLog[i].text = chatLog[i].text.replace(tinypicImage[0], "<IMG Class = \"tinypic-img\" Width = \"" + chatImgWidth + "\" Src = \"" + tinypicImage[0] + "\">");
+            }
+            
+            var tinypicVideo = chatLog[i].text.match(/http:\/\/tinypic.com\/r\/(.*)\/(\d*)/);
+            if (tinypicVideo)
+            {
+                chatLog[i].text = chatLog[i].text.replace(tinypicVideo[0], "<embed class = \"tinypic-vid\" width=\"" + chatVidWidth + "\" height=\"" + chatVidHeight + "\" type=\"application/x-shockwave-flash\" src=\"http://v5.tinypic.com/player.swf?file=" + tinypicVideo[1] + "&s=" + tinypicVideo[2] + "><SPAN Class = \"hide-vid\">[Hide]</SPAN>");
+            }
+            
+            var timeStr = timestamp(time, "long");
+            var timeStrShort = timestamp (time, "short");
+            
+            if (tripFound && namePart && tripPart)
+            {
+                str += '<DIV Class = \"chat-line\" Title = \"' + timeStr + '\"><SPAN Class = \"chat-name\">' + namePart + '<SPAN Class = "trip-display greentext">' + tripPart + '</SPAN><SPAN Class = \"chat-time\"> (' + timeStrShort + ')</SPAN>:</SPAN> <SPAN Class = \"chat-text\">' + chatLog[i].text + '</SPAN></DIV>';
+            }
+            else
+            {
+                str += '<DIV Class = \"chat-line\" Title = \"' + timeStr + '\"><SPAN Class = \"chat-name\">' + chatLog[i].username + '<SPAN Class = \"chat-time\"> (' + timeStrShort + ')</SPAN>:</SPAN> <SPAN Class = \"chat-text\">' + chatLog[i].text + '</SPAN></DIV>';
+            }
+        }
+        chatListDiv.innerHTML = str;
+        
+        checkSettings();
+    });
+
+    // Message for updating view of number of skips on current video
+    socket.on('skipSync', function (skips, maxSkips)
+    {
+        var str = skips + '/' + maxSkips;
+        $('#skipVote').html(str); 
+        
+        if (skips == 0)
+        {
+            // Skips were reset
+            $('#skipButton').val('SKIP');
+        }
+    });
+
+    // Message for getting current log of chat when first entering room
+    socket.on('masterVideoPause', function (paused)
+    {
+        if (paused)
+        {
+            videoPlayer.pauseVideo();
+        }
+        else
+        {
+            videoPlayer.playVideo();
+        }
+    });
+    
+    
 });
 
 // Event listener for when video changes state
@@ -1753,11 +1756,10 @@ function generatePlaylistItem(index)
     $newListItem.append($playingIndicator);
     
     $newListItem.append($dragger);
+    $newListItem.append($urlButton);
     $newListItem.append($vidAddedBy);
     $newListItem.append($vidDuration);
-    
     $newListItem.append($playButton);
-    $newListItem.append($urlButton);
     $newListItem.append($bumpButton);
     $newListItem.append($deleteButton);
     $playingIndicator.hide();
