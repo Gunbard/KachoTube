@@ -59,7 +59,8 @@
                     <SPAN Class = "master-control hidden clickable icon-random icon-large" OnClick = "shufflePlaylist();" Title = "Shuffle Playlist"></SPAN>
                     <SPAN Class = "clickable icon-cogs icon-large" Id = "settingsButton" OnClick = "showSettings();" Title = "Settings"></SPAN>
                     <SPAN Class = "master-control hidden clickable icon-cog icon-large" Id = "roomSettingsButton" OnClick = "showRoomSettings();" Title = "Room Settings"></SPAN>
-
+                    <SPAN Class = "superuser-control hidden clickable icon-wrench icon-large" Id = "adminCPButton" OnClick = "showCP();" Title = "Admin CP"></SPAN>
+                    
                 </DIV>
                 
                 <SPAN Class = "window-title text-outline" Style = "margin-top:125; margin-left:-485">Playlist</SPAN>
@@ -166,6 +167,19 @@
             
             <INPUT Type = "Button" Id = "roomSettingsApply" Value = "Apply" OnClick = "applySkipSettings();">
 
+        </DIV>
+
+        <DIV Class = "drop-shadow" Id = "cpPopup">
+            Admin CP<SPAN Class = "clickable icon-remove-circle icon-large" Id = "closeAdminCPSettings"></SPAN>
+            <DIV Id = "adminCPSettingsDiv" Class = "superuser-control">
+                Add mod: <INPUT Type = "Text" Id = "addModInput"><BR>
+                Mod list:
+                <DIV Id = "modList">
+                </DIV>
+                Ban list:
+                <DIV Id = "banList">
+                </DIV>
+            </DIV>
         </DIV>
        
         <DIV Class = "drop-shadow" Id = "userPopup">

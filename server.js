@@ -53,7 +53,7 @@ var COMMAND_TIMEOUT     = 3000;
 
 
 //========BASIC DATA STORAGE===========//
-// user {string name, string id, date lastspammingCheck, int msgCount, int chatMsgCount, bool bootFlag, date lastChatEmbed, bool adminFlag}
+// user {string name, string id, string ip, date lastspammingCheck, int msgCount, int chatMsgCount, date lastChatEmbed, bool adminFlag}
 var userList        = [];    
 
 // user {string name, bool adminFlag, string imgBase64}
@@ -71,16 +71,20 @@ var skipList        = [];
 // item {string username, string text, string timestamp}
 var chatLog         = [];
 
-// ip list {ip, date of expiration}
+// ip list {ip, ban date, length in days, name last used, reason}
 var banList         = [];
 
 // list of tripcodes
 var adminList       = ["Gunbard!lfdxHP"];
 
+// list of tripcodes
+var modList         = [];
+
 // PRIVS
 // User: standard user, can add to unlocked playlist
-// MasterUser: can manipulate playlist, mute, and boot users
-// Admin: can permaban people
+// MasterUser: can manipulate playlist, video
+// Mod: take master from user, boot
+// Admin: ban, take master from mod, mod/de-mod
                    
 
 var userCount       = 0;
@@ -692,7 +696,6 @@ io.sockets.on('connection', function (socket)
             
             if (videoIdx > -1)
             {
-                console.log(videoIdx);
                 var nextVideo;
                 if (videoIdx >= videoList.length - 1)
                 {
@@ -806,6 +809,36 @@ io.sockets.on('connection', function (socket)
         }, timeout);
     }
     
+    // Searches in hashArray for a hash with the key value pair
+    // Returns first object with match, null otherwise
+    function objectWithKeyAndValue(hashArray, key, value)
+    {
+        for (var i = 0; i < hashArray.length; i++)
+        {
+            console.log(hashArray[i]['ip']);
+            if (hashArray[i][key] == value)
+            {
+                return hashArray[i];
+            }
+        }
+        return null;
+    }
+    
+    // Adds someone to the ban list
+    function banUser(socketId, reason, length)
+    {
+        var user = objectWithKeyAndValue(userList, 'id', userId);
+        if (!user)
+        {
+            console.log("Couldn't ban user: user with that id not found");
+            return null;
+        }
+        
+        var now = new Date();
+        var banItem = {ip: user.ip, lastName: user.username, banDate: now, expiration: length, reason: reason};
+        
+        banList.push(banItem);
+    }
     
     /****END SERVER FUNCTIONS***************/
     
@@ -815,7 +848,8 @@ io.sockets.on('connection', function (socket)
     }
     
     // Disconnect if IP is in banList
-    if (banList.indexOf(ip) != -1)
+    //if (banList.indexOf(ip) != -1)
+    if (objectWithKeyAndValue(banList, 'ip', ip))
     {
         sendServerMsgUser("BANNED");
         socket.disconnect();
@@ -842,7 +876,7 @@ io.sockets.on('connection', function (socket)
         
         // This will be the only real means of auth without registration
         // Ignore messages if socket id doesn't match username
-        var user = {name: username, id: socket.id, ip: ip, lastSpamCheck: null, msgCount: 0, chatMsgCount: 0, bootFlag: false, lastChatEmbed: null, lastShuffle: null};
+        var user = {name: username, id: socket.id, ip: ip, lastSpamCheck: null, msgCount: 0, chatMsgCount: 0, lastChatEmbed: null, lastShuffle: null};
         userList.push(user);
         
         // Maintain a list without sensitive info (to send to everyone else)

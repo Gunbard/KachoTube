@@ -49,7 +49,7 @@ $(function ()
     loadSettings();
     
     // Make iframes draggable
-    $('#iframePopup, #saveVidPopup, #loadVidPopup, #settingsPopup, #roomSettingsPopup, #userPopup').draggable().mousedown(function ()
+    $('#iframePopup, #saveVidPopup, #loadVidPopup, #settingsPopup, #roomSettingsPopup, #userPopup, #cpPopup').draggable().mousedown(function ()
     {
         // Bring window to front if not already
         if (!$(this).is(':last-child'))
@@ -58,7 +58,7 @@ $(function ()
         }
     });
         
-    $('#closeSettings, #closeRoomSettings, #closeSaveVid, #closeLoadVid, #closeIframe, #closeUserPopup').click(function ()
+    $('#closeSettings, #closeRoomSettings, #closeSaveVid, #closeLoadVid, #closeIframe, #closeUserPopup, #closeAdminCPSettings').click(function ()
     {
         $(this).parent().fadeOut(300, function () {
             $(this).hide();
@@ -79,22 +79,7 @@ $(function ()
     $(document).mousemove(function(e){
         $('#thumbnailPopup').offset({left:e.pageX-180,top:e.pageY+20});    
     });
-               
-    // Make a slider for time diff
-    /*var slider = $("<div id='timeDiffSlider' style = 'width: 100'></div>").insertAfter(timeDiffSelect).slider(
-    {
-        min: 1,
-        max: timeDiffSelect.children('option').length,
-        range: "min",
-        value: timeDiffSelect[0].selectedIndex + 1,
-        slide: function (event, ui) 
-        {
-            timeDiffSelect[0].selectedIndex = ui.value - 1;
-        }
-    });
-    
-    slider.slider("value", 2);
-    */
+       
     var timeDiffSelect = $('#syncTimeDiff');
     timeDiffSelect.change(function () 
     {
@@ -189,6 +174,8 @@ $(function ()
         }
     });
     
+    
+    /**SOCKET MESSAGES**/
     
     // Message for server disconnection
     socket.on('disconnect', function () 
@@ -1052,11 +1039,17 @@ function displayMasterControls(showControls)
     {
         $('.sortable').sortable({ disabled: false });
         $('.master-control').show();
+        
+        if (superUser)
+        {
+            $('.superuser-control').show();
+        }
     }
     else
     {
         $('.sortable').sortable({ disabled: true });
         $('.master-control').hide();
+        $('.superuser-control').hide();
     }
 }
 
@@ -1166,6 +1159,16 @@ function showSettings()
     var winWidth = $('#settingsPopup').width() / 2;
         
     openPopup(buttonLeft-winWidth, buttonTop, '#settingsPopup');
+}
+
+// Show CP
+function showCP()
+{
+    var buttonLeft = $('#adminCPButton').offset().left;
+    var buttonTop = $('#videoList').offset().top;
+    var winWidth = $('#adminCPButton').width() / 2;
+        
+    openPopup(buttonLeft-winWidth, buttonTop, '#cpPopup');
 }
 
 // Show room settings
