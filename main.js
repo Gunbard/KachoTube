@@ -1475,11 +1475,27 @@ function executeSearch(query, startIndex)
                 $itemContainer = $('<DIV>').attr({class: 'searchResultItem'});
                 $thumbnail = $('<IMG>').attr({src: currentItem.thumbnail.sqDefault}).css({float: 'left', verticalAlign: 'text-top', marginRight: '10'});
                 
+                $dataCenterer = $('<DIV>').css({textAlign: 'center'});
+                
                 $vidLink = $('<A>').attr({href: url}).html(currentItem.title);
                 
-                $copyInput = $('<INPUT>').attr({readonly: 'true'}).css({width: '300'}).val(url);
+                $copyInput = $('<INPUT>').attr({readonly: 'true', class: 'searchItemUrl'}).css({width: '300'}).val(url);
                 
-                $itemContainer.append($thumbnail).append($vidLink).append($copyInput);
+                $addButton = $('<INPUT>').attr({type: 'button', value: 'Add'}).css({width: '200'});
+                
+                // Configure add button event
+                $addButton.click(function ()
+                {
+                    var url = $(this).siblings('.searchItemUrl').val();
+                    if (url.length > 0)
+                    {
+                        socket.emit('addVideo', url);
+                        $('#closeIframe').click();
+                    }
+                });
+                
+                $dataCenterer.append($vidLink).append($copyInput).append($addButton);
+                $itemContainer.append($thumbnail).append($dataCenterer);
                 
                 $('#iframePopupContent').append($itemContainer);
             }
