@@ -778,7 +778,7 @@ function onYouTubePlayerReady(playerId)
     if (videoPlaylist.length > 0)
     {
         var index = indexById(currentVideo);
-        document.getElementById("videoTitle").innerHTML = videoPlaylist[index].title;
+        updateTitle(videoPlaylist[index].title);
     }
     
 }
@@ -797,7 +797,7 @@ function onDailymotionPlayerReady(playerid)
     if (videoPlaylist.length > 0)
     {
         var index = indexById(currentVideo);
-        document.getElementById("videoTitle").innerHTML = videoPlaylist[index].title;
+        updateTitle(videoPlaylist[index].title);
     }
     
 }
@@ -855,8 +855,7 @@ function changeVideo(videoId)
     }
     
     currentVideo = videoId;
-    
-    document.getElementById("videoTitle").innerHTML = videoPlaylist[index].title;
+    updateTitle(videoPlaylist[index].title);
     
     // Set indicator for currently playing video
     setPlayingIndicator();
@@ -2100,4 +2099,11 @@ function updatePlayTime()
     
     $('#playlistTime').html(secondsToTime(playlistTotalTime));
     $('#playlistLength').html(videoPlaylist.length);
+}
+
+// Updates the document title and video title text
+function updateTitle(str)
+{
+    document.getElementById("videoTitle").innerHTML = str;
+    document.title = str + " - KachoTube";
 }

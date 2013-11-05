@@ -1069,7 +1069,7 @@ io.sockets.on('connection', function (socket)
     
         var videoId;
         var sourceType;
-        var ytIdMatch = url.match(/(\?|&)v=((\w|\W)*)/);
+        var ytIdMatch = url.match(/(\?v=([a-zA-Z0-9_-]{11}))/);
         var dmIdMatch = url.match(/video\/([^_]+)/);
         var usIdMatch = url.match(/ustream.tv\/channel\/(\d+)/);
         var lsIdMatch = url.match(/livestream.com\/(\w+)/);
