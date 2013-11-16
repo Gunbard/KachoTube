@@ -12,6 +12,8 @@ var serverMsgFadeTime = 1500;
 var videoPlaylist = [];
 var playlistTotalTime = 0; // In seconds
 var userList = []; // {string name, string trip, bool adminFlag, bool muted, bool dead}
+var modList = [];
+var banList = [];
 var firstScroll = true;
 var origIndex = 0; // Used for sorting
 var timeDiff = 5;
@@ -297,7 +299,7 @@ $(function ()
     });
 
     // Message for setting my name
-    socket.on('nameSync', function (username, superuser)
+    socket.on('nameSync', function (username, superuserData)
     {
         myName = username;
 
@@ -316,9 +318,15 @@ $(function ()
             nameDiv.innerHTML = myName;
         }
        
-        superUser = superuser;
+        if (superuserData)
+        {
+            superUser = true;
+            modList = superuserData.mods;
+            banList = superuserData.bans;
+            //alert(JSON.stringify(superuserData));
+        }
+        
         displayMasterControls(superUser);
-
         checkSettings();
     });
 
@@ -890,7 +898,7 @@ function nextVideo()
         videoPlayer.loadVideoById(currentVideo);
     }
     
-    document.getElementById("videoTitle").innerHTML = videoPlaylist[currentVidIndex].title;
+    updateTitle(videoPlaylist[currentVidIndex].title);
    
     if (myName == masterUser || superUser)
     {
@@ -1163,6 +1171,23 @@ function showSettings()
 // Show CP
 function showCP()
 {
+    // Update mod and ban divs
+    $('#modList').html(modList.join('<BR>'));
+    $('#banList').html('');
+        
+    for (var i = 0; i < banList.length; i++)
+    {
+        $('#banList').append
+        (
+            '<DIV Id = "banItem">' +
+            banList[i].ip + ' ' +
+            banList[i].lastName /*+ ', ' +
+            'Date: ' + banList[i].banDate + ', ' +
+            'Exp: ' + banList[i].expiration + ', ' +
+            'Reason: ' + banList[i].reason*/ + '</DIV>'
+        );
+    }
+    
     var buttonLeft = $('#adminCPButton').offset().left;
     var buttonTop = $('#videoList').offset().top;
     var winWidth = $('#adminCPButton').width() / 2;

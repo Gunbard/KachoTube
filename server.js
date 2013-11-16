@@ -71,14 +71,14 @@ var skipList        = [];
 // item {string username, string text, string timestamp}
 var chatLog         = [];
 
-// ip list {ip, ban date, length in days, name last used, reason}
-var banList         = [];
+// ip list {ip: user.ip, lastName: user.username, banDate: now, expiration: length, reason: reason}
+var banList         = [{ip: '1234', lastName: 'someone', banDate: '', expiration: '', reason: 'idgaf'}];
 
 // list of tripcodes
 var adminList       = ["Gunbard!lfdxHP"];
 
 // list of tripcodes
-var modList         = [];
+var modList         = ["Imaweiner!asdf", "asdfsdf!what"];
 
 // PRIVS
 // User: standard user, can add to unlocked playlist
@@ -421,6 +421,7 @@ io.sockets.on('connection', function (socket)
     function updateUsername(newName)
     {
         var oldName = username;
+        var superuserData;
         var superUser = false;
 
         for (var i = 0; i < userList.length; i++)
@@ -434,6 +435,7 @@ io.sockets.on('connection', function (socket)
                 {
                     userList[i].adminFlag = true;
                     superUser = true;
+                    superuserData = {mods: modList, bans: banList};
                 }
                 break;
             }
@@ -453,7 +455,7 @@ io.sockets.on('connection', function (socket)
         socket.username = newName;
         username = socket.username;
         
-        io.sockets.socket(socket.id).emit('nameSync', username, superUser);
+        io.sockets.socket(socket.id).emit('nameSync', username, superuserData);
 
         sendServerMsgAll("\"" + oldName + "\" is now \"" + username + "\"");
         
