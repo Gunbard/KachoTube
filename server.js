@@ -250,7 +250,10 @@ io.sockets.on('connection', function (socket)
     function syncVideoList()
     {   
         io.sockets.emit('videoListSync', videoList);
-        
+    }
+    
+    function savePlaylist()
+    {
         // Save to file just in case server dies
         fs.writeFile("savedPlaylist.txt", JSON.stringify(videoList), function (err) 
         {
@@ -368,8 +371,9 @@ io.sockets.on('connection', function (socket)
                                 sendServerMsgUser("Playlist loaded successfully! :D");
                                 syncVideoList();
                             }
-                            
                         }
+                        
+                        savePlaylist();
                     }
                     else
                     {
@@ -406,6 +410,8 @@ io.sockets.on('connection', function (socket)
                                 syncVideoList();
                             }
                         }
+                        
+                        savePlaylist();
                     }
                     else
                     {
@@ -1227,6 +1233,7 @@ io.sockets.on('connection', function (socket)
             {
                 videoList.splice(index1, 0, savedObj[0]);
                 io.sockets.emit('moveVideoSync', index1, index2);
+                savePlaylist();
             }
         }
     });
@@ -1240,6 +1247,7 @@ io.sockets.on('connection', function (socket)
         {
             videoList.splice(videoIndex, 1);
             syncDeleteVideo(videoIndex);
+            savePlaylist();
         }
     });
     
