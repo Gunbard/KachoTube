@@ -559,3 +559,8 @@ input[type=button]
     font-style:             italic !important;
     color:                  #666666 !important;
 }
+
+.banItem, .modItem
+{
+    margin-left:            10;
+}

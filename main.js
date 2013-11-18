@@ -1172,14 +1172,23 @@ function showSettings()
 function showCP()
 {
     // Update mod and ban divs
-    $('#modList').html(modList.join('<BR>'));
-    $('#banList').html('');
-        
+    $('#modList').html('');
+    for (var i = 0; i < modList.length; i++)
+    {
+        $('#modList').append
+        (
+            '<DIV Class = "modItem">' +
+            modList[i] + '</DIV>'
+        );
+    }
+    
+    
+    $('#banList').html('');    
     for (var i = 0; i < banList.length; i++)
     {
         $('#banList').append
         (
-            '<DIV Id = "banItem">' +
+            '<DIV Class = "banItem">' +
             banList[i].ip + ' ' +
             banList[i].lastName /*+ ', ' +
             'Date: ' + banList[i].banDate + ', ' +
