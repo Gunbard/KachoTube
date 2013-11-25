@@ -846,7 +846,68 @@ io.sockets.on('connection', function (socket)
         var banItem = {ip: user.ip, lastName: user.username, banDate: now, expiration: length, reason: reason};
         
         banList.push(banItem);
+        console.log('[' + user.ip + '] was BANNED');
     }
+    
+    // Removes someone from the ban list by ip or name
+    function unbanUser(ip, name)
+    {
+        if (ip)
+        {
+            var user = objectWithKeyAndValue(banList, 'ip', ip);
+            if (user)
+            {
+                var index = banList.indexOf(user);
+                banList.splice(index, 1);
+                console.log('[' + ip + '] was unbanned');
+                return;
+            }
+        }
+        
+        if (name)
+        {
+            var user = objectWithKeyAndValue(banList, 'lastName', name);
+            if (user)
+            {
+                var index = banList.indexOf(user);
+                banList.splice(index, 1);
+                console.log('[' + name + '] was unbanned');
+                return;
+            }
+        }
+        
+        console.log("Couldn't unban user: user with that ip or name not found");
+    }
+    
+    // Adds someone to the mod list
+    function modUser(trip)
+    {
+        if (trip)
+        {
+            modList.push(trip);
+            console.log('[' + trip + '] has been modded');
+        }
+        else
+        {
+            console.log("Can't mod nobody");
+        }
+    }
+    
+    // Removes someone from the mod list
+    function unmodUser(trip)
+    {
+        var mod = modList.indexOf(trip);
+        if (mod)
+        {
+            modList.splice(mod);
+            console.log('[' + trip + '] was unmodded');
+        }
+        else
+        {
+            console.log('[' + trip + '] could not be found in mod list');
+        }
+    }
+    
     
     /****END SERVER FUNCTIONS***************/
     
