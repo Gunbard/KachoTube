@@ -371,9 +371,8 @@ io.sockets.on('connection', function (socket)
                                 sendServerMsgUser("Playlist loaded successfully! :D");
                                 syncVideoList();
                             }
+                            savePlaylist();
                         }
-                        
-                        savePlaylist();
                     }
                     else
                     {
@@ -409,9 +408,8 @@ io.sockets.on('connection', function (socket)
                                 sendServerMsgUser("Playlist loaded successfully! :D");
                                 syncVideoList();
                             }
+                            savePlaylist();
                         }
-                        
-                        savePlaylist();
                     }
                     else
                     {
