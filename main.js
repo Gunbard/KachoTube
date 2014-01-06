@@ -1474,7 +1474,6 @@ function executeSearch(query, startIndex)
     $('#iframePopupContent').empty().append('Searching...');
     $('#searchPrevButton, #searchNextButton').remove();
     
-    
     var MAX_RESULTS = 10;
     $.ajax({
         type: 'get',
@@ -1522,8 +1521,8 @@ function executeSearch(query, startIndex)
                     var url = $(this).siblings('.searchItemUrl').val();
                     if (url.length > 0)
                     {
+                        $(this).attr({value: 'Added', disabled: true});
                         socket.emit('addVideo', url);
-                        $('#closeIframe').click();
                     }
                 });
                 

@@ -309,8 +309,8 @@ li.ui-state-default
     clear:              both;
     background-color:   rgba(0, 0, 0, 0.8);
     display:            none;
-    width:              480;
-    height:             420;
+    width:              460;
+    height:             400;
     cursor:             auto;
     text-align:         center;
 }
