@@ -1850,7 +1850,18 @@ function generatePlaylistItem(index)
         
         $bumpButton.click(function() {
             var id = getIdForVideoItem(this);
-            serverMoveVideo(1, id);
+            
+            // Get position right after currently playing video, or loop back
+            var curVidIndex = indexById(currentVideo);
+            if (curVidIndex > -1)
+            {
+                var newPos = 0;
+                if (curVidIndex < videoPlaylist.length)
+                {
+                    newPos = curVidIndex + 1;
+                }
+                serverMoveVideo(newPos, id);
+            }
         });
     }
     else
