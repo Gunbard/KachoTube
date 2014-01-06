@@ -1853,12 +1853,17 @@ function generatePlaylistItem(index)
             
             // Get position right after currently playing video, or loop back
             var curVidIndex = indexById(currentVideo);
+            if (curVidIndex == id)
+            {
+                return;
+            }
+            
             if (curVidIndex > -1)
             {
                 var newPos = 0;
                 if (curVidIndex < videoPlaylist.length)
                 {
-                    newPos = curVidIndex + 1;
+                    newPos = curVidIndex;
                 }
                 serverMoveVideo(newPos, id);
             }
