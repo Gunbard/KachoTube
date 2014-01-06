@@ -1505,20 +1505,18 @@ function executeSearch(query, startIndex)
                 var url = 'http://www.youtube.com/watch?v=' + currentItem.id;
                 
                 $itemContainer = $('<DIV>').attr({class: 'searchResultItem'});
-                $thumbnail = $('<IMG>').attr({src: currentItem.thumbnail.sqDefault}).css({float: 'left', verticalAlign: 'text-top', marginRight: '10'});
+                $thumbnail = $('<IMG>').attr({src: currentItem.thumbnail.sqDefault}).css({float: 'left', verticalAlign: 'text-top', marginRight: '10', height: '50'});
                 
                 $dataCenterer = $('<DIV>').css({textAlign: 'center'});
                 
-                $vidLink = $('<A>').attr({href: url}).html(currentItem.title);
+                $vidLink = $('<A>').attr({href: url, class: 'searchItemTitle'}).html(currentItem.title).append('<BR>');
                 
-                $copyInput = $('<INPUT>').attr({readonly: 'true', class: 'searchItemUrl'}).css({width: '300'}).val(url);
-                
-                $addButton = $('<INPUT>').attr({type: 'button', value: 'Add'}).css({width: '200'});
+                $addButton = $('<INPUT>').attr({type: 'button', value: 'Add'}).css({width: '100'});
                 
                 // Configure add button event
                 $addButton.click(function ()
                 {
-                    var url = $(this).siblings('.searchItemUrl').val();
+                    var url = $(this).siblings('.searchItemTitle').attr('href');
                     if (url.length > 0)
                     {
                         $(this).attr({value: 'Added', disabled: true});
@@ -1526,7 +1524,7 @@ function executeSearch(query, startIndex)
                     }
                 });
                 
-                $dataCenterer.append($vidLink).append($copyInput).append($addButton);
+                $dataCenterer.append($vidLink).append($addButton);
                 $itemContainer.append($thumbnail).append($dataCenterer);
                 
                 $('#iframePopupContent').append($itemContainer);
