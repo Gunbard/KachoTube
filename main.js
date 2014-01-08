@@ -299,7 +299,7 @@ $(function ()
     });
 
     // Message for setting my name
-    socket.on('nameSync', function (username, superuserData)
+    socket.on('nameSync', function (username, isSuperUser)
     {
         myName = username;
 
@@ -317,14 +317,8 @@ $(function ()
         {
             nameDiv.innerHTML = myName;
         }
-       
-        if (superuserData)
-        {
-            superUser = true;
-            modList = superuserData.mods;
-            banList = superuserData.bans;
-            //alert(JSON.stringify(superuserData));
-        }
+        
+        superUser = isSuperUser;
         
         displayMasterControls(superUser);
         checkSettings();

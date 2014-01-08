@@ -71,7 +71,7 @@ var skipList        = [];
 // item {string username, string text, string timestamp}
 var chatLog         = [];
 
-// ip list {ip: user.ip, lastName: user.username, banDate: now, expiration: length, reason: reason}
+// ip list {ip: user.ip, lastName: user.username, banDate: now, expiration: length (int days), reason: reason}
 var banList         = [{ip: '1234', lastName: 'someone', banDate: '', expiration: '', reason: 'idgaf'}];
 
 // list of tripcodes
@@ -238,6 +238,20 @@ io.sockets.on('connection', function (socket)
                 }
             }
         }
+    }
+    
+    // Verify who I'm talking to is an administrator
+    function isAdmin()
+    {
+        // TODO
+        return true;
+    }
+    
+    // Verify who I'm talking to is a moderator
+    function isMod()
+    {
+        // TODO
+        return true;
     }
     
     // Update everyone's list of users
@@ -439,7 +453,6 @@ io.sockets.on('connection', function (socket)
                 {
                     userList[i].adminFlag = true;
                     superUser = true;
-                    superuserData = {mods: modList, bans: banList};
                 }
                 break;
             }
@@ -459,8 +472,14 @@ io.sockets.on('connection', function (socket)
         socket.username = newName;
         username = socket.username;
         
-        io.sockets.socket(socket.id).emit('nameSync', username, superuserData);
-
+        io.sockets.socket(socket.id).emit('nameSync', username, superUser);
+        
+        if (superUser)
+        {
+            io.sockets.socket(socket.id).emit('banSync', banList);
+            io.sockets.socket(socket.id).emit('modSync', modList);
+        }
+        
         sendServerMsgAll("\"" + oldName + "\" is now \"" + username + "\"");
         
         if (oldName == masterUser)
@@ -833,7 +852,7 @@ io.sockets.on('connection', function (socket)
     // Adds someone to the ban list
     function banUser(socketId, reason, length)
     {
-        var user = objectWithKeyAndValue(userList, 'id', userId);
+        var user = objectWithKeyAndValue(userList, 'id', socketId);
         if (!user)
         {
             console.log("Couldn't ban user: user with that id not found");
@@ -1490,7 +1509,7 @@ io.sockets.on('connection', function (socket)
     {
         spammingCheck(0, "");
         
-        if (validUser() && masterUser == username && masterUserId == userId)
+        if (validUser() && (masterUser == username && masterUserId == userId || isMod() || isAdmin()))
         {
             var targetId = socketIdByName(name);
             if (targetId)
@@ -1498,6 +1517,61 @@ io.sockets.on('connection', function (socket)
                 sendServerMsgSpecific("You have been booted!", name);
                 io.sockets.socket(targetId).disconnect();
             }
+        }
+    });
+    
+    // Message for banning a user
+    socket.on('banUser', function (userId, reason, length)
+    {
+        spammingCheck(0, "");
+        
+        if (validUser() && isAdmin())
+        {
+            var targetId = socketIdByName(name);
+            if (targetId)
+            {
+                banUser(targetId, reason, length);
+                sendServerMsgSpecific("You have been banned!", name);
+                io.sockets.socket(targetId).disconnect();
+            }
+        }
+    });
+    
+    // Message for modding a user, mod requires trip
+    socket.on('modUser', function (trip)
+    {
+        spammingCheck(0, "");
+        
+        if (validUser() && (isAdmin() || isMod()))
+        {
+            var targetId = socketIdByName(name);
+            if (targetId)
+            {
+                sendServerMsgSpecific("You have been modded! Hooray!", name);
+            }
+        }
+    });
+    
+    
+    // Message for unbanning a user
+    socket.on('unbanUser', function (userId)
+    {
+        spammingCheck(0, "");
+        
+        if (validUser() && isAdmin())
+        {
+        
+        }
+    });
+    
+    // Message for unmodding a user
+    socket.on('unmodUser', function (trip)
+    {
+        spammingCheck(0, "");
+        
+        if (validUser() && (isAdmin() || isMod()))
+        {
+
         }
     });
 
