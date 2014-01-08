@@ -3,6 +3,7 @@ var playerHeight = 385;
 var myName = "";
 var masterUser = "";
 var superUser = false;
+var modUser = false;
 var currentVideo = "";
 var serverVideo = "";
 var socket = io.connect();
@@ -11,7 +12,7 @@ var serverMsgFadeDelay = 5000;
 var serverMsgFadeTime = 1500;
 var videoPlaylist = [];
 var playlistTotalTime = 0; // In seconds
-var userList = []; // {string name, string trip, bool adminFlag, bool muted, bool dead}
+var userList = []; // {string name, string trip, USER_TYPE userType, bool muted, bool dead}
 var modList = [];
 var banList = [];
 var firstScroll = true;
@@ -42,6 +43,13 @@ var imageEmbedOpacity = 0.5;
 // Command types
 var WHISPER_CMD = 0;
 
+var USER_TYPE =
+{
+    "admin":    0,
+    "mod":      1,
+    "normal":   2
+}
+
 google.load("swfobject", "2.1");
 
 // Page finished loading
@@ -51,7 +59,7 @@ $(function ()
     loadSettings();
     
     // Make iframes draggable
-    $('#iframePopup, #saveVidPopup, #loadVidPopup, #settingsPopup, #roomSettingsPopup, #userPopup, #cpPopup').draggable().mousedown(function ()
+    $('#iframePopup, #saveVidPopup, #loadVidPopup, #settingsPopup, #roomSettingsPopup, #userPopup, #cpPopup, #banUserPopup').draggable({handle: '.popup-gripper'}).mousedown(function ()
     {
         // Bring window to front if not already
         if (!$(this).is(':last-child'))
@@ -60,7 +68,7 @@ $(function ()
         }
     });
         
-    $('#closeSettings, #closeRoomSettings, #closeSaveVid, #closeLoadVid, #closeIframe, #closeUserPopup, #closeAdminCPSettings').click(function ()
+    $('#closeSettings, #closeRoomSettings, #closeSaveVid, #closeLoadVid, #closeIframe, #closeUserPopup, #closeAdminCPSettings, #closeBanUserPopup').click(function ()
     {
         $(this).parent().fadeOut(300, function () {
             $(this).hide();
@@ -235,11 +243,13 @@ $(function ()
                 tripPart = "!" + splitName[1];
             }
             
-            $makeMaster = $('<SPAN>').attr({class: "make-master-user clickable icon-flag icon-large", id: userList[i].name, title: "Give master"});
+            $makeMaster = $('<SPAN>').attr({class: "make-master-user clickable fa fa-flag-o fa-lg", id: userList[i].name, title: "Give master"});
             
-            $user.append("<SPAN Class = 'master-display icon-star-empty icon-large' Title = 'Master User'></SPAN> ");
+            $user.append("<SPAN Class = 'master-display fa fa-star-o fa-lg' Title = 'Master User'></SPAN> ");
             
-            $user.append("<SPAN Class = 'admin-display icon-heart icon-large' Title = 'This user is an administrator.'></SPAN>");
+            $user.append("<SPAN Class = 'admin-display fa fa-heart fa-lg' Title = 'This user is an administrator.'></SPAN>");
+            
+            $user.append("<SPAN Class = 'mod-display fa fa-meh-o fa-lg' Title = 'This user is a moderator.'></SPAN>");
 
             if (tripFound && namePart && tripPart)
             {
@@ -250,7 +260,7 @@ $(function ()
                 $user.append("<SPAN Class = 'name-display'>" + userList[i].name + "</SPAN> ");
             }
 
-            if (myName != userList[i].name && !userList[i].adminFlag)
+            if (myName != userList[i].name && userList[i].userType != USER_TYPE.admin)
             {
                $user.append($makeMaster);
             }
@@ -262,21 +272,40 @@ $(function ()
                 var userPopupIdString = this.id.replace('user', '');
                 userPopupId = parseInt(userPopupIdString);
                 
-                var name = $(this).find('.name-display').html();
-                $('#userPopupName').html(name);
+                var name = $(this).find('.name-display').text();
+                $('#userPopupName').html(tripColorize(name));
                 
                 if (name == myName)
                 {
+                    $('.ban-button').hide();
+                    $('.boot-button').hide();
+                    $('.mod-button').hide();
                     $('.pm-button').hide();
                 }
                 else
                 {
                     $('.pm-button').show();
+                    
+                    if (superUser || modUser)
+                    {
+                        $('.ban-button').show();
+                        $('.mod-button').show();
+                    }
+                    
+                    if (masterUser || superUser || modUser)
+                    {
+                         $('.boot-button').show();
+                    }
                 }
                 
                 userSettingsCheck();
                 
                 openPopup($(this).offset().left + 20, $(this).offset().top, '#userPopup');
+            });
+            
+            $makeMaster.click(function (e) 
+            { 
+                e.stopPropagation(); 
             });
             
             $('#userList').append($user);
@@ -299,7 +328,7 @@ $(function ()
     });
 
     // Message for setting my name
-    socket.on('nameSync', function (username, superuserData)
+    socket.on('nameSync', function (username, type)
     {
         myName = username;
 
@@ -317,13 +346,18 @@ $(function ()
         {
             nameDiv.innerHTML = myName;
         }
-       
-        if (superuserData)
+        
+        switch (type)
         {
-            superUser = true;
-            modList = superuserData.mods;
-            banList = superuserData.bans;
-            //alert(JSON.stringify(superuserData));
+            case USER_TYPE.admin:
+                superUser = true;
+                break;
+            case USER_TYPE.mod:
+                modUser = true;
+                break;
+            default:
+                superUser = false;
+                modUser = false;
         }
         
         displayMasterControls(superUser);
@@ -579,13 +613,24 @@ $(function ()
     socket.on('deleteVideoSync', function (index)
     {
         videoPlaylist.splice(index, 1);
-        $('.video-item#' + index).remove();
         
-        // Fix ids and display numbers
-        $('LI.video-item').each(function(i) 
+        if (videoPlaylist.length == 0)
         {
-            $(this).attr({id: parseInt(i)});
-            $(this).find('.video-number').html(parseInt(i + 1) + '.');
+            var $emptyPlaylistMsg = $('<DIV>').attr({id: 'noVideosMsg'});
+            $emptyPlaylistMsg.html('Playlist is empty! Add some videos!');
+            $('#videoList').append($emptyPlaylistMsg);
+        }
+        
+        $('.video-item#' + index).fadeOut('fast', function () 
+        {
+            $(this).remove();
+            
+            // Fix ids and display numbers
+            $('LI.video-item').each(function(i) 
+            {
+                $(this).attr({id: parseInt(i)});
+                $(this).find('.video-number').html(parseInt(i + 1) + '.');
+            });
         });
         
         updatePlayTime();
@@ -594,8 +639,13 @@ $(function ()
     // Message for adding a video to the playlist
     socket.on('addVideoSync', function (videoObj)
     {
+        $('#noVideosMsg').remove();
         videoPlaylist.push(videoObj);
-        $('.video-list').append(generatePlaylistItem(videoPlaylist.length - 1));
+        
+        var $newVideo = generatePlaylistItem(videoPlaylist.length - 1)
+        $('.video-list').append($newVideo);
+        $newVideo.hide().fadeIn('fast');
+        
         updatePlayTime();
     });
 
@@ -653,11 +703,11 @@ $(function ()
     {
         if (locked)
         {
-            $('#lockPlaylistButton').removeClass("icon-unlock").addClass("icon-lock");
+            $('#lockPlaylistButton').removeClass("fa fa-unlock").addClass("fa fa-lock");
         } 
         else 
         {
-            $('#lockPlaylistButton').removeClass("icon-lock").addClass("icon-unlock");
+            $('#lockPlaylistButton').removeClass("fa fa-lock").addClass("fa fa-unlock");
         }
     });
 
@@ -743,7 +793,25 @@ $(function ()
         }
     });
     
+    /**
+     Admin specific messages
+    */
     
+    // Message for syncing ban list
+    socket.on('banSync', function (list)
+    {   
+        banList = list;
+        updateCPLists();
+    });
+
+    // Message for syncing mod list
+    socket.on('modSync', function (list)
+    {   
+        modList = list;
+        updateCPLists();
+    });
+ 
+
 });
 
 // Event listener for when video changes state
@@ -1039,24 +1107,32 @@ function serverMsg(msg, fadeDelay, fadeTime)
     $newDiv.delay(fadeDelay).fadeOut(fadeTime, function() { $(this).remove(); });
 }
 
-// Toggles master controls
+// Toggles master controls -- TODO: Rename this
 function displayMasterControls(showControls)
 {
     if (showControls)
     {
         $('.sortable').sortable({ disabled: false });
         $('.master-control').show();
+        $('.make-master-user').show();   
         
         if (superUser)
         {
-            $('.superuser-control').show();
+            $('.admin-control').show();
+        }
+        
+        if (modUser || superUser)
+        {
+            $('.mod-control').show();
         }
     }
     else
     {
         $('.sortable').sortable({ disabled: true });
         $('.master-control').hide();
-        $('.superuser-control').hide();
+        $('.make-master-user').hide();   
+        $('.admin-control').hide();
+        $('.mod-control').hide();
     }
 }
 
@@ -1171,37 +1247,98 @@ function showSettings()
 // Show CP
 function showCP()
 {
-    // Update mod and ban divs
-    $('#modList').html('');
-    for (var i = 0; i < modList.length; i++)
-    {
-        $('#modList').append
-        (
-            '<DIV Class = "modItem">' +
-            modList[i] + '</DIV>'
-        );
-    }
-    
-    
-    $('#banList').html('');    
-    for (var i = 0; i < banList.length; i++)
-    {
-        $('#banList').append
-        (
-            '<DIV Class = "banItem">' +
-            banList[i].ip + ' ' +
-            banList[i].lastName /*+ ', ' +
-            'Date: ' + banList[i].banDate + ', ' +
-            'Exp: ' + banList[i].expiration + ', ' +
-            'Reason: ' + banList[i].reason*/ + '</DIV>'
-        );
-    }
+    updateCPLists();
     
     var buttonLeft = $('#adminCPButton').offset().left;
     var buttonTop = $('#videoList').offset().top;
     var winWidth = $('#adminCPButton').width() / 2;
         
     openPopup(buttonLeft-winWidth, buttonTop, '#cpPopup');
+}
+
+
+function updateCPLists()
+{
+    // Update mod and ban divs
+    $('#modList').html('');
+    for (var i = 0; i < modList.length; i++)
+    {
+        var $modItem = $('<DIV>').attr({class: 'modItem'});
+        
+        var $modName = $('<SPAN>').attr({class: 'modName'});
+        $modName.html(tripColorize(modList[i]));
+        
+        var $unmodButton = $('<SPAN>').attr({class: "clickable fa fa-times fa-lg", title: "Unmod this user"});
+        
+        $unmodButton.click(function () 
+        {        
+            var name = $(this).siblings('.modName').text();
+            if (confirm("Are you sure you want to unmod " + name + "?"))
+            {
+                unmodUser(name);
+            }
+        });
+
+        $modItem.append($modName);
+        $modItem.append($unmodButton);
+        
+        $('#modList').append($modItem);
+    }
+    
+    
+    $('#banList').html('');    
+    for (var i = 0; i < banList.length; i++)
+    {
+        var banDate = (banList[i].banDate) ? banList[i].banDate : 'Unknown';
+        var banExpiration = (banList[i].banExpiration) ? banList[i].expiration : '?';        
+        var banReason = (banList[i].reason) ? banList[i].reason : 'None';
+        
+        var banInfo = "Banned on: " + banDate + "\nExpires in " + banExpiration + " days\nBanned for: " + banReason;
+        var $banItem = $('<DIV>').attr({class: 'banItem', title: banInfo});
+        
+        var $banIp = $('<SPAN>').attr({class: 'banIp'});
+        $banIp.html(banList[i].ip);
+        
+        var $banName = $('<SPAN>').attr({class: 'banName'});
+        $banName.html(banList[i].lastName);
+        
+        
+        var $unbanButton = $('<SPAN>').attr({class: "clickable fa fa-times fa-lg", title: "Unban this user"});
+
+        $unbanButton.click(function () 
+        {    
+            var ip = $(this).siblings('.banIp').html();
+            if (confirm("Are you sure you want to unban " + ip + "?"))
+            {
+                unbanUser(ip);
+            }
+        });
+        
+        $banItem.append($banIp).append(' | ').append($banName);
+        $banItem.append($unbanButton);
+        
+        $('#banList').append($banItem);
+        /*$('#banList').append
+        (
+            '<DIV Class = "banItem">' +
+            banList[i].ip + ' ' +
+            banList[i].lastName + ', ' +
+            'Date: ' + banList[i].banDate + ', ' +
+            'Exp: ' + banList[i].expiration + ', ' +
+            'Reason: ' + banList[i].reason + '</DIV>'
+        );*/
+    }
+    
+    if (modList.length == 0)
+    {
+        $('#modList').html('No mods');
+    }
+    
+    if (banList.length == 0)
+    {
+        $('#banList').html('No bans');    
+    }
+    
 }
 
 // Show room settings
@@ -1336,17 +1473,24 @@ function loadPlayerAPI(newSource, videoId)
 // Show who's master or admin user in the user list
 function setMasterDisplay()
 {
-    $('.master-display, .admin-display').hide();
+    $('.master-display, .admin-display, .mod-display').hide();
 
     for (var i = 0; i < userList.length; i++)
     {
-        if (userList[i].adminFlag)
+        if (userList[i].userType == USER_TYPE.admin)
         {
             $('.user-list-user#user' + i + ' .admin-display').css("color", "red").show();
             $('.user-list-user#user' + i + ' .name-display').css("color", "red");
         }
         
-        if (userList[i].name == masterUser && !userList[i].adminFlag)
+        if (userList[i].userType == USER_TYPE.mod)
+        {
+            $('.user-list-user#user' + i + ' .mod-display').css("color", "blue").show();
+            $('.user-list-user#user' + i + ' .name-display').css("color", "blue");
+        }
+        
+        // Don't show master icon for admins. Admins are always masters.
+        if (userList[i].name == masterUser && userList[i].userType != USER_TYPE.admin)
         {
             $('.user-list-user#user' + i + ' .master-display').show();
         }
@@ -1404,9 +1548,9 @@ function sendImage()
 // Shows the Tinypic popup box
 function openTinypic()
 {
-    $('#iframePopup').children(':not(.default-popup-control)').remove();
+    $('#iframePopup').children(':not(.default-popup-control, .popup-gripper)').remove();
 
-    $('#iframePopupTitle').html('TinyPic');
+    $('.popup-title').html('TinyPic');
     $('#iframePopupContent').empty();
     $('#tinypic_plugin_'+id).remove();
     
@@ -1424,9 +1568,9 @@ function openTinypic()
 // Shows the mini search popup
 function openSearch()
 {
-    $('#iframePopup').children(':not(.default-popup-control)').remove();
+    $('#iframePopup').children(':not(.default-popup-control, .popup-gripper)').remove();
     
-    $('#iframePopupTitle').html('YouTube QuickSearch');
+    $('.popup-title').html('YouTube QuickSearch');
     $('#iframePopupContent').empty();
 
     // Make a search input
@@ -1710,8 +1854,8 @@ function applySkipSettings()
 function buildPlaylist()
 {
     playlistTotalTime = 0;
-    document.getElementById("videoList").innerHTML = "";
-    document.getElementById("videoListInfo").innerHTML = "";
+    $('#videoList').html('');
+    $('#videoListInfo').html('');
     
     $newList = $('<UL>').attr({class: "sortable video-list"});
 
@@ -1728,11 +1872,18 @@ function buildPlaylist()
     // Generate playlist info
     $('#videoListInfo').append("Playlist: <SPAN Id = 'playlistTime'>" + secondsToTime(playlistTotalTime) + "</SPAN>, <SPAN Id = 'playlistLength'>" + videoPlaylist.length + "</SPAN> videos");
     
+    if (videoPlaylist.length == 0)
+    {
+        var $emptyPlaylistMsg = $('<DIV>').attr({id: 'noVideosMsg'});
+        $emptyPlaylistMsg.html('Playlist is empty! Add some videos!');
+        $('#videoList').append($emptyPlaylistMsg);
+    }
+    
     // Generate playlist controls
-    $goToControl = $('<SPAN>').attr({id: "goToIndicator", class: "clickable icon-bullseye icon-large", title: "Scroll to currently playing video"});
+    $goToControl = $('<SPAN>').attr({id: "goToIndicator", class: "clickable fa fa-bullseye fa-lg", title: "Scroll to currently playing video"});
     $goToControl.css("padding-left", "8");
     
-    $lockPlaylistControl = $('<SPAN>').attr({id: "lockPlaylistButton", class: "clickable icon-unlock icon-large", title: "Playlist locking state"});
+    $lockPlaylistControl = $('<SPAN>').attr({id: "lockPlaylistButton", class: "clickable fa fa-unlock fa-lg", title: "Playlist locking state"});
     $lockPlaylistControl.css("padding-left", "8");
     
     $('#videoListInfo').append($lockPlaylistControl);
@@ -1775,20 +1926,20 @@ function generatePlaylistItem(index)
     
     $newListItem = $('<LI>').attr({class: "ui-state-default video-item", id: index});
     
-    $dragger = $('<SPAN>').attr({class: "dragger icon-sort icon-large master-control"});
+    $dragger = $('<SPAN>').attr({class: "dragger fa fa-sort fa-lg master-control"});
     
     $number = $('<SPAN>').attr({class: "video-number"});
     $number.append(index + 1 + '.');
     
-    $playButton = $('<SPAN>').attr({class: "play-button icon-play-circle icon-large clickable master-control", id: "tit" + index, title: "Play this video"});
+    $playButton = $('<SPAN>').attr({class: "play-button fa fa-play-circle fa-lg clickable master-control", id: "tit" + index, title: "Play this video"});
     
-    $urlButton = $('<SPAN>').attr({class: "url-button icon-link icon-large", id: index, title: "Link to video"});
+    $urlButton = $('<SPAN>').attr({class: "url-button fa fa-link fa-lg", id: index, title: "Link to video"});
     
-    $deleteButton = $('<SPAN>').attr({class: "delete-button icon-remove icon-large master-control", id: index, title: "Double-click to delete"});
+    $deleteButton = $('<SPAN>').attr({class: "delete-button fa fa-times fa-lg master-control", id: index, title: "Double-click to delete"});
     
-    $bumpButton = $('<SPAN>').attr({class: "bump-button icon-arrow-up icon-large clickable master-control", id: index, title: "Bump as next video to play"});
+    $bumpButton = $('<SPAN>').attr({class: "bump-button fa fa-arrow-up fa-lg clickable master-control", id: index, title: "Bump as next video to play"});
     
-    $playingIndicator = $('<SPAN>').attr({class: "playing-indicator icon-youtube-play icon-large", id: index});
+    $playingIndicator = $('<SPAN>').attr({class: "playing-indicator fa fa-youtube-play fa-lg", id: index});
     
     $vidTitle = $('<SPAN>').attr({class: "video-title"});
     $vidTitle.append(videoPlaylist[index].title);
@@ -2108,16 +2259,25 @@ function bootUser()
     }   
 }
 
+// Asks for ban reason and length
+function banConfirm()
+{   
+    var name = $('#userPopup').find('#userPopupName').text();
+    $('.ban-name').html(tripColorize(name));
+    
+    openPopup($('#userPopup').offset().left + 20, $('#userPopup').offset().top, '#banUserPopup');
+}
+
 // Sets the views user popup settings
 function userSettingsCheck()
 {
     if (userList[userPopupId].muted)
     {
-        $('.mute-button').removeClass('icon-volume-up').addClass('icon-volume-off');
+        $('.mute-button').removeClass('fa fa-volume-up').addClass('fa fa-volume-off');
     }
     else
     {
-        $('.mute-button').removeClass('icon-volume-off').addClass('icon-volume-up');
+        $('.mute-button').removeClass('fa fa-volume-off').addClass('fa fa-volume-up');
     }
 }
 
@@ -2153,4 +2313,70 @@ function updateTitle(str)
 {
     document.getElementById("videoTitle").innerHTML = str;
     document.title = str + " - KachoTube";
+}
+
+
+// Takes some text, scans for ! and returns a colorized version
+function tripColorize(trip)
+{    
+    var namePart, tripPart;
+    var tripFound = trip.match(/!/g);
+    if (tripFound)
+    {
+        var splitName = trip.split("!");
+        namePart = splitName[0];
+        tripPart = "!" + splitName[1];
+        tripPart = "<SPAN Class = 'trip-display greentext'>" + tripPart + "</SPAN>";
+        return namePart + tripPart;
+    }
+    
+    return trip;
+}
+
+/**
+ Admin specific functions
+ 
+ WARNING: Attempting to call these manually 
+ will result in an immediate permaban
+ */
+ 
+function banUser()
+{
+    var name = $('#userPopup').find('#userPopupName').text();
+    if (name.length == 0)
+    {
+        alert("Couldn't get name!");
+        return;
+    }
+    
+    var reason = $('.ban-reason-input').val();
+    var length = $('.ban-length-input').val();
+    
+    if (superUser)
+    {
+        socket.emit('banUser', name, reason, length);
+    }
+    
+    $('#closeBanUserPopup').click();
+    $('#closeUserPopup').click();
+}
+
+function unbanUser(ip)
+{
+    socket.emit('unbanUser', ip);
+}
+
+function addMod()
+{
+    if (superUser || modUser)
+    {
+        var trip = userList[userPopupId].name;
+        socket.emit('modUser', trip);
+        $('#closeUserPopup').click();
+    }
+}
+
+function unmodUser(trip)
+{
+    socket.emit('unmodUser', trip);
 }

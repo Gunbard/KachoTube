@@ -7,7 +7,7 @@
         <SCRIPT Src = "http://www.google.com/jsapi" Type = "text/javascript"></SCRIPT>
         <SCRIPT Src = "main.js" Type = "text/javascript"></SCRIPT>
         <LINK Rel = "stylesheet" Href = "http://code.jquery.com/ui/1.10.3/themes/overcast/jquery-ui.css">
-        <link href="http://netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
+        <link href="http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
         <LINK Rel = "stylesheet" Href = "/styles/default/default.css">
         
         <!--TinyPic Plugin-->
@@ -51,15 +51,15 @@
 
                     <BR>
                     
-                    <SPAN Class = "clickable icon-search icon-large" Id = "searchButton" OnClick = "openSearch();" Title = "Search for Videos on YouTube"></SPAN>
-                    <SPAN Class = "clickable icon-save icon-large" Id = "playlistSaveButton" OnClick = "generatePlaylistSaveData();" Title = "Save Playlist"></SPAN>
-                    <SPAN Class = "master-control hidden clickable icon-upload-alt icon-large" Id = "playlistLoadButton" OnClick = "openLoadPopup();" Title = "Load Playlist"></SPAN>
-                    <SPAN Class = "master-control hidden clickable icon-trash icon-large" OnClick = "clearPlaylist();" Title = "Clear Playlist"></SPAN>
-                    <SPAN Class = "master-control hidden clickable icon-magic icon-large" OnClick = "cleanPlaylist();" Title = "Clean Playlist (Delete up to currently playing video)"></SPAN>
-                    <SPAN Class = "master-control hidden clickable icon-random icon-large" OnClick = "shufflePlaylist();" Title = "Shuffle Playlist"></SPAN>
-                    <SPAN Class = "clickable icon-cogs icon-large" Id = "settingsButton" OnClick = "showSettings();" Title = "Settings"></SPAN>
-                    <SPAN Class = "master-control hidden clickable icon-cog icon-large" Id = "roomSettingsButton" OnClick = "showRoomSettings();" Title = "Room Settings"></SPAN>
-                    <SPAN Class = "superuser-control hidden clickable icon-wrench icon-large" Id = "adminCPButton" OnClick = "showCP();" Title = "Admin CP"></SPAN>
+                    <SPAN Class = "clickable fa fa-search fa-lg" Id = "searchButton" OnClick = "openSearch();" Title = "Search for Videos on YouTube"></SPAN>
+                    <SPAN Class = "clickable fa fa-save fa-lg" Id = "playlistSaveButton" OnClick = "generatePlaylistSaveData();" Title = "Save Playlist"></SPAN>
+                    <SPAN Class = "master-control hidden clickable fa fa-upload fa-lg" Id = "playlistLoadButton" OnClick = "openLoadPopup();" Title = "Load Playlist"></SPAN>
+                    <SPAN Class = "master-control hidden clickable fa fa-trash fa-lg" OnClick = "clearPlaylist();" Title = "Clear Playlist"></SPAN>
+                    <SPAN Class = "master-control hidden clickable fa fa-magic fa-lg" OnClick = "cleanPlaylist();" Title = "Clean Playlist (Delete up to currently playing video)"></SPAN>
+                    <SPAN Class = "master-control hidden clickable fa fa-random fa-lg" OnClick = "shufflePlaylist();" Title = "Shuffle Playlist"></SPAN>
+                    <SPAN Class = "clickable fa fa-cogs fa-lg" Id = "settingsButton" OnClick = "showSettings();" Title = "Settings"></SPAN>
+                    <SPAN Class = "master-control hidden clickable fa fa-cog fa-lg" Id = "roomSettingsButton" OnClick = "showRoomSettings();" Title = "Room Settings"></SPAN>
+                    <SPAN Class = "admin-control hidden clickable fa fa-wrench fa-lg" Id = "adminCPButton" OnClick = "showCP();" Title = "Admin CP"></SPAN>
                     
                 </DIV>
                 
@@ -95,25 +95,25 @@
         <DIV Class = "drop-shadow" Id = "thumbnailPopup"></DIV>
         
         <DIV Class = "drop-shadow" Id = "iframePopup">
-            <SPAN Id = "iframePopupTitle" Class = "default-popup-control"></SPAN><SPAN Class = "clickable icon-remove-circle icon-large default-popup-control" Id = "closeIframe"></SPAN>
+            <SPAN Class = 'fa fa-bars fa-lg popup-gripper'></SPAN><SPAN Class = 'popup-title default-popup-control'></SPAN><SPAN Class = "clickable fa fa-times-circle fa-lg default-popup-control" Id = "closeIframe"></SPAN>
             <DIV Id = "iframePopupContent" Class = "default-popup-control"></DIV>
         </DIV>
         
         <DIV Class = "drop-shadow" Id = "saveVidPopup">
-            Save<SPAN Class = "clickable icon-remove-circle icon-large" Id = "closeSaveVid"></SPAN>
+            <SPAN Class = 'fa fa-bars fa-lg popup-gripper'></SPAN><SPAN Class = 'popup-title'>Save</SPAN><SPAN Class = "clickable fa fa-times-circle fa-lg" Id = "closeSaveVid"></SPAN>
             <TEXTAREA Id = "playlistSave" Rows = "5" Cols = "30"></TEXTAREA>
             <DIV Id = "saveHelpText">Save by copying and pasting into a text editor (Select all with Ctrl-A, if you forgot)</DIV>
         </DIV>
         
         <DIV Class = "drop-shadow" Id = "loadVidPopup">
-            Load<SPAN Class = "clickable icon-remove-circle icon-large" Id = "closeLoadVid"></SPAN>
+            <SPAN Class = 'fa fa-bars fa-lg popup-gripper'></SPAN><SPAN Class = 'popup-title'>Load</SPAN><SPAN Class = "clickable fa fa-times-circle fa-lg" Id = "closeLoadVid"></SPAN>
             <TEXTAREA Id = "playlistLoad" Rows = "5" Cols = "30"></TEXTAREA>
             <DIV Id = "loadHelpText">Paste (Ctrl-V) a series of video URLs that you made or a previously saved playlist and press load!<BR><BR>Note: Videos will be appended to the list, so clear it first if you want to load a new playlist.<BR>
             <INPUT Type = "Button" Value = "Load" onClick = "sendPlaylistSaveData()"></DIV>
         </DIV>
         
         <DIV Class = "drop-shadow" Id = "settingsPopup">
-            Settings<SPAN Class = "clickable icon-remove-circle icon-large" Id = "closeSettings"></SPAN>
+            <SPAN Class = 'fa fa-bars fa-lg popup-gripper'></SPAN><SPAN Class = 'popup-title'>Settings</SPAN><SPAN Class = "clickable fa fa-times-circle fa-lg" Id = "closeSettings"></SPAN>
             
             <DIV Id = "settingsDiv">
                 Change name: <INPUT Type = "Text" Id = "changeNameInput" Title = "Tripcode how-to:&#10;yourName#yourSecretWord"><BR> 
@@ -157,7 +157,7 @@
         </DIV>
         
         <DIV Class = "drop-shadow" Id = "roomSettingsPopup">
-            Room Settings<SPAN Class = "clickable icon-remove-circle icon-large" Id = "closeRoomSettings"></SPAN>
+            <SPAN Class = 'fa fa-bars fa-lg popup-gripper'></SPAN><SPAN Class = 'popup-title'>Room Settings</SPAN><SPAN Class = "clickable fa fa-times-circle fa-lg" Id = "closeRoomSettings"></SPAN>
             <DIV Id = "roomSettingsDiv" Class = "master-control">
                 <INPUT Type = "checkbox" Id = "settingLockPlaylist"> Lock playlist<BR>
                 <INPUT Type = "checkbox" Id = "settingAllowSkips" Checked> Allow skips<BR>
@@ -170,22 +170,36 @@
         </DIV>
 
         <DIV Class = "drop-shadow" Id = "cpPopup">
-            Admin CP<SPAN Class = "clickable icon-remove-circle icon-large" Id = "closeAdminCPSettings"></SPAN>
-            <DIV Id = "adminCPSettingsDiv" Class = "superuser-control">
-                Add mod: <INPUT Type = "Text" Id = "addModInput"><BR>
+            <SPAN Class = 'fa fa-bars fa-lg popup-gripper'></SPAN><SPAN Class = 'popup-title'>Admin CP</SPAN><SPAN Class = "clickable fa fa-times-circle fa-lg" Id = "closeAdminCPSettings"></SPAN>
+            <DIV Id = "adminCPSettingsDiv" Class = "admin-control">
                 <U>Mod List</U>
-                <DIV Id = "modList">
-                </DIV>
+                <DIV Id = "modList"></DIV>
                 <U>Ban List</U>
-                <DIV Id = "banList">
+                <DIV Id = "banList"></DIV>
+            </DIV>
+        </DIV>
+        
+        <DIV Class = "drop-shadow" Id = "banUserPopup">
+            <SPAN Class = 'fa fa-bars fa-lg popup-gripper'></SPAN><SPAN Class = 'popup-title'>Ban User</SPAN><SPAN Class = "clickable fa fa-times-circle fa-lg" Id = "closeBanUserPopup"></SPAN>
+            <DIV Id = 'banUserPopupDiv'>
+                <DIV Class = 'ban-name'></DIV>
+                <DIV Class = 'ban-reason'>
+                    Ban reason: <INPUT Type = "text" Size = "20" MaxLength = "10" Class = "ban-reason-input">
+                </DIV>
+                <DIV Class = 'ban-length' Title = 'in days'>
+                    Ban length: <INPUT Type = "number" Size = "3" MaxLength = "3" Class = "ban-length-input">
                 </DIV>
             </DIV>
+            
+            <INPUT Type = "Button" Value = "Ban" OnClick = "banUser()" Class = "ban-button-confirm">
+            
         </DIV>
        
         <DIV Class = "drop-shadow" Id = "userPopup">
-            <SPAN Class = "clickable icon-remove-circle icon-large" Id = "closeUserPopup"></SPAN>
+            <SPAN Class = 'fa fa-bars fa-lg popup-gripper'></SPAN><SPAN Class = "clickable fa fa-times-circle fa-lg" Id = "closeUserPopup"></SPAN>
             <DIV Id = "userPopupDiv">
-                <SPAN Id = "userPopupName"></SPAN><BR><SPAN Class = "mute-button clickable icon-volume-up icon-large" Title = "Mute user" onClick = "toggleUserMute();"></SPAN> <SPAN Class = "pm-button clickable icon-envelope-alt icon-large" onClick = "setPrivateMessage();" Title = "Send whisper"></SPAN> <SPAN Class = "boot-button clickable icon-legal master-control icon-large" onClick = "bootUser();" Title = "Boot user"></SPAN>
+                <SPAN Id = "userPopupName"></SPAN><BR><SPAN Class = "mute-button clickable fa fa-volume-up fa-lg" Title = "Mute user" onClick = "toggleUserMute();"></SPAN> <SPAN Class = "pm-button clickable fa fa-envelope fa-lg" onClick = "setPrivateMessage();" Title = "Send whisper"></SPAN> <SPAN Class = "mod-button clickable fa fa-certificate admin-control mod-control fa-lg" onClick = "addMod();" Title = "Mod user"></SPAN> <SPAN Class = "boot-button clickable fa fa-legal admin-control mod-control fa-lg" onClick = "bootUser();" Title = "Boot user"></SPAN>
+                <SPAN Class = "ban-button clickable fa fa-ban admin-control mod-control fa-lg" onClick = "banConfirm();" Title = "Ban user"></SPAN>
             </DIV>
         </DIV>
 

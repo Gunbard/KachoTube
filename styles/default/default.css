@@ -214,7 +214,7 @@ li.ui-state-default
     display:            inline-block;
     text-align:         center;
     width:              20;
-    height:             40;
+    height:             20;
     padding-top:        10;
     font-size:          16;
 }
@@ -241,7 +241,7 @@ li.ui-state-default
 
 .bump-button
 {
-    width:              30;
+    width:              16;
 }
 
 .dragger
@@ -342,7 +342,7 @@ li.ui-state-default
     text-align:         center;
 }
 
-#settingsPopup, #roomSettingsPopup, #userPopup, #cpPopup
+#settingsPopup, #roomSettingsPopup, #userPopup, #cpPopup, #banUserPopup
 {
     position:           absolute;
     clear:              both;
@@ -352,7 +352,7 @@ li.ui-state-default
     text-align:         center;
 }
 
-#settingsPopup, #roomSettingsPopup, #cpPopup
+#settingsPopup, #roomSettingsPopup, #cpPopup, #banUserPopup
 {
     width:              300;
 }
@@ -363,7 +363,7 @@ li.ui-state-default
 }
 
 
-#settingsDiv, #roomSettingsDiv, #adminCPSettingsDiv
+#settingsDiv, #roomSettingsDiv, #adminCPSettingsDiv, #banUserPopupDiv
 {
     text-align:         left;
     cursor:             auto;
@@ -374,17 +374,23 @@ li.ui-state-default
     font-size:          12;
 }
 
-#iframePopup:hover, #saveVidPopup:hover, #loadVidPopup:hover, #settingsPopup:hover,
-#roomSettingsPopup:hover, #userPopup:hover, #cpPopup:hover
+.popup-title
 {
+    text-decoration:    underline;   
+    text-align:         center;
+}
+
+.popup-gripper
+{
+    display:            inline-block;
+    float:              left;
     cursor:             move;
 }
 
-#closeIframe, #closeSaveVid, #closeSettings, #closeRoomSettings, #closeLoadVid, #closeUserPopup, #closeAdminCPSettings
+#closeIframe, #closeSaveVid, #closeSettings, #closeRoomSettings, #closeLoadVid, #closeUserPopup, #closeAdminCPSettings, #closeBanUserPopup
 {
     display:            inline-block;
     float:              right;
-    clear:              both;
 }
 
 .clickable
@@ -503,7 +509,7 @@ input[type=button]
     font-family:        inherit;
 }
 
-#chatList, #userList, #videoDivContainer, #videoList, #iframePopup, #saveVidPopup, #loadVidPopup, #chatInputContainer, #playlistControls, #serverMessageContainer, #settingsPopup, #roomSettingsPopup, #banner, #userPopup, #funContainer, #cpPopup
+#chatList, #userList, #videoDivContainer, #videoList, #iframePopup, #saveVidPopup, #loadVidPopup, #chatInputContainer, #playlistControls, #serverMessageContainer, #settingsPopup, #roomSettingsPopup, #banner, #userPopup, #funContainer, #cpPopup, #banUserPopup
 {
     border-style:           solid; 
     border-width:           25px; 
@@ -563,4 +569,9 @@ input[type=button]
 .banItem, .modItem
 {
     margin-left:            10;
+}
+
+#noVideosMsg
+{
+    text-align:             center;
 }

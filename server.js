@@ -48,15 +48,22 @@ var COOLDOWN_CHAT_EMBED = 10;    // Seconds
 var COOLDOWN_SHUFFLE    = 30;
 var COMMAND_TIMEOUT     = 3000;
 
+var USER_TYPE =
+{
+    "admin":    0,
+    "mod":      1,
+    "normal":   2
+}
+
 // Server currently only suports one room. Should be able to encapsulate
 // this into a JavaScript object. Maybe.
 
 
 //========BASIC DATA STORAGE===========//
-// user {string name, string id, string ip, date lastspammingCheck, int msgCount, int chatMsgCount, date lastChatEmbed, bool adminFlag}
+// user {string name, string id, string ip, date lastspammingCheck, int msgCount, int chatMsgCount, date lastChatEmbed, USER_TYPE userType}
 var userList        = [];    
 
-// user {string name, bool adminFlag, string imgBase64}
+// user {string name, USER_TYPE userType, string imgBase64}
 var userInfo        = [];    
 
 // video {string id, string title, string duration, string addedBy}
@@ -71,11 +78,11 @@ var skipList        = [];
 // item {string username, string text, string timestamp}
 var chatLog         = [];
 
-// ip list {ip: user.ip, lastName: user.username, banDate: now, expiration: length, reason: reason}
+// ip list {ip: user.ip, lastName: user.username, banDate: now, expiration: length (int days), reason: reason}
 var banList         = [{ip: '1234', lastName: 'someone', banDate: '', expiration: '', reason: 'idgaf'}];
 
 // list of tripcodes
-var adminList       = ["Gunbard!lfdxHP"];
+var adminList       = ["Gunbard!eGTll4"];
 
 // list of tripcodes
 var modList         = ["Imaweiner!asdf", "asdfsdf!what"];
@@ -155,7 +162,7 @@ function generateTrip(str)
     var MD5 = crypto.createHash("MD5");
     MD5.update(str);
     var trip = MD5.digest("base64").slice(0, 6);
-    console.log("Generated trip: " + trip);
+    console.log("Generated trip " + trip);
     return trip;
 }
 
@@ -238,6 +245,18 @@ io.sockets.on('connection', function (socket)
                 }
             }
         }
+    }
+    
+    // Verify who I'm talking to is an administrator
+    function isAdmin()
+    {
+        return (adminList.indexOf(socket.username) > -1);
+    }
+    
+    // Verify who I'm talking to is a moderator
+    function isMod()
+    {
+        return (modList.indexOf(socket.username) > -1);
     }
     
     // Update everyone's list of users
@@ -426,7 +445,7 @@ io.sockets.on('connection', function (socket)
     {
         var oldName = username;
         var superuserData;
-        var superUser = false;
+        var userType = USER_TYPE.normal;
 
         for (var i = 0; i < userList.length; i++)
         {
@@ -437,10 +456,17 @@ io.sockets.on('connection', function (socket)
                 // Check if name is in admin list
                 if (adminList.indexOf(newName) != -1)
                 {
-                    userList[i].adminFlag = true;
-                    superUser = true;
-                    superuserData = {mods: modList, bans: banList};
+                    userList[i].userType = USER_TYPE.admin;
+                    userType = USER_TYPE.admin;
                 }
+                
+                // Check if name is in mod list
+                if (modList.indexOf(newName) != -1)
+                {
+                    userList[i].userType = USER_TYPE.mod;
+                    userType = USER_TYPE.mod;
+                }
+                
                 break;
             }
         }
@@ -450,7 +476,7 @@ io.sockets.on('connection', function (socket)
             if (username == userInfo[i].name)
             {
                 userInfo[i].name = newName;
-                userInfo[i].adminFlag = superUser;
+                userInfo[i].userType = userType;
                 // Set new time for user
                 break;
             }
@@ -459,8 +485,14 @@ io.sockets.on('connection', function (socket)
         socket.username = newName;
         username = socket.username;
         
-        io.sockets.socket(socket.id).emit('nameSync', username, superuserData);
-
+        io.sockets.socket(socket.id).emit('nameSync', username, userType);
+        
+        if (userType == USER_TYPE.admin)
+        {
+            io.sockets.socket(socket.id).emit('banSync', banList);
+            io.sockets.socket(socket.id).emit('modSync', modList);
+        }
+        
         sendServerMsgAll("\"" + oldName + "\" is now \"" + username + "\"");
         
         if (oldName == masterUser)
@@ -821,7 +853,7 @@ io.sockets.on('connection', function (socket)
     {
         for (var i = 0; i < hashArray.length; i++)
         {
-            console.log(hashArray[i]['ip']);
+            //console.log(hashArray[i]['ip']);
             if (hashArray[i][key] == value)
             {
                 return hashArray[i];
@@ -831,9 +863,9 @@ io.sockets.on('connection', function (socket)
     }
     
     // Adds someone to the ban list
-    function banUser(socketId, reason, length)
+    function banUser(socketId, banReason, banLength)
     {
-        var user = objectWithKeyAndValue(userList, 'id', userId);
+        var user = objectWithKeyAndValue(userList, 'id', socketId);
         if (!user)
         {
             console.log("Couldn't ban user: user with that id not found");
@@ -841,9 +873,11 @@ io.sockets.on('connection', function (socket)
         }
         
         var now = new Date();
-        var banItem = {ip: user.ip, lastName: user.username, banDate: now, expiration: length, reason: reason};
+        var banItem = {ip: user.ip, lastName: user.username, banDate: now, expiration: banLength, reason: banReason};
         
         banList.push(banItem);
+        
+        io.sockets.socket(socket.id).emit('banSync', banList);
         console.log('[' + user.ip + '] was BANNED');
     }
     
@@ -857,23 +891,27 @@ io.sockets.on('connection', function (socket)
             {
                 var index = banList.indexOf(user);
                 banList.splice(index, 1);
+                sendServerMsgUser("You unbanned " + ip);
+                io.sockets.socket(socket.id).emit('banSync', banList);
                 console.log('[' + ip + '] was unbanned');
                 return;
             }
         }
-        
-        if (name)
+        else if (name)
         {
             var user = objectWithKeyAndValue(banList, 'lastName', name);
             if (user)
             {
                 var index = banList.indexOf(user);
                 banList.splice(index, 1);
+                sendServerMsgUser("You unbanned " + name);
+                io.sockets.socket(socket.id).emit('banSync', banList);
                 console.log('[' + name + '] was unbanned');
                 return;
             }
         }
         
+        sendServerMsgUser("Unable to unban that user");
         console.log("Couldn't unban user: user with that ip or name not found");
     }
     
@@ -882,8 +920,18 @@ io.sockets.on('connection', function (socket)
     {
         if (trip)
         {
-            modList.push(trip);
-            console.log('[' + trip + '] has been modded');
+            if (modList.indexOf(trip) == -1)
+            {
+                modList.push(trip);
+                console.log('[' + trip + '] has been modded');
+                sendServerMsgSpecific("You have been modded! Hooray!", trip);
+                sendServerMsgAll(trip + " has been modded!");
+                io.sockets.socket(socket.id).emit('modSync', modList);
+            }
+            else
+            {
+                sendServerMsgUser("That user is already a mod");
+            }
         }
         else
         {
@@ -895,13 +943,16 @@ io.sockets.on('connection', function (socket)
     function unmodUser(trip)
     {
         var mod = modList.indexOf(trip);
-        if (mod)
+        if (mod > -1)
         {
-            modList.splice(mod);
+            modList.splice(mod, 1);
+            sendServerMsgUser("You unmodded " + trip);
+            io.sockets.socket(socket.id).emit('modSync', modList);
             console.log('[' + trip + '] was unmodded');
         }
         else
         {
+            sendServerMsgUser("Unable to unmod " + trip);
             console.log('[' + trip + '] could not be found in mod list');
         }
     }
@@ -915,7 +966,6 @@ io.sockets.on('connection', function (socket)
     }
     
     // Disconnect if IP is in banList
-    //if (banList.indexOf(ip) != -1)
     if (objectWithKeyAndValue(banList, 'ip', ip))
     {
         sendServerMsgUser("BANNED");
@@ -1054,7 +1104,6 @@ io.sockets.on('connection', function (socket)
                         var lastTime = user.lastChatEmbed;
                         user.lastChatEmbed = now;
                         var timeDelta = Math.abs(now.getTime() - lastTime.getTime()) / 1000;
-                        console.log(timeDelta);
                         var waitTime = COOLDOWN_CHAT_EMBED - timeDelta;
                         if (timeDelta < COOLDOWN_CHAT_EMBED)
                         {
@@ -1237,7 +1286,8 @@ io.sockets.on('connection', function (socket)
                 var split = newName.split("#");
                 var namePortion = split.shift();
                 var rejoined = split.join("");
-                var trip = generateTrip(rejoined);
+                console.log(rejoined);
+                var trip = generateTrip(namePortion + rejoined);
                 newName = namePortion + "!" + trip;
             }
         
@@ -1392,7 +1442,6 @@ io.sockets.on('connection', function (socket)
                     var dmIdMatch = urls[i].match(/video\/([^\W|_]+)/);
                     if (dmIdMatch)
                     {
-                        console.log(dmIdMatch);
                         videoId = dmIdMatch[1];
                         sourceType = "dm";
                         if (!checkDupeVideo(videoId))
@@ -1435,7 +1484,7 @@ io.sockets.on('connection', function (socket)
     // Message for enabling/disabling skipping
     socket.on('toggleSkippingEnabled', function (enabled)
     {
-        spammingCheck(0, "");
+        spammingCheck(enabled.length, "");
         
         if (validUser() && masterUser == username && masterUserId == userId && skippingEnabled == !enabled)
         {
@@ -1461,7 +1510,7 @@ io.sockets.on('connection', function (socket)
     // Message for enabling/disabling skipping
     socket.on('updateSkipSettings', function (usePercent, skipValue)
     {
-        spammingCheck(0, "");
+        spammingCheck(usePercent.length + skipValue.length, "");
         
         if (validUser() && masterUser == username && masterUserId == userId)
         {
@@ -1488,9 +1537,9 @@ io.sockets.on('connection', function (socket)
     // Message for booting a user
     socket.on('bootUser', function (name)
     {
-        spammingCheck(0, "");
+        spammingCheck(name.length, "");
         
-        if (validUser() && masterUser == username && masterUserId == userId)
+        if (validUser() && (masterUser == username && masterUserId == userId || isMod() || isAdmin()))
         {
             var targetId = socketIdByName(name);
             if (targetId)
@@ -1498,6 +1547,83 @@ io.sockets.on('connection', function (socket)
                 sendServerMsgSpecific("You have been booted!", name);
                 io.sockets.socket(targetId).disconnect();
             }
+        }
+    });
+    
+    // Message for banning a user
+    socket.on('banUser', function (name, reason, banLength)
+    {
+        spammingCheck(name.length + reason.length + banLength.length, "");
+        
+        if (validUser() && isAdmin())
+        {   
+            var targetId = socketIdByName(name);
+            if (targetId)
+            {
+                banUser(targetId, reason, banLength);
+                sendServerMsgSpecific("You have been banned!", name);
+                
+                if (reason && reason.length > 0)
+                {
+                    sendServerMsgSpecific("Ban reason: " + reason, name);
+                }
+                
+                if (banLength && banLength.length > 0 || banLength > 0)
+                {
+                    sendServerMsgSpecific("Your ban will expire in " + banLength + " days", name);
+                }
+                else
+                {
+                    sendServerMsgSpecific("Your ban will not expire", name);
+                }
+                
+                io.sockets.socket(targetId).disconnect();
+            }
+        }
+    });
+    
+    // Message for modding a user, mod requires trip
+    socket.on('modUser', function (trip)
+    {
+        spammingCheck(trip.length, "");
+        
+        if (validUser() && (isAdmin() || isMod()))
+        {
+            // Detect trip, mods must have a tripcode
+            if (trip.indexOf('!') == -1)
+            {
+                sendServerMsgUser("Mods must use a tripcode");
+                return;
+            }
+        
+            var targetId = socketIdByName(trip);
+            if (targetId)
+            {
+                modUser(trip);
+            }
+        }
+    });
+    
+    
+    // Message for unbanning a user
+    socket.on('unbanUser', function (ip)
+    {
+        spammingCheck(ip.length, "");
+        
+        if (validUser() && isAdmin())
+        {
+            unbanUser(ip, null);
+        }
+    });
+    
+    // Message for unmodding a user
+    socket.on('unmodUser', function (trip)
+    {
+        spammingCheck(trip.length, "");
+        
+        if (validUser() && (isAdmin() || isMod()))
+        {
+            unmodUser(trip);
         }
     });
 
