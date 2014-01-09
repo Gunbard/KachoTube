@@ -23,6 +23,10 @@ app.get('/main.js', function (req, res) {
   res.sendfile(__dirname + '/main.js');
 });
 
+app.get('/admin.js', function (req, res) {
+  res.sendfile(__dirname + '/admin.js');
+});
+
 app.get('/styles/default/default.css', function (req, res) {
   res.sendfile(__dirname + '/styles/default/default.css');
 });
@@ -876,23 +880,27 @@ io.sockets.on('connection', function (socket)
             {
                 var index = banList.indexOf(user);
                 banList.splice(index, 1);
+                sendServerMsgUser("You unbanned " + ip);
+                io.sockets.socket(socket.id).emit('banSync', banList);
                 console.log('[' + ip + '] was unbanned');
                 return;
             }
         }
-        
-        if (name)
+        else if (name)
         {
             var user = objectWithKeyAndValue(banList, 'lastName', name);
             if (user)
             {
                 var index = banList.indexOf(user);
                 banList.splice(index, 1);
+                sendServerMsgUser("You unbanned " + name);
+                io.sockets.socket(socket.id).emit('banSync', banList);
                 console.log('[' + name + '] was unbanned');
                 return;
             }
         }
         
+        sendServerMsgUser("Unable to unban that user");
         console.log("Couldn't unban user: user with that ip or name not found");
     }
     
@@ -914,13 +922,16 @@ io.sockets.on('connection', function (socket)
     function unmodUser(trip)
     {
         var mod = modList.indexOf(trip);
-        if (mod)
+        if (mod > -1)
         {
-            modList.splice(mod);
+            modList.splice(mod, 1);
+            sendServerMsgUser("You unmodded " + trip);
+            io.sockets.socket(socket.id).emit('modSync', modList);
             console.log('[' + trip + '] was unmodded');
         }
         else
         {
+            sendServerMsgUser("Unable to unmod " + trip);
             console.log('[' + trip + '] could not be found in mod list');
         }
     }
@@ -1454,7 +1465,7 @@ io.sockets.on('connection', function (socket)
     // Message for enabling/disabling skipping
     socket.on('toggleSkippingEnabled', function (enabled)
     {
-        spammingCheck(0, "");
+        spammingCheck(enabled.length, "");
         
         if (validUser() && masterUser == username && masterUserId == userId && skippingEnabled == !enabled)
         {
@@ -1480,7 +1491,7 @@ io.sockets.on('connection', function (socket)
     // Message for enabling/disabling skipping
     socket.on('updateSkipSettings', function (usePercent, skipValue)
     {
-        spammingCheck(0, "");
+        spammingCheck(usePercent.length + skipValue.length, "");
         
         if (validUser() && masterUser == username && masterUserId == userId)
         {
@@ -1507,7 +1518,7 @@ io.sockets.on('connection', function (socket)
     // Message for booting a user
     socket.on('bootUser', function (name)
     {
-        spammingCheck(0, "");
+        spammingCheck(name.length, "");
         
         if (validUser() && (masterUser == username && masterUserId == userId || isMod() || isAdmin()))
         {
@@ -1521,9 +1532,9 @@ io.sockets.on('connection', function (socket)
     });
     
     // Message for banning a user
-    socket.on('banUser', function (userId, reason, length)
+    socket.on('banUser', function (name, reason, banLength)
     {
-        spammingCheck(0, "");
+        spammingCheck(name.length + reason.length + banLength.length, "");
         
         if (validUser() && isAdmin())
         {
@@ -1540,38 +1551,39 @@ io.sockets.on('connection', function (socket)
     // Message for modding a user, mod requires trip
     socket.on('modUser', function (trip)
     {
-        spammingCheck(0, "");
+        spammingCheck(trip.length, "");
         
         if (validUser() && (isAdmin() || isMod()))
         {
-            var targetId = socketIdByName(name);
+            var targetId = socketIdByName(trip);
             if (targetId)
             {
                 sendServerMsgSpecific("You have been modded! Hooray!", name);
+                sendServerMsgAll(trip + " has been modded!");
             }
         }
     });
     
     
     // Message for unbanning a user
-    socket.on('unbanUser', function (userId)
+    socket.on('unbanUser', function (ip)
     {
-        spammingCheck(0, "");
+        spammingCheck(ip.length, "");
         
         if (validUser() && isAdmin())
         {
-        
+            unbanUser(ip, null);
         }
     });
     
     // Message for unmodding a user
     socket.on('unmodUser', function (trip)
     {
-        spammingCheck(0, "");
+        spammingCheck(trip.length, "");
         
         if (validUser() && (isAdmin() || isMod()))
         {
-
+            unmodUser(trip);
         }
     });
 

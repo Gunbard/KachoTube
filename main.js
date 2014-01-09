@@ -235,11 +235,11 @@ $(function ()
                 tripPart = "!" + splitName[1];
             }
             
-            $makeMaster = $('<SPAN>').attr({class: "make-master-user clickable icon-flag icon-large", id: userList[i].name, title: "Give master"});
+            $makeMaster = $('<SPAN>').attr({class: "make-master-user clickable fa fa-flag-o fa-lg", id: userList[i].name, title: "Give master"});
             
-            $user.append("<SPAN Class = 'master-display icon-star-empty icon-large' Title = 'Master User'></SPAN> ");
+            $user.append("<SPAN Class = 'master-display fa fa-star-o fa-lg' Title = 'Master User'></SPAN> ");
             
-            $user.append("<SPAN Class = 'admin-display icon-heart icon-large' Title = 'This user is an administrator.'></SPAN>");
+            $user.append("<SPAN Class = 'admin-display fa fa-heart fa-lg' Title = 'This user is an administrator.'></SPAN>");
 
             if (tripFound && namePart && tripPart)
             {
@@ -647,11 +647,11 @@ $(function ()
     {
         if (locked)
         {
-            $('#lockPlaylistButton').removeClass("icon-unlock").addClass("icon-lock");
+            $('#lockPlaylistButton').removeClass("fa fa-unlock").addClass("fa fa-lock");
         } 
         else 
         {
-            $('#lockPlaylistButton').removeClass("icon-lock").addClass("icon-unlock");
+            $('#lockPlaylistButton').removeClass("fa fa-lock").addClass("fa fa-unlock");
         }
     });
 
@@ -1165,37 +1165,98 @@ function showSettings()
 // Show CP
 function showCP()
 {
-    // Update mod and ban divs
-    $('#modList').html('');
-    for (var i = 0; i < modList.length; i++)
-    {
-        $('#modList').append
-        (
-            '<DIV Class = "modItem">' +
-            modList[i] + '</DIV>'
-        );
-    }
-    
-    
-    $('#banList').html('');    
-    for (var i = 0; i < banList.length; i++)
-    {
-        $('#banList').append
-        (
-            '<DIV Class = "banItem">' +
-            banList[i].ip + ' ' +
-            banList[i].lastName /*+ ', ' +
-            'Date: ' + banList[i].banDate + ', ' +
-            'Exp: ' + banList[i].expiration + ', ' +
-            'Reason: ' + banList[i].reason*/ + '</DIV>'
-        );
-    }
+    updateCPLists();
     
     var buttonLeft = $('#adminCPButton').offset().left;
     var buttonTop = $('#videoList').offset().top;
     var winWidth = $('#adminCPButton').width() / 2;
         
     openPopup(buttonLeft-winWidth, buttonTop, '#cpPopup');
+}
+
+
+function updateCPLists()
+{
+    // Update mod and ban divs
+    $('#modList').html('');
+    for (var i = 0; i < modList.length; i++)
+    {
+        var $modItem = $('<DIV>').attr({class: 'modItem'});
+        
+        var $modName = $('<SPAN>').attr({class: 'modName'});
+        $modName.html(modList[i]);
+        
+        var $unmodButton = $('<SPAN>').attr({class: "clickable fa fa-times fa-lg", title: "Unmod this user"});
+        
+        $unmodButton.click(function () 
+        {        
+            var name = $(this).siblings('.modName').html();
+            if (confirm("Are you sure you want to unmod " + name + "?"))
+            {
+                unmodUser(name);
+            }
+        });
+
+        $modItem.append($modName);
+        $modItem.append($unmodButton);
+        
+        $('#modList').append($modItem);
+    }
+    
+    
+    $('#banList').html('');    
+    for (var i = 0; i < banList.length; i++)
+    {
+        var banDate = (banList[i].banDate) ? banList[i].banDate : 'Unknown';
+        var banExpiration = (banList[i].banExpiration) ? banList[i].expiration : '?';        
+        var banReason = (banList[i].reason) ? banList[i].reason : 'None';
+        
+        var banInfo = 'Banned on: ' + banDate + ', Expires in ' + banExpiration + ' days, Banned for: ' + banReason;
+        var $banItem = $('<DIV>').attr({class: 'banItem', title: banInfo});
+        
+        var $banIp = $('<SPAN>').attr({class: 'banIp'});
+        $banIp.html(banList[i].ip);
+        
+        var $banName = $('<SPAN>').attr({class: 'banName'});
+        $banName.html(banList[i].lastName);
+        
+        
+        var $unbanButton = $('<SPAN>').attr({class: "clickable fa fa-times fa-lg", title: "Unban this user"});
+
+        $unbanButton.click(function () 
+        {    
+            var ip = $(this).siblings('.banIp').html();
+            if (confirm("Are you sure you want to unban " + ip + "?"))
+            {
+                unbanUser(ip);
+            }
+        });
+        
+        $banItem.append($banIp).append(' | ').append($banName);
+        $banItem.append($unbanButton);
+        
+        $('#banList').append($banItem);
+        /*$('#banList').append
+        (
+            '<DIV Class = "banItem">' +
+            banList[i].ip + ' ' +
+            banList[i].lastName + ', ' +
+            'Date: ' + banList[i].banDate + ', ' +
+            'Exp: ' + banList[i].expiration + ', ' +
+            'Reason: ' + banList[i].reason + '</DIV>'
+        );*/
+    }
+    
+    if (modList.length == 0)
+    {
+        $('#modList').html('No mods');
+    }
+    
+    if (banList.length == 0)
+    {
+        $('#banList').html('No bans');    
+    }
+    
 }
 
 // Show room settings
@@ -1723,10 +1784,10 @@ function buildPlaylist()
     $('#videoListInfo').append("Playlist: <SPAN Id = 'playlistTime'>" + secondsToTime(playlistTotalTime) + "</SPAN>, <SPAN Id = 'playlistLength'>" + videoPlaylist.length + "</SPAN> videos");
     
     // Generate playlist controls
-    $goToControl = $('<SPAN>').attr({id: "goToIndicator", class: "clickable icon-bullseye icon-large", title: "Scroll to currently playing video"});
+    $goToControl = $('<SPAN>').attr({id: "goToIndicator", class: "clickable fa fa-bullseye fa-lg", title: "Scroll to currently playing video"});
     $goToControl.css("padding-left", "8");
     
-    $lockPlaylistControl = $('<SPAN>').attr({id: "lockPlaylistButton", class: "clickable icon-unlock icon-large", title: "Playlist locking state"});
+    $lockPlaylistControl = $('<SPAN>').attr({id: "lockPlaylistButton", class: "clickable fa fa-unlock fa-lg", title: "Playlist locking state"});
     $lockPlaylistControl.css("padding-left", "8");
     
     $('#videoListInfo').append($lockPlaylistControl);
@@ -1769,20 +1830,20 @@ function generatePlaylistItem(index)
     
     $newListItem = $('<LI>').attr({class: "ui-state-default video-item", id: index});
     
-    $dragger = $('<SPAN>').attr({class: "dragger icon-sort icon-large master-control"});
+    $dragger = $('<SPAN>').attr({class: "dragger fa fa-sort fa-lg master-control"});
     
     $number = $('<SPAN>').attr({class: "video-number"});
     $number.append(index + 1 + '.');
     
-    $playButton = $('<SPAN>').attr({class: "play-button icon-play-circle icon-large clickable master-control", id: "tit" + index, title: "Play this video"});
+    $playButton = $('<SPAN>').attr({class: "play-button fa fa-play-circle fa-lg clickable master-control", id: "tit" + index, title: "Play this video"});
     
-    $urlButton = $('<SPAN>').attr({class: "url-button icon-link icon-large", id: index, title: "Link to video"});
+    $urlButton = $('<SPAN>').attr({class: "url-button fa fa-link fa-lg", id: index, title: "Link to video"});
     
-    $deleteButton = $('<SPAN>').attr({class: "delete-button icon-remove icon-large master-control", id: index, title: "Double-click to delete"});
+    $deleteButton = $('<SPAN>').attr({class: "delete-button fa fa-times fa-lg master-control", id: index, title: "Double-click to delete"});
     
-    $bumpButton = $('<SPAN>').attr({class: "bump-button icon-arrow-up icon-large clickable master-control", id: index, title: "Bump as next video to play"});
+    $bumpButton = $('<SPAN>').attr({class: "bump-button fa fa-arrow-up fa-lg clickable master-control", id: index, title: "Bump as next video to play"});
     
-    $playingIndicator = $('<SPAN>').attr({class: "playing-indicator icon-youtube-play icon-large", id: index});
+    $playingIndicator = $('<SPAN>').attr({class: "playing-indicator fa fa-youtube-play fa-lg", id: index});
     
     $vidTitle = $('<SPAN>').attr({class: "video-title"});
     $vidTitle.append(videoPlaylist[index].title);
@@ -2107,11 +2168,11 @@ function userSettingsCheck()
 {
     if (userList[userPopupId].muted)
     {
-        $('.mute-button').removeClass('icon-volume-up').addClass('icon-volume-off');
+        $('.mute-button').removeClass('fa fa-volume-up').addClass('fa fa-volume-off');
     }
     else
     {
-        $('.mute-button').removeClass('icon-volume-off').addClass('icon-volume-up');
+        $('.mute-button').removeClass('fa fa-volume-off').addClass('fa fa-volume-up');
     }
 }
 

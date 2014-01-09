@@ -12,34 +12,34 @@
 socket.on('banSync', function (list)
 {   
     banList = list;
-    // Update UI
+    updateCPLists();
 });
 
 // Message for syncing mod list
 socket.on('modSync', function (list)
 {   
     modList = list;
-    // Update UI
+    updateCPLists();
 });
  
 //// FUNCTIONS
  
-function banUser(name)
+function banUser(name, reason, length)
 {
-    socket.emit('banUser', name, "", 0);
+    socket.emit('banUser', name, reason, length);
 }
 
-function unbanUser(name)
+function unbanUser(ip)
 {
-
+    socket.emit('unbanUser', ip);
 }
 
 function modUser(trip)
 {
-
+    socket.emit('modUser', trip);
 }
 
 function unmodUser(trip)
 {
-
+    socket.emit('unmodUser', trip);
 }

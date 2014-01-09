@@ -214,7 +214,7 @@ li.ui-state-default
     display:            inline-block;
     text-align:         center;
     width:              20;
-    height:             40;
+    height:             20;
     padding-top:        10;
     font-size:          16;
 }
@@ -241,7 +241,7 @@ li.ui-state-default
 
 .bump-button
 {
-    width:              30;
+    width:              16;
 }
 
 .dragger
