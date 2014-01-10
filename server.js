@@ -48,15 +48,22 @@ var COOLDOWN_CHAT_EMBED = 10;    // Seconds
 var COOLDOWN_SHUFFLE    = 30;
 var COMMAND_TIMEOUT     = 3000;
 
+var USER_TYPE =
+{
+    "admin":    0,
+    "mod":      1,
+    "normal":   2
+}
+
 // Server currently only suports one room. Should be able to encapsulate
 // this into a JavaScript object. Maybe.
 
 
 //========BASIC DATA STORAGE===========//
-// user {string name, string id, string ip, date lastspammingCheck, int msgCount, int chatMsgCount, date lastChatEmbed, bool adminFlag}
+// user {string name, string id, string ip, date lastspammingCheck, int msgCount, int chatMsgCount, date lastChatEmbed, USER_TYPE userType}
 var userList        = [];    
 
-// user {string name, bool adminFlag, string imgBase64}
+// user {string name, USER_TYPE userType, string imgBase64}
 var userInfo        = [];    
 
 // video {string id, string title, string duration, string addedBy}
@@ -440,7 +447,7 @@ io.sockets.on('connection', function (socket)
     {
         var oldName = username;
         var superuserData;
-        var superUser = false;
+        var userType = USER_TYPE.normal;
 
         for (var i = 0; i < userList.length; i++)
         {
@@ -451,9 +458,17 @@ io.sockets.on('connection', function (socket)
                 // Check if name is in admin list
                 if (adminList.indexOf(newName) != -1)
                 {
-                    userList[i].adminFlag = true;
-                    superUser = true;
+                    userList[i].userType = USER_TYPE.admin;
+                    userType = USER_TYPE.admin;
                 }
+                
+                // Check if name is in mod list
+                if (modList.indexOf(newName) != -1)
+                {
+                    userList[i].userType = USER_TYPE.mod;
+                    userType = USER_TYPE.mod;
+                }
+                
                 break;
             }
         }
@@ -463,7 +478,7 @@ io.sockets.on('connection', function (socket)
             if (username == userInfo[i].name)
             {
                 userInfo[i].name = newName;
-                userInfo[i].adminFlag = superUser;
+                userInfo[i].userType = userType;
                 // Set new time for user
                 break;
             }
@@ -472,9 +487,9 @@ io.sockets.on('connection', function (socket)
         socket.username = newName;
         username = socket.username;
         
-        io.sockets.socket(socket.id).emit('nameSync', username, superUser);
+        io.sockets.socket(socket.id).emit('nameSync', username, userType);
         
-        if (superUser)
+        if (userType == USER_TYPE.admin)
         {
             io.sockets.socket(socket.id).emit('banSync', banList);
             io.sockets.socket(socket.id).emit('modSync', modList);

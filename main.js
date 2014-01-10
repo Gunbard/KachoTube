@@ -12,7 +12,7 @@ var serverMsgFadeDelay = 5000;
 var serverMsgFadeTime = 1500;
 var videoPlaylist = [];
 var playlistTotalTime = 0; // In seconds
-var userList = []; // {string name, string trip, bool adminFlag, bool muted, bool dead}
+var userList = []; // {string name, string trip, USER_TYPE userType, bool muted, bool dead}
 var modList = [];
 var banList = [];
 var firstScroll = true;
@@ -42,6 +42,13 @@ var imageEmbedOpacity = 0.5;
 
 // Command types
 var WHISPER_CMD = 0;
+
+var USER_TYPE =
+{
+    "admin":    0,
+    "mod":      1,
+    "normal":   2
+}
 
 google.load("swfobject", "2.1");
 
@@ -251,7 +258,7 @@ $(function ()
                 $user.append("<SPAN Class = 'name-display'>" + userList[i].name + "</SPAN> ");
             }
 
-            if (myName != userList[i].name && !userList[i].adminFlag)
+            if (myName != userList[i].name && userList[i].userType != USER_TYPE.admin)
             {
                $user.append($makeMaster);
             }
@@ -264,7 +271,7 @@ $(function ()
                 userPopupId = parseInt(userPopupIdString);
                 
                 var name = $(this).find('.name-display').html();
-                $('#userPopupName').html(name);
+                $('#userPopupName').html(tripColorize(name));
                 
                 if (name == myName)
                 {
@@ -300,7 +307,7 @@ $(function ()
     });
 
     // Message for setting my name
-    socket.on('nameSync', function (username, isSuperUser)
+    socket.on('nameSync', function (username, type)
     {
         myName = username;
 
@@ -319,7 +326,18 @@ $(function ()
             nameDiv.innerHTML = myName;
         }
         
-        superUser = isSuperUser;
+        switch (type)
+        {
+            case USER_TYPE.admin:
+                superUser = true;
+                break;
+            case USER_TYPE.mod:
+                modUser = true;
+                break;
+            default:
+                superUser = false;
+                modUser = false;
+        }
         
         displayMasterControls(superUser);
         checkSettings();
@@ -1185,7 +1203,7 @@ function updateCPLists()
         var $modItem = $('<DIV>').attr({class: 'modItem'});
         
         var $modName = $('<SPAN>').attr({class: 'modName'});
-        $modName.html(modList[i]);
+        $modName.html(tripColorize(modList[i]));
         
         var $unmodButton = $('<SPAN>').attr({class: "clickable fa fa-times fa-lg", title: "Unmod this user"});
         
@@ -1396,13 +1414,13 @@ function setMasterDisplay()
 
     for (var i = 0; i < userList.length; i++)
     {
-        if (userList[i].adminFlag)
+        if (userList[i].userType == USER_TYPE.admin)
         {
             $('.user-list-user#user' + i + ' .admin-display').css("color", "red").show();
             $('.user-list-user#user' + i + ' .name-display').css("color", "red");
         }
         
-        if (userList[i].name == masterUser && !userList[i].adminFlag)
+        if (userList[i].name == masterUser && userList[i].userType != USER_TYPE.admin)
         {
             $('.user-list-user#user' + i + ' .master-display').show();
         }
@@ -2209,6 +2227,24 @@ function updateTitle(str)
 {
     document.getElementById("videoTitle").innerHTML = str;
     document.title = str + " - KachoTube";
+}
+
+
+// Takes some text, scans for ! and returns a colorized version
+function tripColorize(trip)
+{    
+    var namePart, tripPart;
+    var tripFound = trip.match(/!/g);
+    if (tripFound)
+    {
+        var splitName = trip.split("!");
+        namePart = splitName[0];
+        tripPart = "!" + splitName[1];
+        tripPart = "<SPAN Class = 'trip-display greentext'>" + tripPart + "</SPAN>";
+        return namePart + tripPart;
+    }
+    
+    return trip;
 }
 
 /**
