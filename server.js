@@ -155,7 +155,7 @@ function generateTrip(str)
     var MD5 = crypto.createHash("MD5");
     MD5.update(str);
     var trip = MD5.digest("base64").slice(0, 6);
-    console.log("Generated trip: " + trip);
+    console.log("Generated trip " + trip);
     return trip;
 }
 
@@ -941,7 +941,6 @@ io.sockets.on('connection', function (socket)
     }
     
     // Disconnect if IP is in banList
-    //if (banList.indexOf(ip) != -1)
     if (objectWithKeyAndValue(banList, 'ip', ip))
     {
         sendServerMsgUser("BANNED");

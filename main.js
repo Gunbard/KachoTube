@@ -3,6 +3,7 @@ var playerHeight = 385;
 var myName = "";
 var masterUser = "";
 var superUser = false;
+var modUser = false;
 var currentVideo = "";
 var serverVideo = "";
 var socket = io.connect();
@@ -1211,7 +1212,7 @@ function updateCPLists()
         var banExpiration = (banList[i].banExpiration) ? banList[i].expiration : '?';        
         var banReason = (banList[i].reason) ? banList[i].reason : 'None';
         
-        var banInfo = 'Banned on: ' + banDate + ', Expires in ' + banExpiration + ' days, Banned for: ' + banReason;
+        var banInfo = "Banned on: " + banDate + "\nExpires in " + banExpiration + " days\nBanned for: " + banReason;
         var $banItem = $('<DIV>').attr({class: 'banItem', title: banInfo});
         
         var $banIp = $('<SPAN>').attr({class: 'banIp'});
