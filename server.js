@@ -23,10 +23,6 @@ app.get('/main.js', function (req, res) {
   res.sendfile(__dirname + '/main.js');
 });
 
-app.get('/admin.js', function (req, res) {
-  res.sendfile(__dirname + '/admin.js');
-});
-
 app.get('/styles/default/default.css', function (req, res) {
   res.sendfile(__dirname + '/styles/default/default.css');
 });
