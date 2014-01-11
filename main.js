@@ -592,7 +592,18 @@ $(function ()
     socket.on('deleteVideoSync', function (index)
     {
         videoPlaylist.splice(index, 1);
-        $('.video-item#' + index).remove();
+        
+        if (videoPlaylist.length == 0)
+        {
+            var $emptyPlaylistMsg = $('<DIV>').attr({id: 'noVideosMsg'});
+            $emptyPlaylistMsg.html('Playlist is empty! Add some videos!');
+            $('#videoList').append($emptyPlaylistMsg);
+        }
+        
+        $('.video-item#' + index).fadeOut('fast', function () 
+        {
+            $(this).remove();
+        });
         
         // Fix ids and display numbers
         $('LI.video-item').each(function(i) 
@@ -607,8 +618,13 @@ $(function ()
     // Message for adding a video to the playlist
     socket.on('addVideoSync', function (videoObj)
     {
+        $('#noVideosMsg').remove();
         videoPlaylist.push(videoObj);
-        $('.video-list').append(generatePlaylistItem(videoPlaylist.length - 1));
+        
+        var $newVideo = generatePlaylistItem(videoPlaylist.length - 1)
+        $('.video-list').append($newVideo);
+        $newVideo.hide().fadeIn('fast');
+        
         updatePlayTime();
     });
 
@@ -756,7 +772,25 @@ $(function ()
         }
     });
     
+    /**
+     Admin specific messages
+    */
     
+    // Message for syncing ban list
+    socket.on('banSync', function (list)
+    {   
+        banList = list;
+        updateCPLists();
+    });
+
+    // Message for syncing mod list
+    socket.on('modSync', function (list)
+    {   
+        modList = list;
+        updateCPLists();
+    });
+ 
+
 });
 
 // Event listener for when video changes state
@@ -1784,8 +1818,8 @@ function applySkipSettings()
 function buildPlaylist()
 {
     playlistTotalTime = 0;
-    document.getElementById("videoList").innerHTML = "";
-    document.getElementById("videoListInfo").innerHTML = "";
+    $('#videoList').html('');
+    $('#videoListInfo').html('');
     
     $newList = $('<UL>').attr({class: "sortable video-list"});
 
@@ -1801,6 +1835,13 @@ function buildPlaylist()
     
     // Generate playlist info
     $('#videoListInfo').append("Playlist: <SPAN Id = 'playlistTime'>" + secondsToTime(playlistTotalTime) + "</SPAN>, <SPAN Id = 'playlistLength'>" + videoPlaylist.length + "</SPAN> videos");
+    
+    if (videoPlaylist.length == 0)
+    {
+        var $emptyPlaylistMsg = $('<DIV>').attr({id: 'noVideosMsg'});
+        $emptyPlaylistMsg.html('Playlist is empty! Add some videos!');
+        $('#videoList').append($emptyPlaylistMsg);
+    }
     
     // Generate playlist controls
     $goToControl = $('<SPAN>').attr({id: "goToIndicator", class: "clickable fa fa-bullseye fa-lg", title: "Scroll to currently playing video"});
@@ -2248,30 +2289,11 @@ function tripColorize(trip)
 }
 
 /**
- Admin specific functions and messages
+ Admin specific functions
  
- WARNING: Unauthorized attempts to call these will result in an
- immediate permaban
+ WARNING: Attempting to call these manually 
+ will result in an immediate permaban
  */
- 
- 
-//// SOCKET MESSAGES
-
-// Message for syncing ban list
-socket.on('banSync', function (list)
-{   
-    banList = list;
-    updateCPLists();
-});
-
-// Message for syncing mod list
-socket.on('modSync', function (list)
-{   
-    modList = list;
-    updateCPLists();
-});
- 
-//// FUNCTIONS
  
 function banUser(name, reason, length)
 {

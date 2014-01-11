@@ -564,3 +564,8 @@ input[type=button]
 {
     margin-left:            10;
 }
+
+#noVideosMsg
+{
+    text-align:             center;
+}
