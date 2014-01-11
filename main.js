@@ -1209,7 +1209,7 @@ function updateCPLists()
         
         $unmodButton.click(function () 
         {        
-            var name = $(this).siblings('.modName').html();
+            var name = $(this).siblings('.modName').text();
             if (confirm("Are you sure you want to unmod " + name + "?"))
             {
                 unmodUser(name);
