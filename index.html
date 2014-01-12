@@ -95,25 +95,25 @@
         <DIV Class = "drop-shadow" Id = "thumbnailPopup"></DIV>
         
         <DIV Class = "drop-shadow" Id = "iframePopup">
-            <SPAN Id = "iframePopupTitle" Class = "default-popup-control"></SPAN><SPAN Class = "clickable fa fa-times-circle fa-lg default-popup-control" Id = "closeIframe"></SPAN>
+            <SPAN Class = 'fa fa-bars fa-lg popup-gripper'></SPAN><SPAN Class = 'popup-title default-popup-control'></SPAN><SPAN Class = "clickable fa fa-times-circle fa-lg default-popup-control" Id = "closeIframe"></SPAN>
             <DIV Id = "iframePopupContent" Class = "default-popup-control"></DIV>
         </DIV>
         
         <DIV Class = "drop-shadow" Id = "saveVidPopup">
-            Save<SPAN Class = "clickable fa fa-times-circle fa-lg" Id = "closeSaveVid"></SPAN>
+            <SPAN Class = 'fa fa-bars fa-lg popup-gripper'></SPAN><SPAN Class = 'popup-title'>Save</SPAN><SPAN Class = "clickable fa fa-times-circle fa-lg" Id = "closeSaveVid"></SPAN>
             <TEXTAREA Id = "playlistSave" Rows = "5" Cols = "30"></TEXTAREA>
             <DIV Id = "saveHelpText">Save by copying and pasting into a text editor (Select all with Ctrl-A, if you forgot)</DIV>
         </DIV>
         
         <DIV Class = "drop-shadow" Id = "loadVidPopup">
-            Load<SPAN Class = "clickable fa fa-times-circle fa-lg" Id = "closeLoadVid"></SPAN>
+            <SPAN Class = 'fa fa-bars fa-lg popup-gripper'></SPAN><SPAN Class = 'popup-title'>Load</SPAN><SPAN Class = "clickable fa fa-times-circle fa-lg" Id = "closeLoadVid"></SPAN>
             <TEXTAREA Id = "playlistLoad" Rows = "5" Cols = "30"></TEXTAREA>
             <DIV Id = "loadHelpText">Paste (Ctrl-V) a series of video URLs that you made or a previously saved playlist and press load!<BR><BR>Note: Videos will be appended to the list, so clear it first if you want to load a new playlist.<BR>
             <INPUT Type = "Button" Value = "Load" onClick = "sendPlaylistSaveData()"></DIV>
         </DIV>
         
         <DIV Class = "drop-shadow" Id = "settingsPopup">
-            Settings<SPAN Class = "clickable fa fa-times-circle fa-lg" Id = "closeSettings"></SPAN>
+            <SPAN Class = 'fa fa-bars fa-lg popup-gripper'></SPAN><SPAN Class = 'popup-title'>Settings</SPAN><SPAN Class = "clickable fa fa-times-circle fa-lg" Id = "closeSettings"></SPAN>
             
             <DIV Id = "settingsDiv">
                 Change name: <INPUT Type = "Text" Id = "changeNameInput" Title = "Tripcode how-to:&#10;yourName#yourSecretWord"><BR> 
@@ -157,7 +157,7 @@
         </DIV>
         
         <DIV Class = "drop-shadow" Id = "roomSettingsPopup">
-            Room Settings<SPAN Class = "clickable fa fa-times-circle fa-lg" Id = "closeRoomSettings"></SPAN>
+            <SPAN Class = 'fa fa-bars fa-lg popup-gripper'></SPAN><SPAN Class = 'popup-title'>Room Settings</SPAN><SPAN Class = "clickable fa fa-times-circle fa-lg" Id = "closeRoomSettings"></SPAN>
             <DIV Id = "roomSettingsDiv" Class = "master-control">
                 <INPUT Type = "checkbox" Id = "settingLockPlaylist"> Lock playlist<BR>
                 <INPUT Type = "checkbox" Id = "settingAllowSkips" Checked> Allow skips<BR>
@@ -170,7 +170,7 @@
         </DIV>
 
         <DIV Class = "drop-shadow" Id = "cpPopup">
-            Admin CP<SPAN Class = "clickable fa fa-times-circle fa-lg" Id = "closeAdminCPSettings"></SPAN>
+            <SPAN Class = 'fa fa-bars fa-lg popup-gripper'></SPAN><SPAN Class = 'popup-title'>Admin CP</SPAN><SPAN Class = "clickable fa fa-times-circle fa-lg" Id = "closeAdminCPSettings"></SPAN>
             <DIV Id = "adminCPSettingsDiv" Class = "admin-control">
                 <U>Mod List</U>
                 <DIV Id = "modList"></DIV>

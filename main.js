@@ -59,7 +59,7 @@ $(function ()
     loadSettings();
     
     // Make iframes draggable
-    $('#iframePopup, #saveVidPopup, #loadVidPopup, #settingsPopup, #roomSettingsPopup, #userPopup, #cpPopup').draggable().mousedown(function ()
+    $('#iframePopup, #saveVidPopup, #loadVidPopup, #settingsPopup, #roomSettingsPopup, #userPopup, #cpPopup').draggable({handle: '.popup-gripper'}).mousedown(function ()
     {
         // Bring window to front if not already
         if (!$(this).is(':last-child'))
@@ -1549,7 +1549,7 @@ function openTinypic()
 {
     $('#iframePopup').children(':not(.default-popup-control)').remove();
 
-    $('#iframePopupTitle').html('TinyPic');
+    $('.popup-title').html('TinyPic');
     $('#iframePopupContent').empty();
     $('#tinypic_plugin_'+id).remove();
     
@@ -1569,7 +1569,7 @@ function openSearch()
 {
     $('#iframePopup').children(':not(.default-popup-control)').remove();
     
-    $('#iframePopupTitle').html('YouTube QuickSearch');
+    $('.popup-title').html('YouTube QuickSearch');
     $('#iframePopupContent').empty();
 
     // Make a search input

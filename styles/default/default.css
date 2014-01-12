@@ -374,9 +374,15 @@ li.ui-state-default
     font-size:          12;
 }
 
-#iframePopup:hover, #saveVidPopup:hover, #loadVidPopup:hover, #settingsPopup:hover,
-#roomSettingsPopup:hover, #userPopup:hover, #cpPopup:hover
+.popup-title
 {
+    text-decoration:    underline;   
+}
+
+.popup-gripper
+{
+    display:            inline-block;
+    float:              left;
     cursor:             move;
 }
 
@@ -384,7 +390,6 @@ li.ui-state-default
 {
     display:            inline-block;
     float:              right;
-    clear:              both;
 }
 
 .clickable
