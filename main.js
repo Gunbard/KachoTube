@@ -287,6 +287,11 @@ $(function ()
                 openPopup($(this).offset().left + 20, $(this).offset().top, '#userPopup');
             });
             
+            $makeMaster.click(function (e) 
+            { 
+                e.stopPropagation(); 
+            });
+            
             $('#userList').append($user);
         }
         
@@ -603,13 +608,13 @@ $(function ()
         $('.video-item#' + index).fadeOut('fast', function () 
         {
             $(this).remove();
-        });
-        
-        // Fix ids and display numbers
-        $('LI.video-item').each(function(i) 
-        {
-            $(this).attr({id: parseInt(i)});
-            $(this).find('.video-number').html(parseInt(i + 1) + '.');
+            
+            // Fix ids and display numbers
+            $('LI.video-item').each(function(i) 
+            {
+                $(this).attr({id: parseInt(i)});
+                $(this).find('.video-number').html(parseInt(i + 1) + '.');
+            });
         });
         
         updatePlayTime();
@@ -1093,6 +1098,7 @@ function displayMasterControls(showControls)
     {
         $('.sortable').sortable({ disabled: false });
         $('.master-control').show();
+        $('.make-master-user').show();   
         
         if (superUser)
         {
@@ -1103,6 +1109,7 @@ function displayMasterControls(showControls)
     {
         $('.sortable').sortable({ disabled: true });
         $('.master-control').hide();
+        $('.make-master-user').hide();   
         $('.superuser-control').hide();
     }
 }
