@@ -248,6 +248,8 @@ $(function ()
             $user.append("<SPAN Class = 'master-display fa fa-star-o fa-lg' Title = 'Master User'></SPAN> ");
             
             $user.append("<SPAN Class = 'admin-display fa fa-heart fa-lg' Title = 'This user is an administrator.'></SPAN>");
+            
+            $user.append("<SPAN Class = 'mod-display fa fa-meh-o fa-lg' Title = 'This user is a moderator.'></SPAN>");
 
             if (tripFound && namePart && tripPart)
             {
@@ -270,16 +272,30 @@ $(function ()
                 var userPopupIdString = this.id.replace('user', '');
                 userPopupId = parseInt(userPopupIdString);
                 
-                var name = $(this).find('.name-display').html();
+                var name = $(this).find('.name-display').text();
                 $('#userPopupName').html(tripColorize(name));
                 
                 if (name == myName)
                 {
+                    $('.ban-button').hide();
+                    $('.boot-button').hide();
+                    $('.mod-button').hide();
                     $('.pm-button').hide();
                 }
                 else
                 {
                     $('.pm-button').show();
+                    
+                    if (superUser || modUser)
+                    {
+                        $('.ban-button').show();
+                        $('.mod-button').show();
+                    }
+                    
+                    if (masterUser || superUser || modUser)
+                    {
+                         $('.boot-button').show();
+                    }
                 }
                 
                 userSettingsCheck();
@@ -1091,7 +1107,7 @@ function serverMsg(msg, fadeDelay, fadeTime)
     $newDiv.delay(fadeDelay).fadeOut(fadeTime, function() { $(this).remove(); });
 }
 
-// Toggles master controls
+// Toggles master controls -- TODO: Rename this
 function displayMasterControls(showControls)
 {
     if (showControls)
@@ -1102,7 +1118,12 @@ function displayMasterControls(showControls)
         
         if (superUser)
         {
-            $('.superuser-control').show();
+            $('.admin-control').show();
+        }
+        
+        if (modUser || superUser)
+        {
+            $('.mod-control').show();
         }
     }
     else
@@ -1110,7 +1131,8 @@ function displayMasterControls(showControls)
         $('.sortable').sortable({ disabled: true });
         $('.master-control').hide();
         $('.make-master-user').hide();   
-        $('.superuser-control').hide();
+        $('.admin-control').hide();
+        $('.mod-control').hide();
     }
 }
 
@@ -1451,7 +1473,7 @@ function loadPlayerAPI(newSource, videoId)
 // Show who's master or admin user in the user list
 function setMasterDisplay()
 {
-    $('.master-display, .admin-display').hide();
+    $('.master-display, .admin-display, .mod-display').hide();
 
     for (var i = 0; i < userList.length; i++)
     {
@@ -1459,6 +1481,12 @@ function setMasterDisplay()
         {
             $('.user-list-user#user' + i + ' .admin-display').css("color", "red").show();
             $('.user-list-user#user' + i + ' .name-display').css("color", "red");
+        }
+        
+        if (userList[i].userType == USER_TYPE.mod)
+        {
+            $('.user-list-user#user' + i + ' .mod-display').css("color", "blue").show();
+            $('.user-list-user#user' + i + ' .name-display').css("color", "blue");
         }
         
         if (userList[i].name == masterUser && userList[i].userType != USER_TYPE.admin)
@@ -2312,9 +2340,14 @@ function unbanUser(ip)
     socket.emit('unbanUser', ip);
 }
 
-function modUser(trip)
+function addMod()
 {
-    socket.emit('modUser', trip);
+    if (superUser || modUser)
+    {
+        var trip = userList[userPopupId].name;
+        socket.emit('modUser', trip);
+        $('#closeUserPopup').click();
+    }
 }
 
 function unmodUser(trip)

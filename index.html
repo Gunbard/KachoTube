@@ -59,7 +59,7 @@
                     <SPAN Class = "master-control hidden clickable fa fa-random fa-lg" OnClick = "shufflePlaylist();" Title = "Shuffle Playlist"></SPAN>
                     <SPAN Class = "clickable fa fa-cogs fa-lg" Id = "settingsButton" OnClick = "showSettings();" Title = "Settings"></SPAN>
                     <SPAN Class = "master-control hidden clickable fa fa-cog fa-lg" Id = "roomSettingsButton" OnClick = "showRoomSettings();" Title = "Room Settings"></SPAN>
-                    <SPAN Class = "superuser-control hidden clickable fa fa-wrench fa-lg" Id = "adminCPButton" OnClick = "showCP();" Title = "Admin CP"></SPAN>
+                    <SPAN Class = "admin-control hidden clickable fa fa-wrench fa-lg" Id = "adminCPButton" OnClick = "showCP();" Title = "Admin CP"></SPAN>
                     
                 </DIV>
                 
@@ -171,8 +171,7 @@
 
         <DIV Class = "drop-shadow" Id = "cpPopup">
             Admin CP<SPAN Class = "clickable fa fa-times-circle fa-lg" Id = "closeAdminCPSettings"></SPAN>
-            <DIV Id = "adminCPSettingsDiv" Class = "superuser-control">
-                Add mod: <INPUT Type = "Text" Id = "addModInput"><BR>
+            <DIV Id = "adminCPSettingsDiv" Class = "admin-control">
                 <U>Mod List</U>
                 <DIV Id = "modList"></DIV>
                 <U>Ban List</U>
@@ -183,7 +182,8 @@
         <DIV Class = "drop-shadow" Id = "userPopup">
             <SPAN Class = "clickable fa fa-times-circle fa-lg" Id = "closeUserPopup"></SPAN>
             <DIV Id = "userPopupDiv">
-                <SPAN Id = "userPopupName"></SPAN><BR><SPAN Class = "mute-button clickable fa fa-volume-up fa-lg" Title = "Mute user" onClick = "toggleUserMute();"></SPAN> <SPAN Class = "pm-button clickable fa fa-envelope fa-lg" onClick = "setPrivateMessage();" Title = "Send whisper"></SPAN> <SPAN Class = "boot-button clickable fa fa-legal master-control fa-lg" onClick = "bootUser();" Title = "Boot user"></SPAN>
+                <SPAN Id = "userPopupName"></SPAN><BR><SPAN Class = "mute-button clickable fa fa-volume-up fa-lg" Title = "Mute user" onClick = "toggleUserMute();"></SPAN> <SPAN Class = "pm-button clickable fa fa-envelope fa-lg" onClick = "setPrivateMessage();" Title = "Send whisper"></SPAN> <SPAN Class = "mod-button clickable fa fa-certificate admin-control mod-control fa-lg" onClick = "addMod();" Title = "Mod user"></SPAN> <SPAN Class = "boot-button clickable fa fa-legal admin-control mod-control fa-lg" onClick = "bootUser();" Title = "Boot user"></SPAN>
+                <SPAN Class = "ban-button clickable fa fa-ban admin-control mod-control fa-lg" onClick = "banUser();" Title = "Ban user"></SPAN>
             </DIV>
         </DIV>
 

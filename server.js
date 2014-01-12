@@ -920,8 +920,17 @@ io.sockets.on('connection', function (socket)
     {
         if (trip)
         {
-            modList.push(trip);
-            console.log('[' + trip + '] has been modded');
+            if (modList.indexOf(trip) == -1)
+            {
+                modList.push(trip);
+                console.log('[' + trip + '] has been modded');
+                sendServerMsgSpecific("You have been modded! Hooray!", trip);
+                sendServerMsgAll(trip + " has been modded!");
+            }
+            else
+            {
+                sendServerMsgUser("That user is already a mod");
+            }
         }
         else
         {
@@ -1094,7 +1103,6 @@ io.sockets.on('connection', function (socket)
                         var lastTime = user.lastChatEmbed;
                         user.lastChatEmbed = now;
                         var timeDelta = Math.abs(now.getTime() - lastTime.getTime()) / 1000;
-                        console.log(timeDelta);
                         var waitTime = COOLDOWN_CHAT_EMBED - timeDelta;
                         if (timeDelta < COOLDOWN_CHAT_EMBED)
                         {
@@ -1432,7 +1440,6 @@ io.sockets.on('connection', function (socket)
                     var dmIdMatch = urls[i].match(/video\/([^\W|_]+)/);
                     if (dmIdMatch)
                     {
-                        console.log(dmIdMatch);
                         videoId = dmIdMatch[1];
                         sourceType = "dm";
                         if (!checkDupeVideo(videoId))
@@ -1565,11 +1572,17 @@ io.sockets.on('connection', function (socket)
         
         if (validUser() && (isAdmin() || isMod()))
         {
+            // Detect trip, mods must have a tripcode
+            if (trip.indexOf('!') == -1)
+            {
+                sendServerMsgUser("Mods must use a tripcode");
+                return;
+            }
+        
             var targetId = socketIdByName(trip);
             if (targetId)
             {
-                sendServerMsgSpecific("You have been modded! Hooray!", name);
-                sendServerMsgAll(trip + " has been modded!");
+                modUser(trip);
             }
         }
     });
