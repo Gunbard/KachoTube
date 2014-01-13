@@ -292,7 +292,7 @@ $(function ()
                         $('.mod-button').show();
                     }
                     
-                    if (masterUser || superUser || modUser)
+                    if (myName == masterUser || superUser || modUser)
                     {
                          $('.boot-button').show();
                     }
