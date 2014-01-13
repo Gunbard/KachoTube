@@ -250,15 +250,13 @@ io.sockets.on('connection', function (socket)
     // Verify who I'm talking to is an administrator
     function isAdmin()
     {
-        // TODO
-        return true;
+        return (adminList.indexOf(socket.username) > -1);
     }
     
     // Verify who I'm talking to is a moderator
     function isMod()
     {
-        // TODO
-        return true;
+        return (modList.indexOf(socket.username) > -1);
     }
     
     // Update everyone's list of users
@@ -894,6 +892,7 @@ io.sockets.on('connection', function (socket)
                 var index = banList.indexOf(user);
                 banList.splice(index, 1);
                 sendServerMsgUser("You unbanned " + ip);
+                io.sockets.socket(socket.id).emit('banSync', banList);
                 console.log('[' + ip + '] was unbanned');
                 return;
             }
@@ -906,12 +905,12 @@ io.sockets.on('connection', function (socket)
                 var index = banList.indexOf(user);
                 banList.splice(index, 1);
                 sendServerMsgUser("You unbanned " + name);
+                io.sockets.socket(socket.id).emit('banSync', banList);
                 console.log('[' + name + '] was unbanned');
                 return;
             }
         }
         
-        io.sockets.socket(socket.id).emit('banSync', modList);
         sendServerMsgUser("Unable to unban that user");
         console.log("Couldn't unban user: user with that ip or name not found");
     }
