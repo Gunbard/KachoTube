@@ -865,7 +865,7 @@ io.sockets.on('connection', function (socket)
     }
     
     // Adds someone to the ban list
-    function banUser(socketId, reason, length)
+    function banUser(socketId, banReason, banLength)
     {
         var user = objectWithKeyAndValue(userList, 'id', socketId);
         if (!user)
@@ -875,9 +875,11 @@ io.sockets.on('connection', function (socket)
         }
         
         var now = new Date();
-        var banItem = {ip: user.ip, lastName: user.username, banDate: now, expiration: length, reason: reason};
+        var banItem = {ip: user.ip, lastName: user.username, banDate: now, expiration: banLength, reason: banReason};
         
         banList.push(banItem);
+        
+        io.sockets.socket(socket.id).emit('banSync', banList);
         console.log('[' + user.ip + '] was BANNED');
     }
     
@@ -892,7 +894,6 @@ io.sockets.on('connection', function (socket)
                 var index = banList.indexOf(user);
                 banList.splice(index, 1);
                 sendServerMsgUser("You unbanned " + ip);
-                io.sockets.socket(socket.id).emit('banSync', banList);
                 console.log('[' + ip + '] was unbanned');
                 return;
             }
@@ -905,12 +906,12 @@ io.sockets.on('connection', function (socket)
                 var index = banList.indexOf(user);
                 banList.splice(index, 1);
                 sendServerMsgUser("You unbanned " + name);
-                io.sockets.socket(socket.id).emit('banSync', banList);
                 console.log('[' + name + '] was unbanned');
                 return;
             }
         }
         
+        io.sockets.socket(socket.id).emit('banSync', modList);
         sendServerMsgUser("Unable to unban that user");
         console.log("Couldn't unban user: user with that ip or name not found");
     }
@@ -926,6 +927,7 @@ io.sockets.on('connection', function (socket)
                 console.log('[' + trip + '] has been modded');
                 sendServerMsgSpecific("You have been modded! Hooray!", trip);
                 sendServerMsgAll(trip + " has been modded!");
+                io.sockets.socket(socket.id).emit('modSync', modList);
             }
             else
             {
@@ -1563,7 +1565,7 @@ io.sockets.on('connection', function (socket)
                 
                 if (reason && reason.length > 0)
                 {
-                    sendServerMsgSpecific("Ban reason: ", reason);
+                    sendServerMsgSpecific("Ban reason: " + reason, name);
                 }
                 
                 if (banLength && banLength.length > 0 || banLength > 0)

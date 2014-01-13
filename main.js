@@ -1314,19 +1314,10 @@ function updateCPLists()
             }
         });
         
-        $banItem.append($banIp).append(' | ').append($banName);
+        $banItem.append($banIp);
         $banItem.append($unbanButton);
         
         $('#banList').append($banItem);
-        /*$('#banList').append
-        (
-            '<DIV Class = "banItem">' +
-            banList[i].ip + ' ' +
-            banList[i].lastName + ', ' +
-            'Date: ' + banList[i].banDate + ', ' +
-            'Exp: ' + banList[i].expiration + ', ' +
-            'Reason: ' + banList[i].reason + '</DIV>'
-        );*/
     }
     
     if (modList.length == 0)
