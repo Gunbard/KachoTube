@@ -1548,7 +1548,7 @@ function sendImage()
 // Shows the Tinypic popup box
 function openTinypic()
 {
-    $('#iframePopup').children(':not(.default-popup-control)').remove();
+    $('#iframePopup').children(':not(.default-popup-control, .popup-gripper)').remove();
 
     $('.popup-title').html('TinyPic');
     $('#iframePopupContent').empty();
@@ -1568,7 +1568,7 @@ function openTinypic()
 // Shows the mini search popup
 function openSearch()
 {
-    $('#iframePopup').children(':not(.default-popup-control)').remove();
+    $('#iframePopup').children(':not(.default-popup-control, .popup-gripper)').remove();
     
     $('.popup-title').html('YouTube QuickSearch');
     $('#iframePopupContent').empty();
