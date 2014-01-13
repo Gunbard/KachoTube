@@ -82,7 +82,7 @@ var chatLog         = [];
 var banList         = [{ip: '1234', lastName: 'someone', banDate: '', expiration: '', reason: 'idgaf'}];
 
 // list of tripcodes
-var adminList       = ["Gunbard!lfdxHP"];
+var adminList       = ["Gunbard!eGTll4"];
 
 // list of tripcodes
 var modList         = ["Imaweiner!asdf", "asdfsdf!what"];
@@ -1286,7 +1286,8 @@ io.sockets.on('connection', function (socket)
                 var split = newName.split("#");
                 var namePortion = split.shift();
                 var rejoined = split.join("");
-                var trip = generateTrip(rejoined);
+                console.log(rejoined);
+                var trip = generateTrip(namePortion + rejoined);
                 newName = namePortion + "!" + trip;
             }
         

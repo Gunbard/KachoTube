@@ -292,7 +292,7 @@ $(function ()
                         $('.mod-button').show();
                     }
                     
-                    if (myName == masterUser || superUser || modUser)
+                    if (masterUser || superUser || modUser)
                     {
                          $('.boot-button').show();
                     }
@@ -1314,10 +1314,19 @@ function updateCPLists()
             }
         });
         
-        $banItem.append($banIp);
+        $banItem.append($banIp).append(' | ').append($banName);
         $banItem.append($unbanButton);
         
         $('#banList').append($banItem);
+        /*$('#banList').append
+        (
+            '<DIV Class = "banItem">' +
+            banList[i].ip + ' ' +
+            banList[i].lastName + ', ' +
+            'Date: ' + banList[i].banDate + ', ' +
+            'Exp: ' + banList[i].expiration + ', ' +
+            'Reason: ' + banList[i].reason + '</DIV>'
+        );*/
     }
     
     if (modList.length == 0)
@@ -1480,6 +1489,7 @@ function setMasterDisplay()
             $('.user-list-user#user' + i + ' .name-display').css("color", "blue");
         }
         
+        // Don't show master icon for admins. Admins are always masters.
         if (userList[i].name == masterUser && userList[i].userType != USER_TYPE.admin)
         {
             $('.user-list-user#user' + i + ' .master-display').show();
