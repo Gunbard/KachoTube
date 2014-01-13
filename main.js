@@ -59,7 +59,7 @@ $(function ()
     loadSettings();
     
     // Make iframes draggable
-    $('#iframePopup, #saveVidPopup, #loadVidPopup, #settingsPopup, #roomSettingsPopup, #userPopup, #cpPopup').draggable({handle: '.popup-gripper'}).mousedown(function ()
+    $('#iframePopup, #saveVidPopup, #loadVidPopup, #settingsPopup, #roomSettingsPopup, #userPopup, #cpPopup, #banUserPopup').draggable({handle: '.popup-gripper'}).mousedown(function ()
     {
         // Bring window to front if not already
         if (!$(this).is(':last-child'))
@@ -68,7 +68,7 @@ $(function ()
         }
     });
         
-    $('#closeSettings, #closeRoomSettings, #closeSaveVid, #closeLoadVid, #closeIframe, #closeUserPopup, #closeAdminCPSettings').click(function ()
+    $('#closeSettings, #closeRoomSettings, #closeSaveVid, #closeLoadVid, #closeIframe, #closeUserPopup, #closeAdminCPSettings, #closeBanUserPopup').click(function ()
     {
         $(this).parent().fadeOut(300, function () {
             $(this).hide();
@@ -2258,6 +2258,15 @@ function bootUser()
     }   
 }
 
+// Asks for ban reason and length
+function banConfirm()
+{   
+    var name = $('#userPopup').find('#userPopupName').text();
+    $('.ban-name').html(tripColorize(name));
+    
+    openPopup($('#userPopup').offset().left + 20, $('#userPopup').offset().top, '#banUserPopup');
+}
+
 // Sets the views user popup settings
 function userSettingsCheck()
 {
@@ -2330,9 +2339,25 @@ function tripColorize(trip)
  will result in an immediate permaban
  */
  
-function banUser(name, reason, length)
+function banUser()
 {
-    socket.emit('banUser', name, reason, length);
+    var name = $('#userPopup').find('#userPopupName').text();
+    if (name.length == 0)
+    {
+        alert("Couldn't get name!");
+        return;
+    }
+    
+    var reason = $('.ban-reason-input').val();
+    var length = $('.ban-length-input').val();
+    
+    if (superUser)
+    {
+        socket.emit('banUser', name, reason, length);
+    }
+    
+    $('#closeBanUserPopup').click();
+    $('#closeUserPopup').click();
 }
 
 function unbanUser(ip)

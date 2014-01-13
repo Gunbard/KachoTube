@@ -178,12 +178,28 @@
                 <DIV Id = "banList"></DIV>
             </DIV>
         </DIV>
+        
+        <DIV Class = "drop-shadow" Id = "banUserPopup">
+            <SPAN Class = 'fa fa-bars fa-lg popup-gripper'></SPAN><SPAN Class = 'popup-title'>Ban User</SPAN><SPAN Class = "clickable fa fa-times-circle fa-lg" Id = "closeBanUserPopup"></SPAN>
+            <DIV Id = 'banUserPopupDiv'>
+                <DIV Class = 'ban-name'></DIV>
+                <DIV Class = 'ban-reason'>
+                    Ban reason: <INPUT Type = "text" Size = "20" MaxLength = "10" Class = "ban-reason-input">
+                </DIV>
+                <DIV Class = 'ban-length' Title = 'in days'>
+                    Ban length: <INPUT Type = "number" Size = "3" MaxLength = "3" Class = "ban-length-input">
+                </DIV>
+            </DIV>
+            
+            <INPUT Type = "Button" Value = "Ban" OnClick = "banUser()" Class = "ban-button-confirm">
+            
+        </DIV>
        
         <DIV Class = "drop-shadow" Id = "userPopup">
-            <SPAN Class = "clickable fa fa-times-circle fa-lg" Id = "closeUserPopup"></SPAN>
+            <SPAN Class = 'fa fa-bars fa-lg popup-gripper'></SPAN><SPAN Class = "clickable fa fa-times-circle fa-lg" Id = "closeUserPopup"></SPAN>
             <DIV Id = "userPopupDiv">
                 <SPAN Id = "userPopupName"></SPAN><BR><SPAN Class = "mute-button clickable fa fa-volume-up fa-lg" Title = "Mute user" onClick = "toggleUserMute();"></SPAN> <SPAN Class = "pm-button clickable fa fa-envelope fa-lg" onClick = "setPrivateMessage();" Title = "Send whisper"></SPAN> <SPAN Class = "mod-button clickable fa fa-certificate admin-control mod-control fa-lg" onClick = "addMod();" Title = "Mod user"></SPAN> <SPAN Class = "boot-button clickable fa fa-legal admin-control mod-control fa-lg" onClick = "bootUser();" Title = "Boot user"></SPAN>
-                <SPAN Class = "ban-button clickable fa fa-ban admin-control mod-control fa-lg" onClick = "banUser();" Title = "Ban user"></SPAN>
+                <SPAN Class = "ban-button clickable fa fa-ban admin-control mod-control fa-lg" onClick = "banConfirm();" Title = "Ban user"></SPAN>
             </DIV>
         </DIV>
 

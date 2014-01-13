@@ -855,7 +855,7 @@ io.sockets.on('connection', function (socket)
     {
         for (var i = 0; i < hashArray.length; i++)
         {
-            console.log(hashArray[i]['ip']);
+            //console.log(hashArray[i]['ip']);
             if (hashArray[i][key] == value)
             {
                 return hashArray[i];
@@ -1554,12 +1554,27 @@ io.sockets.on('connection', function (socket)
         spammingCheck(name.length + reason.length + banLength.length, "");
         
         if (validUser() && isAdmin())
-        {
+        {   
             var targetId = socketIdByName(name);
             if (targetId)
             {
-                banUser(targetId, reason, length);
+                banUser(targetId, reason, banLength);
                 sendServerMsgSpecific("You have been banned!", name);
+                
+                if (reason && reason.length > 0)
+                {
+                    sendServerMsgSpecific("Ban reason: ", reason);
+                }
+                
+                if (banLength && banLength.length > 0 || banLength > 0)
+                {
+                    sendServerMsgSpecific("Your ban will expire in " + banLength + " days", name);
+                }
+                else
+                {
+                    sendServerMsgSpecific("Your ban will not expire", name);
+                }
+                
                 io.sockets.socket(targetId).disconnect();
             }
         }
