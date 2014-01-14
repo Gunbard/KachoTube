@@ -1101,10 +1101,15 @@ function arraySwap(arr, index1, index2)
 // Displays a server message that fades after a bit
 function serverMsg(msg, fadeDelay, fadeTime)
 {
-    $newDiv = $('<DIV>', {html: msg + ' ', class: 'server-msg'});
-    $('#serverMessages').prepend($newDiv);
+    var $newDiv = $('<DIV>', {html: msg + ' ', class: 'server-msg'});
+    $('#serverMessages').append($newDiv);
     $newDiv.hide().fadeIn("fast");
-    $newDiv.delay(fadeDelay).fadeOut(fadeTime, function() { $(this).remove(); });
+    
+    var delayTime = $('.server-msg').length;
+    $newDiv.delay(fadeDelay * delayTime).fadeOut(fadeTime, function () 
+    { 
+        $(this).remove(); 
+    });
 }
 
 // Toggles master controls -- TODO: Rename this
@@ -1374,6 +1379,11 @@ function cleanPlaylist()
 // Shuffle the playlist
 function shufflePlaylist()
 {
+    if (!confirm("Are you sure you want to shuffle the playlist?"))
+    {
+        return;
+    }
+
     if (myName == masterUser || superUser)
     {
         socket.emit('shuffleVideoList');
@@ -2011,7 +2021,6 @@ function generatePlaylistItem(index)
                 {
                     newPos = curVidIndex + 1;
                 }
-                alert("New: " + newPos + ", Old: " + id);
                 serverMoveVideo(newPos, id);
             }
         });
