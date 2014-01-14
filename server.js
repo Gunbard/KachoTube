@@ -458,6 +458,7 @@ io.sockets.on('connection', function (socket)
                 {
                     userList[i].userType = USER_TYPE.admin;
                     userType = USER_TYPE.admin;
+                    break;
                 }
                 
                 // Check if name is in mod list
@@ -465,9 +466,8 @@ io.sockets.on('connection', function (socket)
                 {
                     userList[i].userType = USER_TYPE.mod;
                     userType = USER_TYPE.mod;
+                    break;
                 }
-                
-                break;
             }
         }
 
@@ -477,7 +477,6 @@ io.sockets.on('connection', function (socket)
             {
                 userInfo[i].name = newName;
                 userInfo[i].userType = userType;
-                // Set new time for user
                 break;
             }
         }
@@ -927,6 +926,7 @@ io.sockets.on('connection', function (socket)
                 sendServerMsgSpecific("You have been modded! Hooray!", trip);
                 sendServerMsgAll(trip + " has been modded!");
                 io.sockets.socket(socket.id).emit('modSync', modList);
+                updateUserType(trip);
             }
             else
             {
@@ -949,6 +949,7 @@ io.sockets.on('connection', function (socket)
             sendServerMsgUser("You unmodded " + trip);
             io.sockets.socket(socket.id).emit('modSync', modList);
             console.log('[' + trip + '] was unmodded');
+            updateUserType(trip);
         }
         else
         {
@@ -957,6 +958,46 @@ io.sockets.on('connection', function (socket)
         }
     }
     
+    // Updates user's type in info and syncs
+    function updateUserType(name)
+    {
+        var userType = USER_TYPE.normal;
+        
+        // Update userList
+        for (var i = 0; i < userList.length; i++)
+        {
+            if (name == userList[i].name)
+            {
+                // Check if name is in admin list
+                if (adminList.indexOf(name) != -1)
+                {
+                    userList[i].userType = USER_TYPE.admin;
+                    userType = USER_TYPE.admin;
+                    break;
+                }
+                
+                // Check if name is in mod list
+                if (modList.indexOf(name) != -1)
+                {
+                    userList[i].userType = USER_TYPE.mod;
+                    userType = USER_TYPE.mod;
+                    break;
+                }
+            }
+        }
+        
+        // Update userInfo
+        for (var i = 0; i < userInfo.length; i++)
+        {
+            if (name == userInfo[i].name)
+            {
+                userInfo[i].userType = userType;
+                break;
+            }
+        }
+        
+        syncUserList();
+    }
     
     /****END SERVER FUNCTIONS***************/
     

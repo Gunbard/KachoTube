@@ -1495,14 +1495,6 @@ function setMasterDisplay()
             $('.user-list-user#user' + i + ' .master-display').show();
         }
     }
-    /*$('.name-display').each(function ()
-    {
-        var str = $(this).html().replace(/<(?:.|\n)*?>/gm, '');
-        if (str == masterUser)
-        {
-            $(this).prev().show();
-        }
-    });*/
 }
 
 
@@ -1550,7 +1542,7 @@ function openTinypic()
 {
     $('#iframePopup').children(':not(.default-popup-control, .popup-gripper)').remove();
 
-    $('.popup-title').html('TinyPic');
+    $('#iframePopup .popup-title').html('TinyPic');
     $('#iframePopupContent').empty();
     $('#tinypic_plugin_'+id).remove();
     
@@ -1570,7 +1562,7 @@ function openSearch()
 {
     $('#iframePopup').children(':not(.default-popup-control, .popup-gripper)').remove();
     
-    $('.popup-title').html('YouTube QuickSearch');
+    $('#iframePopup .popup-title').html('YouTube QuickSearch');
     $('#iframePopupContent').empty();
 
     // Make a search input
@@ -2004,18 +1996,22 @@ function generatePlaylistItem(index)
             
             // Get position right after currently playing video, or loop back
             var curVidIndex = indexById(currentVideo);
-            if (curVidIndex == id)
+            
+            if ((curVidIndex == videoPlaylist.length && id == 0) || curVidIndex == id || 
+                id == curVidIndex + 1)
             {
+                alert("That video is already playing or will be played next");
                 return;
             }
-            
+
             if (curVidIndex > -1)
             {
                 var newPos = 0;
-                if (curVidIndex < videoPlaylist.length)
+                if (curVidIndex < videoPlaylist.length - 1)
                 {
-                    newPos = curVidIndex;
+                    newPos = curVidIndex + 1;
                 }
+                alert("New: " + newPos + ", Old: " + id);
                 serverMoveVideo(newPos, id);
             }
         });
