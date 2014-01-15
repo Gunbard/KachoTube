@@ -94,21 +94,22 @@ var modList         = ["Imaweiner!asdf", "asdfsdf!what"];
 // Admin: ban, take master from mod, mod/de-mod
                    
 
-var userCount       = 0;
-var masterUser      = "";
-var masterUserId    = "";
-var masterTime      = 0;
-var currentVideo    = "";           // Id of video
-var streamSource    = "";
-var videoIsStream   = false;
-var masterless      = false;        // aka TV mode
-var paused          = false;
-var validatedVideos = 0;
-var skipUsePercent  = false;
-var skipsNeeded     = 1;            // Set to 0 to ignore skips   
-var skipPercent     = 0;
-var skippingEnabled = true;
-var playlistLocked  = false;  
+var userCount           = 0;
+var masterUser          = "";
+var masterUserId        = "";
+var masterTime          = 0;
+var currentVideo        = "";           // Id of video
+var streamSource        = "";
+var videoIsStream       = false;
+var masterless          = false;        // aka TV mode
+var paused              = false;
+var validatedVideos     = 0;
+var skipUsePercent      = false;
+var skipsNeeded         = 1;            // Set to 0 to ignore skips   
+var skipPercent         = 0;
+var skippingEnabled     = true;
+var playlistLocked      = false;
+var giveMasterToUser    = true;         // Allow any user to be master
 var commandTimer;
 
 // Formats a date string. Expects a UTC date and will convert to local automatically.
@@ -504,6 +505,17 @@ io.sockets.on('connection', function (socket)
         if (oldName == masterUser)
         {
             masterUser = username;
+            io.sockets.emit('masterUserSync', masterUser);
+        }
+        
+        // Set mods as master user
+        if (masterUser == "" && !giveMasterToUser && userType == USER_TYPE.mod)
+        {
+            masterUser = username;
+            masterUserId = id;
+            console.log("masterUser set to " + masterUser);
+            
+            // Tell/remind everyone who the masterUser is
             io.sockets.emit('masterUserSync', masterUser);
         }
         
@@ -1087,13 +1099,12 @@ io.sockets.on('connection', function (socket)
             io.sockets.socket(socket.id).emit('videoSync', currentVideo, source);
         }
         
-        // Make new guy masterUser if there isn't one
-        if (masterUser == "")
+        // Make new guy masterUser if there isn't one (if allowed)
+        if (masterUser == "" && giveMasterToUser)
         {
             masterUser = username;
             masterUserId = id;
             console.log("masterUser set to " + masterUser);
-            
         }
         
     }
@@ -1718,20 +1729,38 @@ io.sockets.on('connection', function (socket)
             skipList.splice(idx, 1);
         }
         
+        var foundNewMaster = false;
+        
         // Need to find a new masterUser if old one left
         if (!userInList(masterUser))
         {
             if (userList.length > 0)
             {
-                masterUser = userList[0].name;
-                masterUserId = userList[0].id;
-                io.sockets.emit('masterUserSync', masterUser);
+                // Find the first mod, or some user if allowed
+                for (var i = 0; i < userList.length; i++)
+                {
+                    if (userList[i].userType == USER_TYPE.mod)
+                    {
+                        masterUser = userList[i].name;
+                        masterUserId = userList[i].id;
+                        foundNewMaster = true;
+                        break;
+                    }
+                }
+                
+                if (!foundNewMaster && giveMasterToUser)
+                {
+                    masterUser = userList[0].name;
+                    masterUserId = userList[0].id;
+                }
             }
             else
             {
                 masterUser = "";
                 masterUserId = "";
             }
+            
+            io.sockets.emit('masterUserSync', masterUser);
         }
         
         syncUserList();
