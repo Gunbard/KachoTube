@@ -40,9 +40,7 @@ var showChatVideos = true;
 var userPopupId = -1;
 var imageEmbedOpacity = 0.5;
 
-// Command types
-var WHISPER_CMD = 0;
-
+// Enums
 var USER_TYPE =
 {
     "admin":    0,
@@ -286,13 +284,16 @@ $(function ()
                 {
                     $('.pm-button').show();
                     
-                    if (superUser || modUser)
+                    var id = userIdByName(name);
+                    var type = userList[id].userType;
+                    
+                    if ((superUser || modUser) && type != USER_TYPE.admin && type != USER_TYPE.mod)
                     {
                         $('.ban-button').show();
                         $('.mod-button').show();
                     }
                     
-                    if (masterUser || superUser || modUser)
+                    if ((masterUser == myName || superUser || modUser) && type != USER_TYPE.admin)
                     {
                          $('.boot-button').show();
                     }
@@ -1298,14 +1299,14 @@ function updateCPLists()
         var banExpiration = (banList[i].banExpiration) ? banList[i].expiration : '?';        
         var banReason = (banList[i].reason) ? banList[i].reason : 'None';
         
-        var banInfo = "Banned on: " + banDate + "\nExpires in " + banExpiration + " days\nBanned for: " + banReason;
+        var banInfo = "Banned on: " + banDate + "\nBan length: " + banExpiration + " days\nBanned for: " + banReason;
         var $banItem = $('<DIV>').attr({class: 'banItem', title: banInfo});
         
         var $banIp = $('<SPAN>').attr({class: 'banIp'});
         $banIp.html(banList[i].ip);
         
         var $banName = $('<SPAN>').attr({class: 'banName'});
-        $banName.html(banList[i].lastName);
+        $banName.html(tripColorize(banList[i].lastName));
         
         
         var $unbanButton = $('<SPAN>').attr({class: "clickable fa fa-times fa-lg", title: "Unban this user"});
@@ -1319,19 +1320,15 @@ function updateCPLists()
             }
         });
         
-        $banItem.append($banIp).append(' | ').append($banName);
+        $banItem.append($banIp)
+        if (banList[i].lastName.length > 0)
+        {
+            $banItem.append(', ').append($banName);
+        }
+        
         $banItem.append($unbanButton);
         
         $('#banList').append($banItem);
-        /*$('#banList').append
-        (
-            '<DIV Class = "banItem">' +
-            banList[i].ip + ' ' +
-            banList[i].lastName + ', ' +
-            'Date: ' + banList[i].banDate + ', ' +
-            'Exp: ' + banList[i].expiration + ', ' +
-            'Reason: ' + banList[i].reason + '</DIV>'
-        );*/
     }
     
     if (modList.length == 0)
@@ -2357,7 +2354,7 @@ function banUser()
     var reason = $('.ban-reason-input').val();
     var length = $('.ban-length-input').val();
     
-    if (superUser)
+    if (superUser || modUser)
     {
         socket.emit('banUser', name, reason, length);
     }

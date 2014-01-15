@@ -259,6 +259,13 @@ io.sockets.on('connection', function (socket)
         return (modList.indexOf(socket.username) > -1);
     }
     
+    // Verify who I'm talking to is the master user or an admin
+    function isMasterUser()
+    {
+        return (masterUser == username && masterUserId == userId);
+    }
+    
+    
     // Update everyone's list of users
     function syncUserList()
     {
@@ -588,7 +595,7 @@ io.sockets.on('connection', function (socket)
     // Make new user room master
     function masterUserPassOff(user)
     {
-        if (validUser() && masterUser == username && masterUserId == userId)
+        if (validUser() && (isMasterUser() || isAdmin()))
         {
             if (userInList(user))
             {
@@ -872,7 +879,15 @@ io.sockets.on('connection', function (socket)
         }
         
         var now = new Date();
-        var banItem = {ip: user.ip, lastName: user.username, banDate: now, expiration: banLength, reason: banReason};
+        
+        // Save name only if tripped
+        var name = user.name;
+        if (name.indexOf('!') == -1)
+        {
+            name = '';
+        }
+        
+        var banItem = {ip: user.ip, lastName: name, banDate: now, expiration: banLength, reason: banReason};
         
         banList.push(banItem);
         
@@ -1038,7 +1053,7 @@ io.sockets.on('connection', function (socket)
         userList.push(user);
         
         // Maintain a list without sensitive info (to send to everyone else)
-        user = {name: username};
+        user = {name: username, userType: USER_TYPE.normal};
         userInfo.push(user);
         
         // Send new guy current state of chat (last X lines)
@@ -1097,7 +1112,7 @@ io.sockets.on('connection', function (socket)
         spammingCheck(time.length, "");
     
         // Validation
-        if (validUser() && isFloat(time) && masterUser == username && masterUserId == userId)
+        if (validUser() && isFloat(time) && (isMasterUser() || isAdmin()))
         {
             masterTime = time;
             //console.log("Time: " + time + " from " + masterUser + "\n");
@@ -1179,7 +1194,7 @@ io.sockets.on('connection', function (socket)
     {
         spammingCheck(state.length, "");
     
-        if (validUser() && masterUser == username && masterUserId == userId)
+        if (validUser() && (isMasterUser() || isAdmin()))
         {
             switch (state)
             {
@@ -1275,7 +1290,7 @@ io.sockets.on('connection', function (socket)
             else
             {
                 // Auto load streams, but check for masterUser
-                if (validUser() && masterUser == username && masterUserId == userId)
+                if (validUser() && (isMasterUser() || isAdmin()))
                 {
                     videoIsStream = true;
                     currentVideo = videoId;
@@ -1348,7 +1363,7 @@ io.sockets.on('connection', function (socket)
     {
         spammingCheck(videoId.length, "");
     
-        if (validUser() && masterUser == username && masterUserId == userId)
+        if (validUser() && (isMasterUser() || isAdmin()))
         {
             videoIsStream = false;
             currentVideo = videoId;
@@ -1361,7 +1376,7 @@ io.sockets.on('connection', function (socket)
     {
         spammingCheck(videoId.length, "");
         
-        if (validUser() && masterUser == username && masterUserId == userId)
+        if (validUser() && (isMasterUser() || isAdmin()))
         {
             videoIsStream = false;
             currentVideo = videoId;
@@ -1376,7 +1391,7 @@ io.sockets.on('connection', function (socket)
         var totalSize = index1.length + index2.length;
         spammingCheck(totalSize, "");
     
-        if (validUser() && masterUser == username && masterUserId == userId)
+        if (validUser() && (isMasterUser() || isAdmin()))
         {
             var savedObj = videoList.splice(index2, 1);
             if (savedObj[0])
@@ -1393,7 +1408,7 @@ io.sockets.on('connection', function (socket)
     {
         spammingCheck(videoIndex.length, "");
         
-        if (validUser() && masterUser == username && masterUserId == userId)
+        if (validUser() && (isMasterUser() || isAdmin()))
         {
             videoList.splice(videoIndex, 1);
             syncDeleteVideo(videoIndex);
@@ -1406,7 +1421,7 @@ io.sockets.on('connection', function (socket)
     {
         spammingCheck(0, "");
         
-        if (validUser() && masterUser == username && masterUserId == userId)
+        if (validUser() && (isMasterUser() || isAdmin()))
         {
             videoList = [];
             syncVideoList();
@@ -1418,7 +1433,7 @@ io.sockets.on('connection', function (socket)
     {
         spammingCheck(0, "");
         
-        if (validUser() && masterUser == username && masterUserId == userId)
+        if (validUser() && (isMasterUser() || isAdmin()))
         {
             var curVidIndex = indexById(currentVideo);
             if (curVidIndex > -1)
@@ -1433,7 +1448,7 @@ io.sockets.on('connection', function (socket)
     socket.on('shuffleVideoList', function ()
     {
         spammingCheck(0, "");
-        if (validUser() && masterUser == username && masterUserId == userId)
+        if (validUser() && (isMasterUser() || isAdmin()))
         {
             videoList = shuffleArray(videoList);
             syncVideoList();
@@ -1444,7 +1459,7 @@ io.sockets.on('connection', function (socket)
     socket.on('loadPlaylist', function (playlistStr)
     {
         spammingCheck(0, "");
-        if (validUser() && masterUser == username && masterUserId == userId)
+        if (validUser() && (isMasterUser() || isAdmin()))
         {
             var urls = playlistStr.match(/(\?v=([a-zA-Z0-9_-]{11}))|(video\/([^\W|_]+))/g);
             
@@ -1505,7 +1520,7 @@ io.sockets.on('connection', function (socket)
     {
         spammingCheck(user.length, "");
 
-        if (validUser() && masterUser == username && masterUserId == userId)
+        if (validUser() && (isMasterUser() || isAdmin()))
         {
             masterUserPassOff(user);
         }
@@ -1527,7 +1542,7 @@ io.sockets.on('connection', function (socket)
     {
         spammingCheck(enabled.length, "");
         
-        if (validUser() && masterUser == username && masterUserId == userId && skippingEnabled == !enabled)
+        if (validUser() && (isMasterUser() || isAdmin()) && skippingEnabled == !enabled)
         {
         
             skippingEnabled = enabled;
@@ -1540,7 +1555,7 @@ io.sockets.on('connection', function (socket)
     {
         spammingCheck(locked.length, "");
         
-        if (validUser() && masterUser == username && masterUserId == userId && playlistLocked == !locked)
+        if (validUser() && (isMasterUser() || isAdmin()) && playlistLocked == !locked)
         {
         
             playlistLocked = locked;
@@ -1553,7 +1568,7 @@ io.sockets.on('connection', function (socket)
     {
         spammingCheck(usePercent.length + skipValue.length, "");
         
-        if (validUser() && masterUser == username && masterUserId == userId)
+        if (validUser() && (isMasterUser() || isAdmin()))
         {
             skipUsePercent = usePercent;
             if (usePercent)
@@ -1580,11 +1595,27 @@ io.sockets.on('connection', function (socket)
     {
         spammingCheck(name.length, "");
         
-        if (validUser() && (masterUser == username && masterUserId == userId || isMod() || isAdmin()))
+        if (validUser() && ((isMasterUser() || isAdmin()) || isMod()))
         {
             var targetId = socketIdByName(name);
             if (targetId)
             {
+                // Master user privs
+                if (isMasterUser() && (adminList.indexOf(name) > -1 || modList.indexOf(name) > -1))
+                {
+                    sendServerMsgUser("You can't boot an admin or mod");
+                    return;
+                }
+                
+                // Mod privs
+                if (isMod() && adminList.indexOf(name) > -1)
+                {
+                    sendServerMsgUser("You can't boot an admin");
+                    return;
+                }
+                
+                // TODO: Take master if booting master user
+                
                 sendServerMsgSpecific("You have been booted!", name);
                 io.sockets.socket(targetId).disconnect();
             }
@@ -1596,11 +1627,17 @@ io.sockets.on('connection', function (socket)
     {
         spammingCheck(name.length + reason.length + banLength.length, "");
         
-        if (validUser() && isAdmin())
+        if (validUser() && (isAdmin() || isMod()))
         {   
             var targetId = socketIdByName(name);
             if (targetId)
             {
+                if (isMod() && adminList.indexOf(name) > -1)
+                {
+                    sendServerMsgUser("You can't ban an admin");
+                    return;
+                }
+            
                 banUser(targetId, reason, banLength);
                 sendServerMsgSpecific("You have been banned!", name);
                 
