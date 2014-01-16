@@ -1131,6 +1131,8 @@ function displayMasterControls(showControls)
         {
             $('.mod-control').show();
         }
+        
+        $('.video-voting-controls').hide();
     }
     else
     {
@@ -1139,6 +1141,8 @@ function displayMasterControls(showControls)
         $('.make-master-user').hide();   
         $('.admin-control').hide();
         $('.mod-control').hide();
+        
+        $('.video-voting-controls').show();
     }
 }
 
@@ -1923,50 +1927,61 @@ function generatePlaylistItem(index)
         return null;
     }
     
-    $newListItem = $('<LI>').attr({class: "ui-state-default video-item", id: index});
+    var $newListItem = $('<LI>').attr({class: "ui-state-default video-item", id: index});
     
-    $dragger = $('<SPAN>').attr({class: "dragger fa fa-sort fa-lg master-control"});
+    var $dragger = $('<SPAN>').attr({class: "dragger fa fa-sort fa-lg master-control"});
     
-    $number = $('<SPAN>').attr({class: "video-number"});
+    var $number = $('<SPAN>').attr({class: "video-number"});
     $number.append(index + 1 + '.');
     
-    $playButton = $('<SPAN>').attr({class: "play-button fa fa-play-circle fa-lg clickable master-control", id: "tit" + index, title: "Play this video"});
+    var $urlButton = $('<SPAN>').attr({class: "url-button fa fa-link fa-lg", id: index, title: "Link to video"});
     
-    $urlButton = $('<SPAN>').attr({class: "url-button fa fa-link fa-lg", id: index, title: "Link to video"});
     
-    $deleteButton = $('<SPAN>').attr({class: "delete-button fa fa-times fa-lg master-control", id: index, title: "Double-click to delete"});
+    var $videoControls = $('<SPAN>').attr({class: "video-controls master-control"});
     
-    $bumpButton = $('<SPAN>').attr({class: "bump-button fa fa-arrow-up fa-lg clickable master-control", id: index, title: "Bump as next video to play"});
+    var $playButton = $('<SPAN>').attr({class: "play-button fa fa-play-circle fa-lg clickable master-control", id: "tit" + index, title: "Play this video"});
     
-    $playingIndicator = $('<SPAN>').attr({class: "playing-indicator fa fa-youtube-play fa-lg", id: index});
+    var $bumpButton = $('<SPAN>').attr({class: "bump-button fa fa-arrow-up fa-lg clickable master-control", id: index, title: "Bump as next video to play"});
     
-    $vidTitle = $('<SPAN>').attr({class: "video-title"});
+    var $deleteButton = $('<SPAN>').attr({class: "delete-button fa fa-times fa-lg master-control", id: index, title: "Double-click to delete"});
+    
+    $videoControls.append($playButton).append($bumpButton).append($deleteButton);
+    
+    
+    var $videoVoteControls = $('<SPAN>').attr({class: "video-voting-controls non-master-control"});
+    
+    var $videoVoteButton = $('<INPUT>').attr({class: "video-vote-button", type: "button", value: "Vote"});
+    var $videoVoteCount = $('<SPAN>').attr({class: "video-vote-count"}).html("0");
+    $videoVoteControls.append($videoVoteButton).append(" ").append($videoVoteCount);
+    
+    
+    var $playingIndicator = $('<SPAN>').attr({class: "playing-indicator fa fa-youtube-play fa-lg", id: index});
+    
+    var $vidTitle = $('<SPAN>').attr({class: "video-title"});
     $vidTitle.append(videoPlaylist[index].title);
      
-    $vidDuration = $('<SPAN>').attr({class: "video-duration"});
+    var $vidDuration = $('<SPAN>').attr({class: "video-duration"});
     
     $vidDuration.append(secondsToTime(videoPlaylist[index].duration));
-    $vidAddedBy = $('<SPAN>').attr({class: "video-addedBy"});
+    var $vidAddedBy = $('<SPAN>').attr({class: "video-addedBy"});
     $vidAddedBy.append('added by ' + videoPlaylist[index].addedBy);
     
     $newListItem.append($number);
-    
     $newListItem.append($vidTitle);
     $newListItem.append($playingIndicator);
-    
     $newListItem.append($dragger);
     $newListItem.append($urlButton);
     $newListItem.append($vidAddedBy);
     $newListItem.append($vidDuration);
-    $newListItem.append($playButton);
-    $newListItem.append($bumpButton);
-    $newListItem.append($deleteButton);
+    $newListItem.append($videoControls);
+    $newListItem.append($videoVoteControls);
+    
     $playingIndicator.hide();
     
     // Marquee long video titles
     if (getTextWidth(videoPlaylist[index].title) >= $vidTitle.width())
     {
-        $marquee = $('<MARQUEE>').attr({behavior: "alternate", scrollDelay: "200", hspace: "10", scrollAmount: "0"});
+        var $marquee = $('<MARQUEE>').attr({behavior: "alternate", scrollDelay: "200", hspace: "10", scrollAmount: "0"});
         
         $marquee.hover(function () 
         {

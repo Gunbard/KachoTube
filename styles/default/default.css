@@ -196,7 +196,7 @@ li.ui-state-default
     border-right-style: none !important;
 }
 
-.video-title, .video-duration, .video-addedBy, .url-button, .delete-button, .dragger, .video-number, .play-button
+.video-title, .video-duration, .video-addedBy, .url-button, .delete-button, .dragger, .video-number, .play-button, .video-controls, .video-voting-controls
 {
     display:            inline-block;
     text-align:         center;
@@ -265,6 +265,12 @@ li.ui-state-default
 .delete-button
 {
     width:              32;
+}
+
+.video-voting-controls
+{
+    width:              100;
+    text-align:         right;
 }
 
 .window-title
