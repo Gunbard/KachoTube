@@ -60,13 +60,13 @@ var USER_TYPE =
 
 
 //========BASIC DATA STORAGE===========//
-// user {string name, string id, string ip, date lastspammingCheck, int msgCount, int chatMsgCount, date lastChatEmbed, USER_TYPE userType}
+// user {string name, string id, string ip, date lastspammingCheck, int msgCount, int chatMsgCount, date lastChatEmbed, USER_TYPE userType, bool skipped, string votedVideo}
 var userList        = [];    
 
 // user {string name, USER_TYPE userType, string imgBase64}
 var userInfo        = [];    
 
-// video {string id, string title, string duration, string addedBy}
+// video {string id, string title, string duration, string addedBy, string source}
 var videoList       = [];
 
 // users with finished video [string name]
@@ -74,6 +74,9 @@ var finishedUsers   = [];
 
 // users who would like to skip the current video [string id]
 var skipList        = [];
+
+// keep track of votes on a video -- "video id": votes  
+var videoVotes		= {};
 
 // item {string username, string text, string timestamp}
 var chatLog         = [];
@@ -109,6 +112,7 @@ var skipsNeeded         = 1;            // Set to 0 to ignore skips
 var skipPercent         = 0;
 var skippingEnabled     = true;
 var playlistLocked      = false;
+var videoVotingEnabled  = true;
 var giveMasterToUser    = true;         // Allow any user to be master
 var commandTimer;
 
@@ -560,6 +564,27 @@ io.sockets.on('connection', function (socket)
     // Send everyone the id of the video to immediately change to on the playlist
     function sendVideoChange(videoId)
     {
+        // Reset votes, if any
+        if (videoVotes[videoId])
+        {
+            var index = indexById(videoId);
+            if (index > -1)
+            {
+                delete videoVotes[videoId];
+                
+                // Reset video vote properties
+                for (var i = 0; i < userList.length; i++)
+                {
+                    if (userList[i].votedVideo == videoId)
+                    {
+                        userList[i].votedVideo = '';
+                    }
+                }
+                
+                io.sockets.emit('videoVoteSync', index, '0');
+            }
+        }
+        
         io.sockets.emit('videoChangeSync', videoId);
     }
     
@@ -599,7 +624,6 @@ io.sockets.on('connection', function (socket)
             {
                 return i;
             }
-            // Set new time for user
         }
         return -1;
     }
@@ -778,6 +802,52 @@ io.sockets.on('connection', function (socket)
         io.sockets.emit('skipSync', skipList.length, skipsNeeded);
     }
     
+    // Toggles a vote on a video
+    function toggleUserVideoVote(videoId)
+	{
+        var videoIndex = indexById(videoId);
+        if (videoIndex == -1)
+        {
+            // Couldn't find video in list
+            console.log("Error: attempted to vote on non-existent video [" + videoId + "]");
+            return;
+        }
+        
+        var user = getUserById(userId);
+        if (user)
+        {               
+            if (!user.votedVideo || user.votedVideo.length == 0)
+            {
+                if (!videoVotes[videoId])
+                {
+                    videoVotes[videoId] = 1;
+                }
+                else
+                {
+                    videoVotes[videoId] += 1;
+                }
+                
+                user.votedVideo = videoId;
+            }
+            else if (user.votedVideo == videoId)
+            {
+                videoVotes[videoId] -= 1;
+                user.votedVideo = "";
+            }
+        }
+        
+        if (videoVotes[videoId] == 0)
+        {
+            // Remove video from vote list
+            delete videoVotes[videoId];
+        }
+        
+        var voteCount = videoVotes[videoId] ? videoVotes[videoId] : 0; 
+        
+        // Tell everyone about the vote change
+        io.sockets.emit('videoVoteSync', videoIndex, voteCount);
+    }    
+        
     // Detects and executes a command
     // Returns null if nothing detected
     function detectCommand(queryString)
@@ -1421,6 +1491,22 @@ io.sockets.on('connection', function (socket)
         
         if (validUser() && (isMasterUser() || isAdmin()))
         {
+            // Delete from vote list
+            var videoId = videoList[videoIndex].id;
+            if (videoVotes[videoId])
+            {
+                delete videoVotes[videoId];
+                
+                // Reset video vote properties
+                for (var i = 0; i < userList.length; i++)
+                {
+                    if (userList[i].votedVideo == videoId)
+                    {
+                        userList[i].votedVideo = '';
+                    }
+                }
+            }
+        
             videoList.splice(videoIndex, 1);
             syncDeleteVideo(videoIndex);
             savePlaylist();
@@ -1548,6 +1634,17 @@ io.sockets.on('connection', function (socket)
        }
     });
     
+    // Message for toggling a video vote
+    socket.on('toggleVideoVote', function (videoId)
+    {
+    	spammingCheck(videoId.length, "");
+
+       if (validUser() && videoVotingEnabled)
+       {
+           toggleUserVideoVote(videoId);
+       }
+    });
+        
     // Message for enabling/disabling skipping
     socket.on('toggleSkippingEnabled', function (enabled)
     {
@@ -1561,7 +1658,7 @@ io.sockets.on('connection', function (socket)
         }
     });
     
-    // Message for enabling/disabling skipping
+    // Message for enabling/disabling playlist lock
     socket.on('togglePlaylistLocked', function (locked)
     {
         spammingCheck(locked.length, "");
@@ -1571,6 +1668,19 @@ io.sockets.on('connection', function (socket)
         
             playlistLocked = locked;
             io.sockets.emit('lockPlaylistSync', locked);
+        }
+    });
+    
+    // Message for enabling/disabling video voting
+    socket.on('toggleVideoVoting', function (enabled)
+    {
+        spammingCheck(enabled.length, "");
+        
+        if (validUser() && (isMasterUser() || isAdmin()) && videoVotingEnabled == !enabled)
+        {
+        
+            videoVotingEnabled = enabled;
+            io.sockets.emit('videoVotingSync', enabled);
         }
     });
     
@@ -1718,9 +1828,7 @@ io.sockets.on('connection', function (socket)
 
     // When a user disconnects
 	socket.on('disconnect', function () 
-    {
-        removeUser(username);
-        
+    {        
         // Remove from skip list if in there
         var idx = skipList.indexOf(username);
         if (idx > -1)
@@ -1728,6 +1836,32 @@ io.sockets.on('connection', function (socket)
             // Remove from skip list
             skipList.splice(idx, 1);
         }
+        
+        // Remove user's video vote
+        var user = getUserById(userId);
+        if (user)
+        {
+            if (user.votedVideo && user.votedVideo.length > 0)
+            {
+                var videoIndex = indexById(user.votedVideo);
+                if (videoIndex > -1)
+                {                
+                    if (videoVotes[user.votedVideo] && videoVotes[user.votedVideo] > 0)
+                    {
+                        videoVotes[user.votedVideo] -= 1;
+                    }
+                    else
+                    {
+                        delete videoVotes[user.votedVideo];
+                    }
+                    
+                    var voteCount = videoVotes[user.votedVideo] ? videoVotes[user.votedVideo] : 0;
+                    io.sockets.emit('videoVoteSync', videoIndex, voteCount);
+                }
+            }
+        }
+        
+        removeUser(username);
         
         var foundNewMaster = false;
         

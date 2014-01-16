@@ -74,7 +74,7 @@ $(function ()
     });
 
     // Setup settings
-    $('#settingShowChatImages, #settingShowChatVideos, #settingNNDToggle, #settingDisplayTrips, #settingShowTimestamp, #settingAllowSkips, #settingPlayerSizeSm, #settingPlayerSizeLg, #settingChatImgSizeSm, #settingChatImgSizeMed, #settingChatImgSizeLg, #settingLockPlaylist, #settingShowChat').click(function ()
+    $('#settingShowChatImages, #settingShowChatVideos, #settingNNDToggle, #settingDisplayTrips, #settingShowTimestamp, #settingAllowSkips, #settingPlayerSizeSm, #settingPlayerSizeLg, #settingChatImgSizeSm, #settingChatImgSizeMed, #settingChatImgSizeLg, #settingLockPlaylist, #settingShowChat, #settingVideoVoting').click(function ()
     {
         checkSettings();
     });
@@ -591,28 +591,20 @@ $(function ()
     // Message for syncing just video id from server
     socket.on('videoSync', function (videoId, source)
     {   
-        if (currentVideo == "")
-        {        
-            // Get initial player size from css container
-            playerWidth = parseInt($('#videoDivContainer').css('width'));
-            playerHeight = parseInt($('#videoDivContainer').css('height'));
-            $('#NNDOverlay').css({width: playerWidth, height: playerHeight});
-        }
-        
-        currentVideo = videoId;
-        serverVideo = currentVideo;
-        
-        if (source != APImode || source == "us" || source == "ls" || source == "tw")
-        {
-            loadPlayerAPI(source, currentVideo);
-        }
-        
-        setPlayingIndicator();
+        changeVideo(videoId);
     });
 
     // Message for deleting a video from the playlist
     socket.on('deleteVideoSync', function (index)
     {
+        // Re-enable voting if you voted for deleted video
+        if ($('.video-item#' + index + ' .video-vote-button').val() == 'Unvote')
+        {
+            var curVidIndex = indexById(currentVideo);
+            var $curVidVoteButton = $('.video-item#' + curVidIndex + ' .video-vote-button');
+            $('.video-item .video-vote-button').not($curVidVoteButton).attr({disabled: false});
+        }
+    
         videoPlaylist.splice(index, 1);
         
         if (videoPlaylist.length == 0)
@@ -712,7 +704,34 @@ $(function ()
         }
     });
 
-
+    // Message for enabling/disabling video voting
+    socket.on('videoVotingSync', function (enabled)
+    {
+        var curVidIndex = indexById(currentVideo);
+        var $curVidVoteButton = $('.video-item#' + curVidIndex + ' .video-vote-button');
+        var $votedVid = $(".video-item .video-vote-button[value='Unvote']");
+        if (enabled)
+        {            
+            if ($votedVid.length > 0)
+            {
+                // If you voted, you can only unvote
+                $votedVid.attr({disabled: false});
+            }
+            else
+            {
+                // Otherwise allow voting on all the videos
+                $('.video-item .video-vote-button').attr({disabled: false});
+            }
+            
+            // Can't vote on current video
+            $curVidVoteButton.attr({disabled: true});
+        } 
+        else 
+        {
+            $('.video-item .video-vote-button').attr({disabled: true});
+        }
+    });
+    
     // Message for getting current log of chat when first entering room
     socket.on('chatLogSync', function (chatLog)
     {
@@ -779,6 +798,12 @@ $(function ()
             // Skips were reset
             $('#skipButton').val('SKIP');
         }
+    });
+    
+    // Message for updating video votes
+    socket.on('videoVoteSync', function (videoIndex, voteCount)
+    {
+        $('.video-item#' + videoIndex + ' .video-vote-count').html(voteCount);
     });
 
     // Message for getting current log of chat when first entering room
@@ -918,6 +943,14 @@ function serverChangeVideo(index)
 // Change to specific video
 function changeVideo(videoId)
 {
+    if (currentVideo == "")
+    {        
+        // Get initial player size from css container
+        playerWidth = parseInt($('#videoDivContainer').css('width'));
+        playerHeight = parseInt($('#videoDivContainer').css('height'));
+        $('#NNDOverlay').css({width: playerWidth, height: playerHeight});
+    }
+
     var index = indexById(videoId);
     var source = videoPlaylist[index].source;
     
@@ -932,7 +965,21 @@ function changeVideo(videoId)
     }
     
     currentVideo = videoId;
+    serverVideo = currentVideo;
     updateTitle(videoPlaylist[index].title);
+    
+    // Set vote button display
+    var $voteButton = $('.video-item#' + index + ' .video-vote-button');
+    var userVotedForVideo = ($voteButton.val() == 'Unvote');
+    
+    // Disable voting for this video
+    $voteButton.attr({disabled: true}).val('Vote');
+
+    // Renable voting for all others if vote wasn't used
+    if (userVotedForVideo)
+    {
+        $('.video-item .video-vote-button').not($voteButton).attr({disabled: false});
+    }
     
     // Set indicator for currently playing video
     setPlayingIndicator();
@@ -1131,6 +1178,9 @@ function displayMasterControls(showControls)
         {
             $('.mod-control').show();
         }
+        
+        $('.video-vote-button').hide();
+        $('.video-voting-controls').css('width', '');
     }
     else
     {
@@ -1139,6 +1189,9 @@ function displayMasterControls(showControls)
         $('.make-master-user').hide();   
         $('.admin-control').hide();
         $('.mod-control').hide();
+        
+        $('.video-vote-button').show();
+        $('.video-voting-controls').css('width', '100');
     }
 }
 
@@ -1400,6 +1453,28 @@ function toggleSkip()
     socket.emit('toggleSkip');
 }
 
+function toggleVideoVote(videoIndex, videoId)
+{
+    var $voteButton = $('.video-item#' + videoIndex + ' .video-vote-button');
+    if ($voteButton.val() == 'Vote')
+    {
+        $voteButton.val('Unvote');
+        $('.video-item .video-vote-button').not($voteButton).attr({disabled: true});
+    }
+    else
+    {
+        $voteButton.val('Vote');
+        
+        var curVidIndex = indexById(currentVideo);
+        var $curVidVoteButton = $('.video-item#' + curVidIndex + ' .video-vote-button');
+        
+        // Enable buttons except for currently playing video
+        $('.video-item .video-vote-button').not($curVidVoteButton).attr({disabled: false});
+    }
+
+    socket.emit('toggleVideoVote', videoId);
+}
+
 function toggleSkipEnabled(enabled)
 {
     if (myName == masterUser || superUser)
@@ -1413,6 +1488,14 @@ function togglePlaylistLocked(locked)
     if (myName == masterUser || superUser)
     {
         socket.emit('togglePlaylistLocked', locked);
+    }
+}
+
+function toggleVideoVoting(enabled)
+{
+    if (myName == masterUser || superUser)
+    {
+        socket.emit('toggleVideoVoting', enabled);
     }
 }
 
@@ -1817,6 +1900,8 @@ function checkSettings()
     
     toggleSkipEnabled(document.getElementById('settingAllowSkips').checked);
     togglePlaylistLocked(document.getElementById('settingLockPlaylist').checked);
+    toggleVideoVoting(document.getElementById('settingVideoVoting').checked);
+
 }
 
 // Updates skip settings for room
@@ -1923,50 +2008,61 @@ function generatePlaylistItem(index)
         return null;
     }
     
-    $newListItem = $('<LI>').attr({class: "ui-state-default video-item", id: index});
+    var $newListItem = $('<LI>').attr({class: "ui-state-default video-item", id: index});
     
-    $dragger = $('<SPAN>').attr({class: "dragger fa fa-sort fa-lg master-control"});
+    var $dragger = $('<SPAN>').attr({class: "dragger fa fa-sort fa-lg master-control"});
     
-    $number = $('<SPAN>').attr({class: "video-number"});
+    var $number = $('<SPAN>').attr({class: "video-number"});
     $number.append(index + 1 + '.');
     
-    $playButton = $('<SPAN>').attr({class: "play-button fa fa-play-circle fa-lg clickable master-control", id: "tit" + index, title: "Play this video"});
+    var $urlButton = $('<SPAN>').attr({class: "url-button fa fa-link fa-lg", id: index, title: "Link to video"});
     
-    $urlButton = $('<SPAN>').attr({class: "url-button fa fa-link fa-lg", id: index, title: "Link to video"});
     
-    $deleteButton = $('<SPAN>').attr({class: "delete-button fa fa-times fa-lg master-control", id: index, title: "Double-click to delete"});
+    var $videoControls = $('<SPAN>').attr({class: "video-controls master-control"});
     
-    $bumpButton = $('<SPAN>').attr({class: "bump-button fa fa-arrow-up fa-lg clickable master-control", id: index, title: "Bump as next video to play"});
+    var $playButton = $('<SPAN>').attr({class: "play-button fa fa-play-circle fa-lg clickable master-control", id: "tit" + index, title: "Play this video"});
     
-    $playingIndicator = $('<SPAN>').attr({class: "playing-indicator fa fa-youtube-play fa-lg", id: index});
+    var $bumpButton = $('<SPAN>').attr({class: "bump-button fa fa-arrow-up fa-lg clickable master-control", id: index, title: "Bump as next video to play"});
     
-    $vidTitle = $('<SPAN>').attr({class: "video-title"});
+    var $deleteButton = $('<SPAN>').attr({class: "delete-button fa fa-times fa-lg master-control", id: index, title: "Double-click to delete"});
+    
+    $videoControls.append($playButton).append($bumpButton).append($deleteButton);
+    
+    
+    var $videoVoteControls = $('<SPAN>').attr({class: "video-voting-controls"});
+    
+    var $videoVoteButton = $('<INPUT>').attr({class: "video-vote-button", type: "button", value: "Vote"});
+    
+    var $videoVoteCount = $('<SPAN>').attr({class: "video-vote-count"}).html("0");
+    $videoVoteControls.append($videoVoteButton).append(" ").append($videoVoteCount);
+    
+    var $playingIndicator = $('<SPAN>').attr({class: "playing-indicator fa fa-youtube-play fa-lg", id: index});
+    
+    var $vidTitle = $('<SPAN>').attr({class: "video-title"});
     $vidTitle.append(videoPlaylist[index].title);
      
-    $vidDuration = $('<SPAN>').attr({class: "video-duration"});
+    var $vidDuration = $('<SPAN>').attr({class: "video-duration"});
     
     $vidDuration.append(secondsToTime(videoPlaylist[index].duration));
-    $vidAddedBy = $('<SPAN>').attr({class: "video-addedBy"});
+    var $vidAddedBy = $('<SPAN>').attr({class: "video-addedBy"});
     $vidAddedBy.append('added by ' + videoPlaylist[index].addedBy);
     
     $newListItem.append($number);
-    
     $newListItem.append($vidTitle);
     $newListItem.append($playingIndicator);
-    
     $newListItem.append($dragger);
     $newListItem.append($urlButton);
     $newListItem.append($vidAddedBy);
     $newListItem.append($vidDuration);
-    $newListItem.append($playButton);
-    $newListItem.append($bumpButton);
-    $newListItem.append($deleteButton);
+    $newListItem.append($videoControls);
+    $newListItem.append($videoVoteControls);
+    
     $playingIndicator.hide();
     
     // Marquee long video titles
     if (getTextWidth(videoPlaylist[index].title) >= $vidTitle.width())
     {
-        $marquee = $('<MARQUEE>').attr({behavior: "alternate", scrollDelay: "200", hspace: "10", scrollAmount: "0"});
+        var $marquee = $('<MARQUEE>').attr({behavior: "alternate", scrollDelay: "200", hspace: "10", scrollAmount: "0"});
         
         $marquee.hover(function () 
         {
@@ -1998,6 +2094,13 @@ function generatePlaylistItem(index)
             serverChangeVideo(id);
         });
         
+        $videoVoteButton.click(function ()
+        {
+            var vidId = getIdForVideoItem(this);
+            var id = videoPlaylist[vidId].id;
+            toggleVideoVote(index, id);
+        });
+        
         $bumpButton.click(function() {
             var id = getIdForVideoItem(this);
             
@@ -2021,12 +2124,10 @@ function generatePlaylistItem(index)
                 serverMoveVideo(newPos, id);
             }
         });
-    }
-    else
-    {
-        // Disable playlist controls
-        $dragger.hide();
-        $deleteButton.hide();
+        
+        // Hide voting button
+        $videoVoteButton.hide();
+        $('.video-voting-controls').css('width', '');
     }
     
     // Change cursor on hover
