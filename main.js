@@ -780,6 +780,12 @@ $(function ()
             $('#skipButton').val('SKIP');
         }
     });
+    
+    // Message for updating video votes
+    socket.on('videoVoteSync', function (videoIndex, voteCount)
+    {
+        $('.video-item#' + videoIndex + ' .video-vote-count').html(voteCount);
+    });
 
     // Message for getting current log of chat when first entering room
     socket.on('masterVideoPause', function (paused)

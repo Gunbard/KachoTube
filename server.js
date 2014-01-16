@@ -66,7 +66,7 @@ var userList        = [];
 // user {string name, USER_TYPE userType, string imgBase64}
 var userInfo        = [];    
 
-// video {string id, string title, string duration, string addedBy}
+// video {string id, string title, string duration, string addedBy, string source}
 var videoList       = [];
 
 // users with finished video [string name]
@@ -74,6 +74,9 @@ var finishedUsers   = [];
 
 // users who would like to skip the current video [string id]
 var skipList        = [];
+
+// keep track of votes on a video -- "video id" : username/vote array  
+var videoVotes		= {};
 
 // item {string username, string text, string timestamp}
 var chatLog         = [];
@@ -778,6 +781,36 @@ io.sockets.on('connection', function (socket)
         io.sockets.emit('skipSync', skipList.length, skipsNeeded);
     }
     
+    // 
+    function toggleUserVideoVote(videoId)
+	{
+        var videoVoteList = videoVotes[videoId];
+        if (videoVoteList)
+        {
+        	var videoIndex = indexById(videoId);
+			if (videoIndex == -1)
+			{
+				// Couldn't find video in list
+				return;
+			}
+
+        	var idx = videoVoteList.indexOf(username);
+        	if (idx > -1)
+        	{
+    			// Remove from vote list
+        		videoVoteList.splice(idx);
+        	}
+        	else
+        	{
+        		// Add to vote list
+        		videoVoteList.push(username);
+        	}
+        	
+        	// Tell everyone about the vote change
+        	io.sockets.emit('videoVoteSync', videoIndex, videoVoteList.length);
+        }
+    }    
+        
     // Detects and executes a command
     // Returns null if nothing detected
     function detectCommand(queryString)
@@ -1548,6 +1581,17 @@ io.sockets.on('connection', function (socket)
        }
     });
     
+    // Message for toggling a video vote
+    socket.on('toggleVideoVote', function (videoId)
+    {
+    	spammingCheck(videoId.length, "");
+
+       if (validUser())
+       {
+           toggleUserVideoVote(videoId);
+       }
+    }
+        
     // Message for enabling/disabling skipping
     socket.on('toggleSkippingEnabled', function (enabled)
     {
