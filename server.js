@@ -60,7 +60,7 @@ var USER_TYPE =
 
 
 //========BASIC DATA STORAGE===========//
-// user {string name, string id, string ip, date lastspammingCheck, int msgCount, int chatMsgCount, date lastChatEmbed, USER_TYPE userType}
+// user {string name, string id, string ip, date lastspammingCheck, int msgCount, int chatMsgCount, date lastChatEmbed, USER_TYPE userType, bool skipped, string votedVideo}
 var userList        = [];    
 
 // user {string name, USER_TYPE userType, string imgBase64}
@@ -75,7 +75,7 @@ var finishedUsers   = [];
 // users who would like to skip the current video [string id]
 var skipList        = [];
 
-// keep track of votes on a video -- "video id" : username/vote array  
+// keep track of votes on a video -- "video id": votes  
 var videoVotes		= {};
 
 // item {string username, string text, string timestamp}
@@ -602,7 +602,6 @@ io.sockets.on('connection', function (socket)
             {
                 return i;
             }
-            // Set new time for user
         }
         return -1;
     }
@@ -781,34 +780,50 @@ io.sockets.on('connection', function (socket)
         io.sockets.emit('skipSync', skipList.length, skipsNeeded);
     }
     
-    // 
+    // Toggles a vote on a video
     function toggleUserVideoVote(videoId)
 	{
-        var videoVoteList = videoVotes[videoId];
-        if (videoVoteList)
+        var videoIndex = indexById(videoId);
+        if (videoIndex == -1)
         {
-        	var videoIndex = indexById(videoId);
-			if (videoIndex == -1)
-			{
-				// Couldn't find video in list
-				return;
-			}
-
-        	var idx = videoVoteList.indexOf(username);
-        	if (idx > -1)
-        	{
-    			// Remove from vote list
-        		videoVoteList.splice(idx);
-        	}
-        	else
-        	{
-        		// Add to vote list
-        		videoVoteList.push(username);
-        	}
-        	
-        	// Tell everyone about the vote change
-        	io.sockets.emit('videoVoteSync', videoIndex, videoVoteList.length);
+            // Couldn't find video in list
+            console.log("Error: attempted to vote on non-existent video [" + videoId + "]");
+            return;
         }
+        
+        var user = getUserById(userId);
+        if (user)
+        {               
+            if (!user.votedVideo || user.votedVideo.length == 0)
+            {
+                if (!videoVotes[videoId])
+                {
+                    videoVotes[videoId] = 1;
+                }
+                else
+                {
+                    videoVotes[videoId] += 1;
+                }
+                
+                user.votedVideo = videoId;
+            }
+            else if (user.votedVideo == videoId)
+            {
+                videoVotes[videoId] -= 1;
+                user.votedVideo = "";
+            }
+        }
+        
+        if (videoVotes[videoId] == 0)
+        {
+            // Remove video from vote list
+            delete videoVotes[videoId];
+        }
+        
+        var voteCount = videoVotes[videoId] ? videoVotes[videoId] : 0; 
+        
+        // Tell everyone about the vote change
+        io.sockets.emit('videoVoteSync', videoIndex, voteCount);
     }    
         
     // Detects and executes a command
@@ -1454,6 +1469,13 @@ io.sockets.on('connection', function (socket)
         
         if (validUser() && (isMasterUser() || isAdmin()))
         {
+            // Delete from vote list
+            var videoId = videoList[videoIndex].id;
+            if (videoVotes[videoId])
+            {
+                delete videoVotes[videoId];
+            }
+        
             videoList.splice(videoIndex, 1);
             syncDeleteVideo(videoIndex);
             savePlaylist();
@@ -1590,7 +1612,7 @@ io.sockets.on('connection', function (socket)
        {
            toggleUserVideoVote(videoId);
        }
-    }
+    });
         
     // Message for enabling/disabling skipping
     socket.on('toggleSkippingEnabled', function (enabled)
@@ -1762,9 +1784,7 @@ io.sockets.on('connection', function (socket)
 
     // When a user disconnects
 	socket.on('disconnect', function () 
-    {
-        removeUser(username);
-        
+    {        
         // Remove from skip list if in there
         var idx = skipList.indexOf(username);
         if (idx > -1)
@@ -1772,6 +1792,32 @@ io.sockets.on('connection', function (socket)
             // Remove from skip list
             skipList.splice(idx, 1);
         }
+        
+        // Remove user's video vote
+        var user = getUserById(userId);
+        if (user)
+        {
+            if (user.votedVideo && user.votedVideo.length > 0)
+            {
+                var videoIndex = indexById(user.votedVideo);
+                if (videoIndex > -1)
+                {                
+                    if (videoVotes[user.votedVideo] && videoVotes[user.votedVideo] > 0)
+                    {
+                        videoVotes[user.votedVideo] -= 1;
+                    }
+                    else
+                    {
+                        delete videoVotes[user.votedVideo];
+                    }
+                    
+                    var voteCount = videoVotes[user.votedVideo] ? videoVotes[user.votedVideo] : 0;
+                    io.sockets.emit('videoVoteSync', videoIndex, voteCount);
+                }
+            }
+        }
+        
+        removeUser(username);
         
         var foundNewMaster = false;
         

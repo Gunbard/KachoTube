@@ -1410,6 +1410,23 @@ function toggleSkip()
     socket.emit('toggleSkip');
 }
 
+function toggleVideoVote(videoIndex, videoId)
+{
+    var $voteButton = $('.video-item#' + videoIndex + ' .video-vote-button');
+    if ($voteButton.val() == 'Vote')
+    {
+        $voteButton.val('Unvote');
+        $('.video-item .video-vote-button').not($voteButton).attr({disabled: true});
+    }
+    else
+    {
+        $voteButton.val('Vote');
+        $('.video-item .video-vote-button').attr({disabled: false});
+    }
+
+    socket.emit('toggleVideoVote', videoId);
+}
+
 function toggleSkipEnabled(enabled)
 {
     if (myName == masterUser || superUser)
@@ -1957,9 +1974,9 @@ function generatePlaylistItem(index)
     var $videoVoteControls = $('<SPAN>').attr({class: "video-voting-controls non-master-control"});
     
     var $videoVoteButton = $('<INPUT>').attr({class: "video-vote-button", type: "button", value: "Vote"});
+    
     var $videoVoteCount = $('<SPAN>').attr({class: "video-vote-count"}).html("0");
     $videoVoteControls.append($videoVoteButton).append(" ").append($videoVoteCount);
-    
     
     var $playingIndicator = $('<SPAN>').attr({class: "playing-indicator fa fa-youtube-play fa-lg", id: index});
     
@@ -2019,6 +2036,13 @@ function generatePlaylistItem(index)
             serverChangeVideo(id);
         });
         
+        $videoVoteButton.click(function ()
+        {
+            var vidId = getIdForVideoItem(this);
+            var id = videoPlaylist[vidId].id;
+            toggleVideoVote(index, id);
+        });
+        
         $bumpButton.click(function() {
             var id = getIdForVideoItem(this);
             
@@ -2042,12 +2066,6 @@ function generatePlaylistItem(index)
                 serverMoveVideo(newPos, id);
             }
         });
-    }
-    else
-    {
-        // Disable playlist controls
-        $dragger.hide();
-        $deleteButton.hide();
     }
     
     // Change cursor on hover
