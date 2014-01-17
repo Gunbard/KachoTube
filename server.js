@@ -112,6 +112,7 @@ var skipsNeeded         = 1;            // Set to 0 to ignore skips
 var skipPercent         = 0;
 var skippingEnabled     = true;
 var playlistLocked      = false;
+var videoVotingEnabled  = true;
 var giveMasterToUser    = true;         // Allow any user to be master
 var commandTimer;
 
@@ -1629,7 +1630,7 @@ io.sockets.on('connection', function (socket)
     {
     	spammingCheck(videoId.length, "");
 
-       if (validUser())
+       if (validUser() && videoVotingEnabled)
        {
            toggleUserVideoVote(videoId);
        }
@@ -1648,7 +1649,7 @@ io.sockets.on('connection', function (socket)
         }
     });
     
-    // Message for enabling/disabling skipping
+    // Message for enabling/disabling playlist lock
     socket.on('togglePlaylistLocked', function (locked)
     {
         spammingCheck(locked.length, "");
@@ -1658,6 +1659,19 @@ io.sockets.on('connection', function (socket)
         
             playlistLocked = locked;
             io.sockets.emit('lockPlaylistSync', locked);
+        }
+    });
+    
+    // Message for enabling/disabling video voting
+    socket.on('toggleVideoVoting', function (enabled)
+    {
+        spammingCheck(enabled.length, "");
+        
+        if (validUser() && (isMasterUser() || isAdmin()) && videoVotingEnabled == !enabled)
+        {
+        
+            videoVotingEnabled = enabled;
+            io.sockets.emit('videoVotingSync', enabled);
         }
     });
     

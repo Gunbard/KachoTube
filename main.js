@@ -74,7 +74,7 @@ $(function ()
     });
 
     // Setup settings
-    $('#settingShowChatImages, #settingShowChatVideos, #settingNNDToggle, #settingDisplayTrips, #settingShowTimestamp, #settingAllowSkips, #settingPlayerSizeSm, #settingPlayerSizeLg, #settingChatImgSizeSm, #settingChatImgSizeMed, #settingChatImgSizeLg, #settingLockPlaylist, #settingShowChat').click(function ()
+    $('#settingShowChatImages, #settingShowChatVideos, #settingNNDToggle, #settingDisplayTrips, #settingShowTimestamp, #settingAllowSkips, #settingPlayerSizeSm, #settingPlayerSizeLg, #settingChatImgSizeSm, #settingChatImgSizeMed, #settingChatImgSizeLg, #settingLockPlaylist, #settingShowChat, #settingVideoVoting').click(function ()
     {
         checkSettings();
     });
@@ -696,7 +696,34 @@ $(function ()
         }
     });
 
-
+    // Message for enabling/disabling video voting
+    socket.on('videoVotingSync', function (enabled)
+    {
+        var curVidIndex = indexById(currentVideo);
+        var $curVidVoteButton = $('.video-item#' + curVidIndex + ' .video-vote-button');
+        var $votedVid = $(".video-item .video-vote-button[value='Unvote']");
+        if (enabled)
+        {            
+            if ($votedVid.length > 0)
+            {
+                // If you voted, you can only unvote
+                $votedVid.attr({disabled: false});
+            }
+            else
+            {
+                // Otherwise allow voting on all the videos
+                $('.video-item .video-vote-button').attr({disabled: false});
+            }
+            
+            // Can't vote on current video
+            $curVidVoteButton.attr({disabled: true});
+        } 
+        else 
+        {
+            $('.video-item .video-vote-button').attr({disabled: true});
+        }
+    });
+    
     // Message for getting current log of chat when first entering room
     socket.on('chatLogSync', function (chatLog)
     {
@@ -1454,6 +1481,14 @@ function togglePlaylistLocked(locked)
     }
 }
 
+function toggleVideoVoting(enabled)
+{
+    if (myName == masterUser || superUser)
+    {
+        socket.emit('toggleVideoVoting', enabled);
+    }
+}
+
 // Load new player API
 function loadPlayerAPI(newSource, videoId)
 {
@@ -1855,6 +1890,8 @@ function checkSettings()
     
     toggleSkipEnabled(document.getElementById('settingAllowSkips').checked);
     togglePlaylistLocked(document.getElementById('settingLockPlaylist').checked);
+    toggleVideoVoting(document.getElementById('settingVideoVoting').checked);
+
 }
 
 // Updates skip settings for room
