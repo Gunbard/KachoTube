@@ -591,23 +591,7 @@ $(function ()
     // Message for syncing just video id from server
     socket.on('videoSync', function (videoId, source)
     {   
-        if (currentVideo == "")
-        {        
-            // Get initial player size from css container
-            playerWidth = parseInt($('#videoDivContainer').css('width'));
-            playerHeight = parseInt($('#videoDivContainer').css('height'));
-            $('#NNDOverlay').css({width: playerWidth, height: playerHeight});
-        }
-        
-        currentVideo = videoId;
-        serverVideo = currentVideo;
-        
-        if (source != APImode || source == "us" || source == "ls" || source == "tw")
-        {
-            loadPlayerAPI(source, currentVideo);
-        }
-        
-        setPlayingIndicator();
+        changeVideo(videoId);
     });
 
     // Message for deleting a video from the playlist
@@ -924,6 +908,14 @@ function serverChangeVideo(index)
 // Change to specific video
 function changeVideo(videoId)
 {
+    if (currentVideo == "")
+    {        
+        // Get initial player size from css container
+        playerWidth = parseInt($('#videoDivContainer').css('width'));
+        playerHeight = parseInt($('#videoDivContainer').css('height'));
+        $('#NNDOverlay').css({width: playerWidth, height: playerHeight});
+    }
+
     var index = indexById(videoId);
     var source = videoPlaylist[index].source;
     
@@ -938,7 +930,21 @@ function changeVideo(videoId)
     }
     
     currentVideo = videoId;
+    serverVideo = currentVideo;
     updateTitle(videoPlaylist[index].title);
+    
+    // Set vote button display
+    var $voteButton = $('.video-item#' + index + ' .video-vote-button');
+    var userVotedForVideo = ($voteButton.val() == 'Unvote');
+    
+    // Disable voting for this video
+    $voteButton.attr({disabled: true}).val('Vote');
+
+    // Renable voting for all others if vote wasn't used
+    if (userVotedForVideo)
+    {
+        $('.video-item .video-vote-button').not($voteButton).attr({disabled: false});
+    }
     
     // Set indicator for currently playing video
     setPlayingIndicator();
@@ -1421,7 +1427,12 @@ function toggleVideoVote(videoIndex, videoId)
     else
     {
         $voteButton.val('Vote');
-        $('.video-item .video-vote-button').attr({disabled: false});
+        
+        var curVidIndex = indexById(currentVideo);
+        var $curVidVoteButton = $('.video-item#' + curVidIndex + ' .video-vote-button');
+        
+        // Enable buttons except for currently playing video
+        $('.video-item .video-vote-button').not($curVidVoteButton).attr({disabled: false});
     }
 
     socket.emit('toggleVideoVote', videoId);

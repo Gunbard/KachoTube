@@ -563,6 +563,27 @@ io.sockets.on('connection', function (socket)
     // Send everyone the id of the video to immediately change to on the playlist
     function sendVideoChange(videoId)
     {
+        // Reset votes, if any
+        if (videoVotes[videoId])
+        {
+            var index = indexById(videoId);
+            if (index > -1)
+            {
+                delete videoVotes[videoId];
+                
+                // Reset video vote properties
+                for (var i = 0; i < userList.length; i++)
+                {
+                    if (userList[i].votedVideo == videoId)
+                    {
+                        userList[i].votedVideo = '';
+                    }
+                }
+                
+                io.sockets.emit('videoVoteSync', index, '0');
+            }
+        }
+        
         io.sockets.emit('videoChangeSync', videoId);
     }
     
