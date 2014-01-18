@@ -48,6 +48,13 @@ var USER_TYPE =
     "normal":   2
 }
 
+var PLAYER_STATE_TYPE =
+{
+    "finished": 0,
+    "playing":  1,
+    "paused":   2
+}
+
 google.load("swfobject", "2.1");
 
 // Page finished loading
@@ -73,8 +80,8 @@ $(function ()
         });
     });
 
-    // Setup settings
-    $('#settingShowChatImages, #settingShowChatVideos, #settingNNDToggle, #settingDisplayTrips, #settingShowTimestamp, #settingAllowSkips, #settingPlayerSizeSm, #settingPlayerSizeLg, #settingChatImgSizeSm, #settingChatImgSizeMed, #settingChatImgSizeLg, #settingLockPlaylist, #settingShowChat, #settingVideoVoting').click(function ()
+    // Setup settings -- TODO should be able to clean this
+    $('#settingShowChatImages, #settingShowChatVideos, #settingNNDToggle, #settingDisplayTrips, #settingShowTimestamp, #settingAllowSkips, #settingPlayerSizeSm, #settingPlayerSizeLg, #settingChatImgSizeSm, #settingChatImgSizeMed, #settingChatImgSizeLg, #settingLockPlaylist, #settingShowChat, #settingVideoVoting, #settingVideoVoteAutoplay').click(function ()
     {
         checkSettings();
     });
@@ -205,7 +212,7 @@ $(function ()
             if (timeDiff > 0 && Math.abs(time - videoPlayer.getCurrentTime()) > timeDiff)
             {
                 // Sync only if I'm not paused and I'm playing master's video
-                if (videoPlayer.getPlayerState() != 2 && currentVideo == serverVideo)
+                if (videoPlayer.getPlayerState() != PLAYER_STATE_TYPE.paused && currentVideo == serverVideo)
                 {
                     if (APImode == "yt")
                     {
@@ -843,15 +850,10 @@ $(function ()
 // Event listener for when video changes state
 function onPlayerStateChange(state)
 {
-    if (myName == masterUser && state >= 0 && state <= 2)
+    if (myName == masterUser && state >= PLAYER_STATE_TYPE.finished && state <= PLAYER_STATE_TYPE.paused)
     {
         // Pass to server
         socket.emit('playerStateChange', state);
-    }
-    
-    if (state == 0)
-    {
-        nextVideo();
     }
 }
 
@@ -985,7 +987,7 @@ function changeVideo(videoId)
     setPlayingIndicator();
 }
 
-// Go to next video in playlist
+// Go to next video in playlist -- DEPRECATED
 function nextVideo()
 {
     var currentVidIndex = indexById(currentVideo);
@@ -1499,6 +1501,14 @@ function toggleVideoVoting(enabled)
     }
 }
 
+function toggleVideoVoteAutoplay(enabled)
+{
+    if (myName == masterUser || superUser)
+    {
+        socket.emit('toggleVideoVoteAutoplay', enabled);
+    }
+}
+
 // Load new player API
 function loadPlayerAPI(newSource, videoId)
 {
@@ -1901,6 +1911,7 @@ function checkSettings()
     toggleSkipEnabled(document.getElementById('settingAllowSkips').checked);
     togglePlaylistLocked(document.getElementById('settingLockPlaylist').checked);
     toggleVideoVoting(document.getElementById('settingVideoVoting').checked);
+    toggleVideoVoteAutoplay(document.getElementById('settingVideoVoteAutoplay').checked);
 
 }
 

@@ -48,11 +48,19 @@ var COOLDOWN_CHAT_EMBED = 10;    // Seconds
 var COOLDOWN_SHUFFLE    = 30;
 var COMMAND_TIMEOUT     = 3000;
 
+// Enums
 var USER_TYPE =
 {
     "admin":    0,
     "mod":      1,
     "normal":   2
+}
+
+var PLAYER_STATE_TYPE =
+{
+    "finished": 0,
+    "playing":  1,
+    "paused":   2
 }
 
 // Server currently only suports one room. Should be able to encapsulate
@@ -101,19 +109,21 @@ var userCount           = 0;
 var masterUser          = "";
 var masterUserId        = "";
 var masterTime          = 0;
-var currentVideo        = "";           // Id of video
+var currentVideo        = "";       // Id of video
 var streamSource        = "";
 var videoIsStream       = false;
-var masterless          = false;        // aka TV mode
+var masterless          = false;    // aka TV mode
 var paused              = false;
 var validatedVideos     = 0;
 var skipUsePercent      = false;
-var skipsNeeded         = 1;            // Set to 0 to ignore skips   
+var skipsNeeded         = 1;        // Set to 0 to ignore skips   
 var skipPercent         = 0;
 var skippingEnabled     = true;
 var playlistLocked      = false;
 var videoVotingEnabled  = true;
-var giveMasterToUser    = true;         // Allow any user to be master
+var giveMasterToUser    = true;     // Allow any user to be master
+var videoVoteMode       = true;     // Votes affect what video plays next
+var videoByVoteThresh   = 2;        // Mininum number of votes needed
 var commandTimer;
 
 // Formats a date string. Expects a UTC date and will convert to local automatically.
@@ -281,6 +291,74 @@ io.sockets.on('connection', function (socket)
     function syncVideoList()
     {   
         io.sockets.emit('videoListSync', videoList);
+    }
+    
+    // Go to next video in playlist
+    function nextVideo()
+    {
+        var videoIdx = indexById(currentVideo);
+            
+        // Override for skipping streams
+        if (videoIdx < 0 && videoList.length > 0)
+        {
+            videoIdx = 0;
+        }
+        
+        if (videoIdx > -1)
+        {
+            var nextVideo;
+            if (videoIdx >= videoList.length - 1)
+            {
+                nextVideo = videoList[0].id;
+            }
+            else
+            {
+                nextVideo = videoList[videoIdx + 1].id;
+            }
+
+            if (nextVideo)
+            {
+                videoIsStream = false;
+                currentVideo = nextVideo;
+                sendVideoChange(currentVideo);
+                sendCurrentVideo();
+                // Reset skips
+                skipList = [];
+            }
+        }
+    }
+    
+    // Go to video with highest votes 
+    function nextVideoByVotes()
+    {   
+        var votes = [];
+        Object.keys(videoVotes).forEach(function (key) 
+        { 
+            var value = videoVotes[key];
+            votes.push([key, value]);
+        });
+        
+        // Find highest voted video
+        var highestVoted = ["", 0];
+        for (var i = 0; i < votes.length; i++)
+        {
+            if (votes[i])
+            {
+                if (votes[i][1] > highestVoted[1] && votes[i][1] >= videoByVoteThresh)
+                {
+                    highestVoted = votes[i];
+                }
+            }
+        }
+        
+        if (videoVotes.length == 0 || highestVoted[0].length == 0)
+        {
+            nextVideo();
+            return;
+        }
+        
+        var highestVotedId = highestVoted[0];
+        sendVideoChange(highestVotedId);
     }
     
     function savePlaylist()
@@ -1277,28 +1355,34 @@ io.sockets.on('connection', function (socket)
     
         if (validUser() && (isMasterUser() || isAdmin()))
         {
-            switch (state)
+            if (isMasterUser())
             {
-            case 0: // Video finished playing
-                //console.log("Got finish message from " + username);
-                //finishedUsers['name'] = username;
-                //console.log(Object.keys(finishedUsers).length);
-                break;
-            case 1: // Playing
-                paused = false;
-                if (masterUser == username)
+                switch (state)
                 {
+                case PLAYER_STATE_TYPE.finished:
+                    if (videoVoteMode)
+                    {
+                        nextVideoByVotes();
+                    }
+                    else
+                    {
+                        nextVideo();
+                    }
+                
+                    //console.log("Got finish message from " + username);
+                    //finishedUsers['name'] = username;
+                    //console.log(Object.keys(finishedUsers).length);
+                    break;
+                case PLAYER_STATE_TYPE.playing:
+                    paused = false;
                     sendPlayPause(paused);
-                }
-                break;
-            case 2: // Paused
-                paused = true;
-                if (masterUser == username)
-                {
+                    break;
+                case PLAYER_STATE_TYPE.paused:
+                    paused = true;
                     sendPlayPause(paused);
+                    break;
+                default:
                 }
-                break;
-            default:
             }
         }
 	});   
@@ -1681,6 +1765,18 @@ io.sockets.on('connection', function (socket)
         
             videoVotingEnabled = enabled;
             io.sockets.emit('videoVotingSync', enabled);
+        }
+    });
+    
+    // Message for enabling/disabling video vote autoplaying
+    socket.on('toggleVideoVoteAutoplay', function (enabled)
+    {
+        spammingCheck(enabled.length, "");
+        
+        if (validUser() && (isMasterUser() || isAdmin()) && videoVoteMode == !enabled)
+        {
+            videoVoteMode = enabled;
+            console.log("Video vote autoplay changed to: " + enabled);
         }
     });
     
