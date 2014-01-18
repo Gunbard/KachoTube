@@ -597,6 +597,14 @@ $(function ()
     // Message for deleting a video from the playlist
     socket.on('deleteVideoSync', function (index)
     {
+        // Re-enable voting if you voted for deleted video
+        if ($('.video-item#' + index + ' .video-vote-button').val() == 'Unvote')
+        {
+            var curVidIndex = indexById(currentVideo);
+            var $curVidVoteButton = $('.video-item#' + curVidIndex + ' .video-vote-button');
+            $('.video-item .video-vote-button').not($curVidVoteButton).attr({disabled: false});
+        }
+    
         videoPlaylist.splice(index, 1);
         
         if (videoPlaylist.length == 0)

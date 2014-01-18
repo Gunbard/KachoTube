@@ -1496,6 +1496,15 @@ io.sockets.on('connection', function (socket)
             if (videoVotes[videoId])
             {
                 delete videoVotes[videoId];
+                
+                // Reset video vote properties
+                for (var i = 0; i < userList.length; i++)
+                {
+                    if (userList[i].votedVideo == videoId)
+                    {
+                        userList[i].votedVideo = '';
+                    }
+                }
             }
         
             videoList.splice(videoIndex, 1);
