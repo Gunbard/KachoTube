@@ -1171,7 +1171,8 @@ function displayMasterControls(showControls)
             $('.mod-control').show();
         }
         
-        $('.video-voting-controls').hide();
+        $('.video-vote-button').hide();
+        $('.video-voting-controls').css('width', '');
     }
     else
     {
@@ -1181,7 +1182,8 @@ function displayMasterControls(showControls)
         $('.admin-control').hide();
         $('.mod-control').hide();
         
-        $('.video-voting-controls').show();
+        $('.video-vote-button').show();
+        $('.video-voting-controls').css('width', '100');
     }
 }
 
@@ -2019,7 +2021,7 @@ function generatePlaylistItem(index)
     $videoControls.append($playButton).append($bumpButton).append($deleteButton);
     
     
-    var $videoVoteControls = $('<SPAN>').attr({class: "video-voting-controls non-master-control"});
+    var $videoVoteControls = $('<SPAN>').attr({class: "video-voting-controls"});
     
     var $videoVoteButton = $('<INPUT>').attr({class: "video-vote-button", type: "button", value: "Vote"});
     
@@ -2114,6 +2116,10 @@ function generatePlaylistItem(index)
                 serverMoveVideo(newPos, id);
             }
         });
+        
+        // Hide voting button
+        $videoVoteButton.hide();
+        $('.video-voting-controls').css('width', '');
     }
     
     // Change cursor on hover

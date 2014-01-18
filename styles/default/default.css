@@ -231,7 +231,7 @@ li.ui-state-default
 
 .url-button
 {
-    width:              30;
+    width:              24;
 }
 
 .play-button
@@ -246,7 +246,7 @@ li.ui-state-default
 
 .dragger
 {
-    width:              54;
+    width:              40;
     height:             20;
     text-align:         center;
 }
@@ -269,7 +269,6 @@ li.ui-state-default
 
 .video-voting-controls
 {
-    width:              100;
     text-align:         right;
 }
 
