@@ -117,7 +117,7 @@ var paused              = false;
 var validatedVideos     = 0;
 var skipUsePercent      = false;
 var skipsNeeded         = 1;        // Set to 0 to ignore skips   
-var skipPercent         = 0;
+var skipPercent         = 66;
 var skippingEnabled     = true;
 var playlistLocked      = false;
 var videoVotingEnabled  = true;
@@ -443,6 +443,29 @@ io.sockets.on('connection', function (socket)
             }
         }
         return null;
+    }
+    
+    // Sends master user current room settings
+    function sendRoomSettings()
+    {
+        if (masterUser == "")
+        {
+            return;
+        }
+        
+        var settingsData = 
+        {
+            "settingLockPlaylist":      playlistLocked,
+            "settingVideoVoting":       videoVotingEnabled,
+            "settingAllowSkips":        skippingEnabled,
+            "settingSkipByPercent":     skipUsePercent,
+            "settingSkipByVotes":       !skipUsePercent,
+            "skipPercent":              skipPercent,
+            "skipVotes":                skipsNeeded,
+            "settingVideoVoteAutoplay": videoVotingEnabled
+        }
+        
+        io.sockets.socket(masterUserId).emit('roomSettingsSync', JSON.stringify(settingsData));
     }
     
     // Check if a video is real and will add it to the playlist
@@ -1253,6 +1276,7 @@ io.sockets.on('connection', function (socket)
             masterUser = username;
             masterUserId = id;
             console.log("masterUser set to " + masterUser);
+            sendRoomSettings();
         }
         
     }
@@ -1991,6 +2015,7 @@ io.sockets.on('connection', function (socket)
             }
             
             io.sockets.emit('masterUserSync', masterUser);
+            sendRoomSettings();
         }
         
         syncUserList();

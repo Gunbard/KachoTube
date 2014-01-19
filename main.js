@@ -462,6 +462,7 @@ $(function ()
         var greentext = text.match(/^&gt;.*/);
         if (greentext)
         {
+            //text = '<SPAN Class = "greentext">' + text + '</SPAN>';
             text = text.replace(/&gt;/g, ">");
             $('#chatList span').last().addClass('greentext');
         }
@@ -514,12 +515,6 @@ $(function ()
         
         NNDCommentCount += 1;
         var $newNNDText = $('<SPAN>').attr({ class: "NNDComment text-outline", id: NNDCommentCount });
-        
-        if (greentext)
-        {
-            text = text.replace(/&gt;/g, ">");
-            $newNNDText.addClass('greentext');
-        }
         
         if (chatLine.whisper)
         {
@@ -811,6 +806,20 @@ $(function ()
             $('#skipButton').val('SKIP');
         }
     });
+    
+    // Message for updating room settings
+    socket.on('roomSettingsSync', function (settingsData)
+    {
+        var settings = JSON.parse(settingsData);
+        document.getElementById('settingLockPlaylist').checked = settings.settingLockPlaylist;
+        document.getElementById('settingVideoVoting').checked = settings.settingVideoVoting;
+        document.getElementById('settingAllowSkips').checked = settings.settingAllowSkips;
+        document.getElementById('settingSkipByPercent').checked = settings.settingSkipByPercent;
+        $('#skipPercent').val(settings.skipPercent);
+        document.getElementById('settingSkipByVotes').checked = settings.settingSkipByVotes;
+        $('#skipVotes').val(settings.skipVotes);
+        document.getElementById('settingVideoVoteAutoplay').checked = settings.settingVideoVoteAutoplay;
+    });    
     
     // Message for updating video votes
     socket.on('videoVoteSync', function (videoIndex, voteCount)
