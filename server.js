@@ -732,23 +732,22 @@ io.sockets.on('connection', function (socket)
     // Make new user room master
     function masterUserPassOff(user)
     {
-        if (validUser() && (isMasterUser() || isAdmin()))
+        if (userInList(user))
         {
-            if (userInList(user))
+            console.log("inlist");
+            var userData = getUserByName(user);
+            if (userData)
             {
-                var userData = getUserByName(user);
-                if (userData)
-                {
-                    masterUser = userData.name;
-                    masterUserId = userData.id;
-                    io.sockets.emit('masterUserSync', masterUser);
-                    sendServerMsgAll("MasterUser is now \"" + masterUser + "\"");
-                }
+                console.log("userfound");
+                masterUser = userData.name;
+                masterUserId = userData.id;
+                io.sockets.emit('masterUserSync', masterUser);
+                sendServerMsgAll("MasterUser is now \"" + masterUser + "\"");
             }
-            else
-            {
-                sendServerMsgUser("That user is no longer available.")
-            }
+        }
+        else
+        {
+            sendServerMsgUser("That user is no longer available.")
         }
     }
     
@@ -1195,6 +1194,10 @@ io.sockets.on('connection', function (socket)
         }
         
         syncUserList();
+        
+        // Tell user about new type
+        var id = socketIdByName(name);
+        io.sockets.socket(id).emit('userTypeSync', userType);
     }
     
     /****END SERVER FUNCTIONS***************/
@@ -1531,7 +1534,6 @@ io.sockets.on('connection', function (socket)
                 var split = newName.split("#");
                 var namePortion = split.shift();
                 var rejoined = split.join("");
-                console.log(rejoined);
                 var trip = generateTrip(namePortion + rejoined);
                 newName = namePortion + "!" + trip;
             }
@@ -1725,7 +1727,7 @@ io.sockets.on('connection', function (socket)
     {
         spammingCheck(user.length, "");
 
-        if (validUser() && (isMasterUser() || isAdmin()))
+        if (validUser() && (isMasterUser() || isAdmin() || isMod()))
         {
             masterUserPassOff(user);
         }

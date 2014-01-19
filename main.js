@@ -248,9 +248,11 @@ $(function ()
                 tripPart = "!" + splitName[1];
             }
             
-            $makeMaster = $('<SPAN>').attr({class: "make-master-user clickable fa fa-flag-o fa-lg", id: userList[i].name, title: "Give master"});
+            var $makeMaster = $('<SPAN>').attr({class: "make-master-user clickable fa fa-flag-o fa-lg", id: userList[i].name, title: "Give master"});
             
-            $user.append("<SPAN Class = 'master-display fa fa-star-o fa-lg' Title = 'Master User'></SPAN> ");
+            var $masterDisplay = $('<SPAN>').attr({class: "master-display fa fa-star-o fa-lg", title: "Master User"});
+            
+            $user.append($masterDisplay);
             
             $user.append("<SPAN Class = 'admin-display fa fa-heart fa-lg' Title = 'This user is an administrator.'></SPAN>");
             
@@ -311,8 +313,20 @@ $(function ()
                 openPopup($(this).offset().left + 20, $(this).offset().top, '#userPopup');
             });
             
+            $masterDisplay.click(function (e) 
+            { 
+                if (modUser)
+                {
+                    // Steal master
+                    masterUserPassOff(myName);
+                }
+                
+                e.stopPropagation();
+            });
+            
             $makeMaster.click(function (e) 
             { 
+                masterUserPassOff(this.id);
                 e.stopPropagation(); 
             });
             
@@ -324,10 +338,6 @@ $(function ()
             $('.make-master-user').hide();   
         }
         
-        $('.make-master-user').click(function() {
-            masterUserPassOff(this.id);
-        });
-         
         setMasterDisplay();
         checkSettings();
         
@@ -372,6 +382,23 @@ $(function ()
         checkSettings();
     });
 
+    // Message for setting user type
+    socket.on('userTypeSync', function (newType)
+    {
+        switch (newType)
+        {
+            case USER_TYPE.admin:
+                superUser = true;
+                break;
+            case USER_TYPE.mod:
+                modUser = true;
+                break;
+            default:
+                superUser = false;
+                modUser = false;
+        }
+    });
+    
     // Message for setting who the masterUser is
     socket.on('masterUserSync', function (user)
     {
@@ -1214,7 +1241,7 @@ function displayMasterControls(showControls)
 // Tells server to change master user
 function masterUserPassOff(user)
 {
-    if (myName == masterUser || superUser)
+    if (myName == masterUser || superUser || modUser)
     {
         socket.emit('masterUserPassOff', user);
     }
