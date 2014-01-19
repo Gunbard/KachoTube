@@ -462,7 +462,6 @@ $(function ()
         var greentext = text.match(/^&gt;.*/);
         if (greentext)
         {
-            //text = '<SPAN Class = "greentext">' + text + '</SPAN>';
             text = text.replace(/&gt;/g, ">");
             $('#chatList span').last().addClass('greentext');
         }
@@ -515,6 +514,12 @@ $(function ()
         
         NNDCommentCount += 1;
         var $newNNDText = $('<SPAN>').attr({ class: "NNDComment text-outline", id: NNDCommentCount });
+        
+        if (greentext)
+        {
+            text = text.replace(/&gt;/g, ">");
+            $newNNDText.addClass('greentext');
+        }
         
         if (chatLine.whisper)
         {

@@ -573,7 +573,7 @@ input[type=button]
 
 .greentext 
 { 
-    color:                  #789922; 
+    color:                  #789922 !important; 
 }
 
 .whisper
