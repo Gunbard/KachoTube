@@ -96,7 +96,7 @@ var banList         = [{ip: '1234', lastName: 'someone', banDate: '', expiration
 var adminList       = ["Gunbard!eGTll4"];
 
 // list of tripcodes
-var modList         = ["Imaweiner!asdf", "asdfsdf!what"];
+var modList         = ["Imaweiner!asdf", "asdfsdf!what", "lel!RqCi8E"];
 
 // PRIVS
 // User: standard user, can add to unlocked playlist
@@ -108,6 +108,7 @@ var modList         = ["Imaweiner!asdf", "asdfsdf!what"];
 var userCount           = 0;
 var masterUser          = "";
 var masterUserId        = "";
+var guestMasterUser     = "";       // Guest master only provides sync-related info
 var masterTime          = 0;
 var currentVideo        = "";       // Id of video
 var streamSource        = "";
@@ -611,7 +612,14 @@ io.sockets.on('connection', function (socket)
         if (oldName == masterUser)
         {
             masterUser = username;
+            guestMasterUser = "";
             io.sockets.emit('masterUserSync', masterUser);
+        }
+        
+        if (oldName == guestMasterUser)
+        {
+            guestMasterUser = username;
+            io.sockets.emit('guestMasterUserSync', guestMasterUser);
         }
         
         // Set mods as master user
@@ -619,6 +627,7 @@ io.sockets.on('connection', function (socket)
         {
             masterUser = username;
             masterUserId = id;
+            guestMasterUser = "";
             console.log("masterUser set to " + masterUser);
             
             // Tell/remind everyone who the masterUser is
@@ -739,9 +748,9 @@ io.sockets.on('connection', function (socket)
             var userData = getUserByName(user);
             if (userData)
             {
-                console.log("userfound");
                 masterUser = userData.name;
                 masterUserId = userData.id;
+                guestMasterUser = "";
                 io.sockets.emit('masterUserSync', masterUser);
                 sendServerMsgAll("MasterUser is now \"" + masterUser + "\"");
             }
@@ -1199,6 +1208,23 @@ io.sockets.on('connection', function (socket)
         // Tell user about new type
         var id = socketIdByName(name);
         io.sockets.socket(id).emit('userTypeSync', userType);
+        
+        return userType;
+    }
+    
+    // Picks a random user to be a guest master user
+    function findGuestMasterUser()
+    {
+        if (userList.length == 0 || guestMasterUser.length > 0)
+        {
+            return;
+        }
+        
+        var index = Math.floor(Math.random() * userList.length);
+        var guest = userList[index].name;
+        guestMasterUser = guest;
+        console.log("Guest master user is now " + guest);
+        io.sockets.emit('guestMasterUserSync', guest);
     }
     
     /****END SERVER FUNCTIONS***************/
@@ -1279,15 +1305,24 @@ io.sockets.on('connection', function (socket)
         {
             masterUser = username;
             masterUserId = id;
+            guestMasterUser = "";
             console.log("masterUser set to " + masterUser);
+            io.sockets.emit('masterUserSync', masterUser);
             sendRoomSettings();
         }
-        
+        else
+        {
+            if (guestMasterUser.length == 0)
+            {
+                findGuestMasterUser();
+            }
+            else
+            {
+                io.sockets.emit('guestMasterUserSync', guestMasterUser);
+            }
+        }
     }
     
-    // Tell/remind everyone who the masterUser is
-    io.sockets.emit('masterUserSync', masterUser);
-            
     console.log(username + " connected");
 
     // Update userList
@@ -1306,7 +1341,25 @@ io.sockets.on('connection', function (socket)
            
             if (userList.length > 1)
             {
-                socket.broadcast.emit('playerTimeSync', time, masterUser);
+                socket.broadcast.emit('playerTimeSync', time);
+            }
+        }
+	});
+    
+    // Message for sending everyone guestMasterUser's current video time
+	socket.on('guestMasterTimeSync', function (time) 
+    {
+        spammingCheck(time.length, "");
+    
+        // Validation
+        if (validUser() && isFloat(time))
+        {
+            masterTime = time;
+            //console.log("Time: " + time + " from " + masterUser + "\n");
+           
+            if (userList.length > 1)
+            {
+                socket.broadcast.emit('playerTimeSync', time);
             }
         }
 	});
@@ -2012,6 +2065,7 @@ io.sockets.on('connection', function (socket)
                     {
                         masterUser = userList[i].name;
                         masterUserId = userList[i].id;
+                        guestMasterUser = "";
                         foundNewMaster = true;
                         break;
                     }
@@ -2021,15 +2075,20 @@ io.sockets.on('connection', function (socket)
                 {
                     masterUser = userList[0].name;
                     masterUserId = userList[0].id;
+                    guestMasterUser = "";
                 }
             }
             else
             {
                 masterUser = "";
                 masterUserId = "";
+                guestMasterUser = "";
             }
             
             io.sockets.emit('masterUserSync', masterUser);
+            
+            findGuestMasterUser();
+            
             sendRoomSettings();
         }
         
