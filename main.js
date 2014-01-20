@@ -2,6 +2,7 @@ var playerWidth = 640;
 var playerHeight = 385;
 var myName = "";
 var masterUser = "";
+var guestMasterUser = "";
 var superUser = false;
 var modUser = false;
 var currentVideo = "";
@@ -200,10 +201,10 @@ $(function ()
 
 
     // Message for setting my player's time to the masterUser's time
-    socket.on('playerTimeSync', function (time, masterUser) 
+    socket.on('playerTimeSync', function (time) 
     {
         // Don't sync if I am the masterUser
-        if (myName != masterUser)
+        if (myName != masterUser && myName != guestMasterUser)
         {
             //var timeDiv = document.getElementById("masterTime");
             //timeDiv.innerHTML = time;
@@ -403,6 +404,7 @@ $(function ()
     socket.on('masterUserSync', function (user)
     {
         masterUser = user;
+        guestMasterUser = "";
         //var masterUserDiv = document.getElementById("masteruser");
         //masterUserDiv.innerHTML = masterUser;
         
@@ -419,6 +421,12 @@ $(function ()
         setMasterDisplay();
     });
 
+    // Message for setting a guest master user
+    socket.on('guestMasterUserSync', function (user)
+    {
+        guestMasterUser = user;
+    });
+    
     // Message for generic server message
     socket.on('serverMsg', function (msg)
     {
@@ -956,6 +964,11 @@ function sendTimeSync()
     {
         socket.emit('masterTimeSync', videoPlayer.getCurrentTime());
     }
+    else if (myName == guestMasterUser)
+    {
+        socket.emit('guestMasterTimeSync', videoPlayer.getCurrentTime());
+    }
+    
     setTimeout(sendTimeSync, 2000);
 }
 

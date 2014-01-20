@@ -108,6 +108,7 @@ var modList         = ["Imaweiner!asdf", "asdfsdf!what"];
 var userCount           = 0;
 var masterUser          = "";
 var masterUserId        = "";
+var guestMasterUser     = "";       // Guest master only provides sync-related info
 var masterTime          = 0;
 var currentVideo        = "";       // Id of video
 var streamSource        = "";
@@ -1201,6 +1202,13 @@ io.sockets.on('connection', function (socket)
         io.sockets.socket(id).emit('userTypeSync', userType);
     }
     
+    // Picks a random user to be a guest master user
+    function findGuestMasterUser()
+    {
+        var index = Math.floor((Math.random() * userList.length) + 1);
+        io.sockets.emit('guestMasterUserSync', userList[i].name);
+    }
+    
     /****END SERVER FUNCTIONS***************/
     
     if (!commandTimer)
@@ -1282,6 +1290,10 @@ io.sockets.on('connection', function (socket)
             console.log("masterUser set to " + masterUser);
             sendRoomSettings();
         }
+        else
+        {
+            findGuestMasterUser();
+        }
         
     }
     
@@ -1306,7 +1318,25 @@ io.sockets.on('connection', function (socket)
            
             if (userList.length > 1)
             {
-                socket.broadcast.emit('playerTimeSync', time, masterUser);
+                socket.broadcast.emit('playerTimeSync', time);
+            }
+        }
+	});
+    
+    // Message for sending everyone guestMasterUser's current video time
+	socket.on('guestMasterTimeSync', function (time) 
+    {
+        spammingCheck(time.length, "");
+    
+        // Validation
+        if (validUser() && isFloat(time))
+        {
+            masterTime = time;
+            //console.log("Time: " + time + " from " + masterUser + "\n");
+           
+            if (userList.length > 1)
+            {
+                socket.broadcast.emit('playerTimeSync', time);
             }
         }
 	});
@@ -2030,6 +2060,7 @@ io.sockets.on('connection', function (socket)
             }
             
             io.sockets.emit('masterUserSync', masterUser);
+            findGuestMasterUser();
             sendRoomSettings();
         }
         
