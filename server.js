@@ -462,7 +462,8 @@ io.sockets.on('connection', function (socket)
             "settingSkipByVotes":       !skipUsePercent,
             "skipPercent":              skipPercent,
             "skipVotes":                skipsNeeded,
-            "settingVideoVoteAutoplay": videoVotingEnabled
+            "settingVideoVoteAutoplay": videoVotingEnabled,
+            "settingNormalUserMaster":  giveMasterToUser
         }
         
         io.sockets.socket(masterUserId).emit('roomSettingsSync', JSON.stringify(settingsData));
@@ -1224,7 +1225,7 @@ io.sockets.on('connection', function (socket)
     
     
     // Always assign a username on connection
-    if (!username)
+    if (!username || username.length == 0)
     {
         // Keep a running count for keying purposes
         userCount++;
@@ -1803,6 +1804,18 @@ io.sockets.on('connection', function (socket)
         {
             videoVoteMode = enabled;
             console.log("Video vote autoplay changed to: " + enabled);
+        }
+    });
+    
+    // Message for allowing normal users to be master users
+    socket.on('toggleNormalUserMaster', function (enabled)
+    {
+        spammingCheck(enabled.length, "");
+        
+        if (validUser() && (isMasterUser() || isAdmin()) && giveMasterToUser == !enabled)
+        {
+            giveMasterToUser = enabled;
+            console.log("Give master to user: " + enabled);
         }
     });
     

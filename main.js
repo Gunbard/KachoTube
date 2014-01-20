@@ -81,7 +81,7 @@ $(function ()
     });
 
     // Setup settings -- TODO should be able to clean this
-    $('#settingShowChatImages, #settingShowChatVideos, #settingNNDToggle, #settingDisplayTrips, #settingShowTimestamp, #settingAllowSkips, #settingPlayerSizeSm, #settingPlayerSizeLg, #settingChatImgSizeSm, #settingChatImgSizeMed, #settingChatImgSizeLg, #settingLockPlaylist, #settingShowChat, #settingVideoVoting, #settingVideoVoteAutoplay').click(function ()
+    $('#settingShowChatImages, #settingShowChatVideos, #settingNNDToggle, #settingDisplayTrips, #settingShowTimestamp, #settingAllowSkips, #settingPlayerSizeSm, #settingPlayerSizeLg, #settingChatImgSizeSm, #settingChatImgSizeMed, #settingChatImgSizeLg, #settingLockPlaylist, #settingShowChat, #settingVideoVoting, #settingVideoVoteAutoplay, #settingNormalUserMaster').click(function ()
     {
         checkSettings();
     });
@@ -846,6 +846,7 @@ $(function ()
         document.getElementById('settingSkipByVotes').checked = settings.settingSkipByVotes;
         $('#skipVotes').val(settings.skipVotes);
         document.getElementById('settingVideoVoteAutoplay').checked = settings.settingVideoVoteAutoplay;
+        document.getElementById('settingNormalUserMaster').checked = settings.settingNormalUserMaster;
     });    
     
     // Message for updating video votes
@@ -1550,6 +1551,14 @@ function toggleVideoVoteAutoplay(enabled)
     }
 }
 
+function toggleNormalUserMaster(enabled)
+{
+    if (myName == masterUser || superUser)
+    {
+        socket.emit('toggleNormalUserMaster', enabled);
+    }
+}
+
 // Load new player API
 function loadPlayerAPI(newSource, videoId)
 {
@@ -1949,11 +1958,14 @@ function checkSettings()
         $('.tinypic-img').width(chatImgWidthLg);
     }
     
-    toggleSkipEnabled(document.getElementById('settingAllowSkips').checked);
-    togglePlaylistLocked(document.getElementById('settingLockPlaylist').checked);
-    toggleVideoVoting(document.getElementById('settingVideoVoting').checked);
-    toggleVideoVoteAutoplay(document.getElementById('settingVideoVoteAutoplay').checked);
-
+    if (myName == masterUser || superUser)
+    {
+        toggleSkipEnabled(document.getElementById('settingAllowSkips').checked);
+        togglePlaylistLocked(document.getElementById('settingLockPlaylist').checked);
+        toggleVideoVoting(document.getElementById('settingVideoVoting').checked);
+        toggleVideoVoteAutoplay(document.getElementById('settingVideoVoteAutoplay').checked);
+        toggleNormalUserMaster(document.getElementById('settingNormalUserMaster').checked);
+    }
 }
 
 // Updates skip settings for room
