@@ -1215,13 +1215,14 @@ io.sockets.on('connection', function (socket)
     // Picks a random user to be a guest master user
     function findGuestMasterUser()
     {
-        if (userList.length == 0)
+        if (userList.length == 0 || guestMasterUser.length > 0)
         {
             return;
         }
         
         var index = Math.floor(Math.random() * userList.length);
         var guest = userList[index].name;
+        guestMasterUser = guest;
         console.log("Guest master user is now " + guest);
         io.sockets.emit('guestMasterUserSync', guest);
     }
@@ -1311,7 +1312,14 @@ io.sockets.on('connection', function (socket)
         }
         else
         {
-            findGuestMasterUser();
+            if (guestMasterUser.length == 0)
+            {
+                findGuestMasterUser();
+            }
+            else
+            {
+                io.sockets.emit('guestMasterUserSync', guestMasterUser);
+            }
         }
     }
     
@@ -2074,10 +2082,13 @@ io.sockets.on('connection', function (socket)
             {
                 masterUser = "";
                 masterUserId = "";
+                guestMasterUser = "";
             }
             
             io.sockets.emit('masterUserSync', masterUser);
+            
             findGuestMasterUser();
+            
             sendRoomSettings();
         }
         
