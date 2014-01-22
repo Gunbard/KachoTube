@@ -182,6 +182,30 @@ function generateTrip(str)
     return trip;
 }
 
+// Reload settings of found
+fs.exists('savedSettings.txt', function (exists) 
+{
+    if (exists)
+    {
+        fs.readFile('savedSettings.txt', 'utf-8', function (err, data) 
+        {
+            if (err)
+            {
+                console.log(err);
+            }
+            else if (data.length > 0)
+            {
+                var oldSetings = JSON.parse(data);
+                if (oldSettings.length > 0)
+                {
+                    
+                }
+            }
+        });
+        console.log("Saved playlist found and loaded");
+    }
+});
+
 // Reload playlist if found
 fs.exists('savedPlaylist.txt', function (exists) 
 {
@@ -196,11 +220,14 @@ fs.exists('savedPlaylist.txt', function (exists)
             else if (data.length > 0)
             {
                 var oldPlaylist = JSON.parse(data);
-                videoList = oldPlaylist;
-                currentVideo = videoList[0].id;
+                if (oldPlaylist.length > 0)
+                {
+                    videoList = oldPlaylist;
+                    currentVideo = videoList[0].id;
+                }
             }
         });
-        console.log("Loaded saved playlist");
+        console.log("Saved playlist found and loaded");
     }
 });
 
