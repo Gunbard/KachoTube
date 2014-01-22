@@ -192,6 +192,13 @@ $(function ()
     
     /**SOCKET MESSAGES**/
     
+    // Message for server connect/reconnect
+    socket.on('connect', function ()
+    {
+        $('#serverMessages').html('');
+        serverMsg("Connected!", serverMsgFadeDelay, serverMsgFadeTime);
+    });
+    
     // Message for server disconnection
     socket.on('disconnect', function () 
     {
