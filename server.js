@@ -182,6 +182,86 @@ function generateTrip(str)
     return trip;
 }
 
+// Reload settings if found
+fs.exists('savedSettings.txt', function (exists) 
+{
+    if (exists)
+    {
+        fs.readFile('savedSettings.txt', 'utf-8', function (err, data) 
+        {
+            if (err)
+            {
+                console.log(err);
+            }
+            else if (data.length > 0)
+            {
+                var oldData = JSON.parse(data);
+                if (oldData.length > 0)
+                {
+                    skipUsePercent = oldData.skipUsePercent;
+                    skipsNeeded = oldData.skipsNeeded;
+                    skipPercent = oldData.skipPercent;
+                    skippingEnabled = oldData.skippingEnabled;
+                    playlistLocked = oldData.playlistLocked;
+                    videoVotingEnabled = oldData.videoVotingEnabled;
+                    giveMasterToUser = oldData.giveMasterToUser;
+                    videoVoteMode = oldData.videoVoteMode;
+                    videoByVoteThresh = oldData.videoByVoteThresh;
+                }
+            }
+        });
+        console.log("Saved settings found and loaded");
+    }
+});
+
+// Reload modList if found
+fs.exists('savedModList.txt', function (exists) 
+{
+    if (exists)
+    {
+        fs.readFile('savedModList.txt', 'utf-8', function (err, data) 
+        {
+            if (err)
+            {
+                console.log(err);
+            }
+            else if (data.length > 0)
+            {
+                var oldData = JSON.parse(data);
+                if (oldData.length > 0)
+                {
+					modList = oldData;
+                }
+            }
+        });
+        console.log("Saved modList found and loaded");
+    }
+});
+
+// Reload banList if found
+fs.exists('savedBanList.txt', function (exists) 
+{
+    if (exists)
+    {
+        fs.readFile('savedBanList.txt', 'utf-8', function (err, data) 
+        {
+            if (err)
+            {
+                console.log(err);
+            }
+            else if (data.length > 0)
+            {
+                var oldData = JSON.parse(data);
+                if (oldData.length > 0)
+                {
+					banList = oldData;
+                }
+            }
+        });
+        console.log("Saved banList found and loaded");
+    }
+});
+
 // Reload playlist if found
 fs.exists('savedPlaylist.txt', function (exists) 
 {
@@ -196,11 +276,14 @@ fs.exists('savedPlaylist.txt', function (exists)
             else if (data.length > 0)
             {
                 var oldPlaylist = JSON.parse(data);
-                videoList = oldPlaylist;
-                currentVideo = videoList[0].id;
+                if (oldPlaylist.length > 0)
+                {
+                    videoList = oldPlaylist;
+                    currentVideo = videoList[0].id;
+                }
             }
         });
-        console.log("Loaded saved playlist");
+        console.log("Saved playlist found and loaded");
     }
 });
 
@@ -366,6 +449,52 @@ io.sockets.on('connection', function (socket)
     {
         // Save to file just in case server dies
         fs.writeFile("savedPlaylist.txt", JSON.stringify(videoList), function (err) 
+        {
+            if (err) 
+            {
+                console.log(err);
+            }
+        });
+    }
+    
+    function saveSettings()
+    {
+		var settings = 
+		{
+			"skipUsePercent": skipUsePercent,
+			"skipsNeeded": skipsNeeded,
+			"skipPercent": skipPercent,
+			"skippingEnabled": skippingEnabled,
+			"playlistLocked": playlistLocked,
+			"videoVotingEnabled": videoVotingEnabled,
+			"giveMasterToUser": giveMasterToUser,
+			"videoVoteMode": videoVoteMode,
+			"videoByVoteThresh": videoByVoteThresh
+		};
+		
+		fs.writeFile("savedSettings.txt", JSON.stringify(settings), function (err) 
+        {
+            if (err) 
+            {
+                console.log(err);
+            }
+        });
+    }
+    
+    function saveModList()
+    {
+    	fs.writeFile("savedModList.txt", JSON.stringify(modList), function (err) 
+        {
+            if (err) 
+            {
+                console.log(err);
+            }
+        });
+    }
+    
+    function saveBanList()
+    {
+        fs.writeFile("savedBanList.txt", JSON.stringify(banList), function (err) 
         {
             if (err) 
             {
@@ -1084,6 +1213,8 @@ io.sockets.on('connection', function (socket)
         banList.push(banItem);
         
         io.sockets.socket(socket.id).emit('banSync', banList);
+        
+        saveBanList();
         console.log('[' + user.ip + '] was BANNED');
     }
     
@@ -1099,6 +1230,7 @@ io.sockets.on('connection', function (socket)
                 banList.splice(index, 1);
                 sendServerMsgUser("You unbanned " + ip);
                 io.sockets.socket(socket.id).emit('banSync', banList);
+                saveBanList();
                 console.log('[' + ip + '] was unbanned');
                 return;
             }
@@ -1112,6 +1244,7 @@ io.sockets.on('connection', function (socket)
                 banList.splice(index, 1);
                 sendServerMsgUser("You unbanned " + name);
                 io.sockets.socket(socket.id).emit('banSync', banList);
+                saveBanList();
                 console.log('[' + name + '] was unbanned');
                 return;
             }
@@ -1133,6 +1266,7 @@ io.sockets.on('connection', function (socket)
                 sendServerMsgSpecific("You have been modded! Hooray!", trip);
                 sendServerMsgAll(trip + " has been modded!");
                 io.sockets.socket(socket.id).emit('modSync', modList);
+                saveModList();
                 updateUserType(trip);
             }
             else
@@ -1156,6 +1290,7 @@ io.sockets.on('connection', function (socket)
             sendServerMsgUser("You unmodded " + trip);
             io.sockets.socket(socket.id).emit('modSync', modList);
             console.log('[' + trip + '] was unmodded');
+            saveModList();
             updateUserType(trip);
         }
         else
@@ -1215,7 +1350,7 @@ io.sockets.on('connection', function (socket)
     // Picks a random user to be a guest master user
     function findGuestMasterUser()
     {
-        if (userList.length == 0 || guestMasterUser.length > 0)
+        if (userList.length == 0 || guestMasterUser.length > 0 || !giveMasterToUser)
         {
             return;
         }
@@ -1819,6 +1954,7 @@ io.sockets.on('connection', function (socket)
         
             skippingEnabled = enabled;
             io.sockets.emit('skipEnabledSync', enabled);
+            saveSettings();
         }
     });
     
@@ -1832,6 +1968,7 @@ io.sockets.on('connection', function (socket)
         
             playlistLocked = locked;
             io.sockets.emit('lockPlaylistSync', locked);
+            saveSettings();
         }
     });
     
@@ -1845,6 +1982,7 @@ io.sockets.on('connection', function (socket)
         
             videoVotingEnabled = enabled;
             io.sockets.emit('videoVotingSync', enabled);
+            saveSettings();
         }
     });
     
@@ -1857,6 +1995,7 @@ io.sockets.on('connection', function (socket)
         {
             videoVoteMode = enabled;
             console.log("Video vote autoplay changed to: " + enabled);
+            saveSettings();
         }
     });
     
@@ -1869,6 +2008,7 @@ io.sockets.on('connection', function (socket)
         {
             giveMasterToUser = enabled;
             console.log("Give master to user: " + enabled);
+            saveSettings();
         }
     });
     
@@ -1896,6 +2036,7 @@ io.sockets.on('connection', function (socket)
             }
             
             syncSkips();
+            saveSettings();
         }
     });
     
