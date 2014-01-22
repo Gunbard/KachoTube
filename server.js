@@ -182,7 +182,7 @@ function generateTrip(str)
     return trip;
 }
 
-// Reload settings of found
+// Reload settings if found
 fs.exists('savedSettings.txt', function (exists) 
 {
     if (exists)
@@ -195,14 +195,70 @@ fs.exists('savedSettings.txt', function (exists)
             }
             else if (data.length > 0)
             {
-                var oldSetings = JSON.parse(data);
-                if (oldSettings.length > 0)
+                var oldData = JSON.parse(data);
+                if (oldData.length > 0)
                 {
-                    
+                    skipUsePercent = oldData.skipUsePercent;
+                    skipsNeeded = oldData.skipsNeeded;
+                    skipPercent = oldData.skipPercent;
+                    skippingEnabled = oldData.skippingEnabled;
+                    playlistLocked = oldData.playlistLocked;
+                    videoVotingEnabled = oldData.videoVotingEnabled;
+                    giveMasterToUser = oldData.giveMasterToUser;
+                    videoVoteMode = oldData.videoVoteMode;
+                    videoByVoteThresh = oldData.videoByVoteThresh;
                 }
             }
         });
-        console.log("Saved playlist found and loaded");
+        console.log("Saved settings found and loaded");
+    }
+});
+
+// Reload modList if found
+fs.exists('savedModList.txt', function (exists) 
+{
+    if (exists)
+    {
+        fs.readFile('savedModList.txt', 'utf-8', function (err, data) 
+        {
+            if (err)
+            {
+                console.log(err);
+            }
+            else if (data.length > 0)
+            {
+                var oldData = JSON.parse(data);
+                if (oldData.length > 0)
+                {
+					modList = oldData;
+                }
+            }
+        });
+        console.log("Saved modList found and loaded");
+    }
+});
+
+// Reload banList if found
+fs.exists('savedBanList.txt', function (exists) 
+{
+    if (exists)
+    {
+        fs.readFile('savedBanList.txt', 'utf-8', function (err, data) 
+        {
+            if (err)
+            {
+                console.log(err);
+            }
+            else if (data.length > 0)
+            {
+                var oldData = JSON.parse(data);
+                if (oldData.length > 0)
+                {
+					banList = oldData;
+                }
+            }
+        });
+        console.log("Saved banList found and loaded");
     }
 });
 
@@ -393,6 +449,52 @@ io.sockets.on('connection', function (socket)
     {
         // Save to file just in case server dies
         fs.writeFile("savedPlaylist.txt", JSON.stringify(videoList), function (err) 
+        {
+            if (err) 
+            {
+                console.log(err);
+            }
+        });
+    }
+    
+    function saveSettings()
+    {
+		var settings = 
+		{
+			"skipUsePercent": skipUsePercent,
+			"skipsNeeded": skipsNeeded,
+			"skipPercent": skipPercent,
+			"skippingEnabled": skippingEnabled,
+			"playlistLocked": playlistLocked,
+			"videoVotingEnabled": videoVotingEnabled,
+			"giveMasterToUser": giveMasterToUser,
+			"videoVoteMode": videoVoteMode,
+			"videoByVoteThresh": videoByVoteThresh
+		};
+		
+		fs.writeFile("savedSettings.txt", JSON.stringify(settings), function (err) 
+        {
+            if (err) 
+            {
+                console.log(err);
+            }
+        });
+    }
+    
+    function saveModList()
+    {
+    	fs.writeFile("savedModList.txt", JSON.stringify(modList), function (err) 
+        {
+            if (err) 
+            {
+                console.log(err);
+            }
+        });
+    }
+    
+    function saveBanList()
+    {
+        fs.writeFile("savedBanList.txt", JSON.stringify(banList), function (err) 
         {
             if (err) 
             {
