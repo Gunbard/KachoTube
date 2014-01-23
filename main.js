@@ -1374,7 +1374,7 @@ function showCP()
     
     var buttonLeft = $('#adminCPButton').offset().left;
     var buttonTop = $('#videoList').offset().top;
-    var winWidth = $('#adminCPButton').width() / 2;
+    var winWidth = $('#cpPopup').width() / 2;
         
     openPopup(buttonLeft-winWidth, buttonTop, '#cpPopup');
 }

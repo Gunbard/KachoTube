@@ -762,6 +762,7 @@ io.sockets.on('connection', function (socket)
             
             // Tell/remind everyone who the masterUser is
             io.sockets.emit('masterUserSync', masterUser);
+            roomSettingsSync();
         }
         
         syncUserList();
