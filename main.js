@@ -244,7 +244,7 @@ $(function ()
         
         for (var i = 0; i < userList.length; i++)
         {
-            $user = $('<SPAN>').attr({class: "user-list-user clickable", id:"user" + i});
+            var $user = $('<SPAN>').attr({class: "user-list-user clickable", id:"user" + i});
             
             var namePart, tripPart;
             
@@ -542,7 +542,7 @@ $(function ()
             }
             else if (chatDisplayMode == "type")
             {
-                $line = $('#chatList span').last().filter('.chat-text');
+                var $line = $('#chatList span').last().filter('.chat-text');
                 $line.html('');
                 typewrite($line, text, 0);
             }
@@ -1279,7 +1279,7 @@ function setPlayingIndicator()
         if (indic)
         {
             indic.style.display = "";
-            $indicator = $(indic);
+            var $indicator = $(indic);
             
             // Set scroll action to scroll to currently playing vid
             var scrollto = $indicator.offset().top - $('#videoList').offset().top + $('#videoList').scrollTop() - ($('#videoList').height() / 2);
@@ -1586,7 +1586,7 @@ function loadPlayerAPI(newSource, videoId)
     $('#videoDiv, #videoPlayer').remove();
     
     // Need to make new videoDiv
-    $videoDiv = $('<DIV>').attr({id: "videoDiv"});
+    var $videoDiv = $('<DIV>').attr({id: "videoDiv"});
     
     // Insert after title div
     $videoDiv.insertAfter($('#videoTitle'));
@@ -1696,7 +1696,7 @@ function sendImage()
             ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
             var shrinked = canvas.toDataURL('image/jpeg', 0.3);
             
-            $newimage = $('<IMG>').attr({src: shrinked});
+            var $newimage = $('<IMG>').attr({src: shrinked});
             $('#chatList').append($newimage);
 
             alert(shrinked.length/1000);
@@ -1736,7 +1736,7 @@ function openSearch()
     $('#iframePopupContent').empty();
 
     // Make a search input
-    $searchBar = $('<INPUT>').attr({id: 'searchInput'});
+    var $searchBar = $('<INPUT>').attr({id: 'searchInput'});
     $searchBar.css({width: 200});
     $searchBar.keypress(function (e) 
     {
@@ -1752,7 +1752,7 @@ function openSearch()
     });
     
     // Make a search button
-    $searchButton = $('<INPUT>').attr({id: 'searchInputButton', type: 'button', value: 'Search'});
+    var $searchButton = $('<INPUT>').attr({id: 'searchInputButton', type: 'button', value: 'Search'});
     $searchButton.click(function () 
     {        
         var message = $searchBar.val();
@@ -1810,14 +1810,14 @@ function executeSearch(query, startIndex)
                 var currentItem = responseObj.data.items[i];
                 var url = 'http://www.youtube.com/watch?v=' + currentItem.id;
                 
-                $itemContainer = $('<DIV>').attr({class: 'searchResultItem'});
-                $thumbnail = $('<IMG>').attr({src: currentItem.thumbnail.sqDefault}).css({float: 'left', verticalAlign: 'text-top', marginRight: '10', height: '50'});
+                var $itemContainer = $('<DIV>').attr({class: 'searchResultItem'});
+                var $thumbnail = $('<IMG>').attr({src: currentItem.thumbnail.sqDefault}).css({float: 'left', verticalAlign: 'text-top', marginRight: '10', height: '50'});
                 
-                $dataCenterer = $('<DIV>').css({textAlign: 'center'});
+                var $dataCenterer = $('<DIV>').css({textAlign: 'center'});
                 
-                $vidLink = $('<A>').attr({href: url, class: 'searchItemTitle'}).html(currentItem.title).append('<BR>');
+                var $vidLink = $('<A>').attr({href: url, class: 'searchItemTitle'}).html(currentItem.title).append('<BR>');
                 
-                $addButton = $('<INPUT>').attr({type: 'button', value: 'Add'}).css({width: '100'});
+                var $addButton = $('<INPUT>').attr({type: 'button', value: 'Add'}).css({width: '100'});
                 
                 // Configure add button event
                 $addButton.click(function ()
@@ -1837,13 +1837,13 @@ function executeSearch(query, startIndex)
             }
             
             // Add prev/next buttons
-            $prevButton = $('<INPUT>').attr({id: 'searchPrevButton', type: 'button', value: 'Prev'}); 
+            var $prevButton = $('<INPUT>').attr({id: 'searchPrevButton', type: 'button', value: 'Prev'}); 
             $prevButton.click(function () 
             {
                 executeSearch(query, startIndex - MAX_RESULTS);
             });
             
-            $nextButton = $('<INPUT>').attr({id: 'searchNextButton', type: 'button', value: 'Next'}); 
+            var $nextButton = $('<INPUT>').attr({id: 'searchNextButton', type: 'button', value: 'Next'}); 
             $nextButton.click(function () 
             {
                 executeSearch(query, startIndex + MAX_RESULTS);
@@ -2025,7 +2025,7 @@ function buildPlaylist()
     $('#videoList').html('');
     $('#videoListInfo').html('');
     
-    $newList = $('<UL>').attr({class: "sortable video-list"});
+    var $newList = $('<UL>').attr({class: "sortable video-list"});
 
     var $playlistItem;
     for (var i = 0; i < videoPlaylist.length; i++)
@@ -2048,10 +2048,10 @@ function buildPlaylist()
     }
     
     // Generate playlist controls
-    $goToControl = $('<SPAN>').attr({id: "goToIndicator", class: "clickable fa fa-bullseye fa-lg", title: "Scroll to currently playing video"});
+    var $goToControl = $('<SPAN>').attr({id: "goToIndicator", class: "clickable fa fa-bullseye fa-lg", title: "Scroll to currently playing video"});
     $goToControl.css("padding-left", "8");
     
-    $lockPlaylistControl = $('<SPAN>').attr({id: "lockPlaylistButton", class: "clickable fa fa-unlock fa-lg", title: "Playlist locking state"});
+    var $lockPlaylistControl = $('<SPAN>').attr({id: "lockPlaylistButton", class: "clickable fa fa-unlock fa-lg", title: "Playlist locking state"});
     $lockPlaylistControl.css("padding-left", "8");
     
     $('#videoListInfo').append($lockPlaylistControl);
@@ -2265,7 +2265,7 @@ function generatePlaylistItem(index)
         }
         
         $(this).css('cursor','pointer');
-        $thumbnail = $('<IMG>').attr({class: "thumbnail", src: imgUrl});
+        var $thumbnail = $('<IMG>').attr({class: "thumbnail", src: imgUrl});
         $('#thumbnailPopup').html('');
         $('#thumbnailPopup').append(videoPlaylist[id].title + "<BR>");
         $('#thumbnailPopup').append($thumbnail);
