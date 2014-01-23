@@ -1213,6 +1213,8 @@ io.sockets.on('connection', function (socket)
         banList.push(banItem);
         
         io.sockets.socket(socket.id).emit('banSync', banList);
+        
+        saveBanList();
         console.log('[' + user.ip + '] was BANNED');
     }
     
@@ -1228,6 +1230,7 @@ io.sockets.on('connection', function (socket)
                 banList.splice(index, 1);
                 sendServerMsgUser("You unbanned " + ip);
                 io.sockets.socket(socket.id).emit('banSync', banList);
+                saveBanList();
                 console.log('[' + ip + '] was unbanned');
                 return;
             }
@@ -1241,6 +1244,7 @@ io.sockets.on('connection', function (socket)
                 banList.splice(index, 1);
                 sendServerMsgUser("You unbanned " + name);
                 io.sockets.socket(socket.id).emit('banSync', banList);
+                saveBanList();
                 console.log('[' + name + '] was unbanned');
                 return;
             }
@@ -1262,6 +1266,7 @@ io.sockets.on('connection', function (socket)
                 sendServerMsgSpecific("You have been modded! Hooray!", trip);
                 sendServerMsgAll(trip + " has been modded!");
                 io.sockets.socket(socket.id).emit('modSync', modList);
+                saveModList();
                 updateUserType(trip);
             }
             else
@@ -1285,6 +1290,7 @@ io.sockets.on('connection', function (socket)
             sendServerMsgUser("You unmodded " + trip);
             io.sockets.socket(socket.id).emit('modSync', modList);
             console.log('[' + trip + '] was unmodded');
+            saveModList();
             updateUserType(trip);
         }
         else
@@ -1344,7 +1350,7 @@ io.sockets.on('connection', function (socket)
     // Picks a random user to be a guest master user
     function findGuestMasterUser()
     {
-        if (userList.length == 0 || guestMasterUser.length > 0)
+        if (userList.length == 0 || guestMasterUser.length > 0 || !giveMasterToUser)
         {
             return;
         }
@@ -1948,6 +1954,7 @@ io.sockets.on('connection', function (socket)
         
             skippingEnabled = enabled;
             io.sockets.emit('skipEnabledSync', enabled);
+            saveSettings();
         }
     });
     
@@ -1961,6 +1968,7 @@ io.sockets.on('connection', function (socket)
         
             playlistLocked = locked;
             io.sockets.emit('lockPlaylistSync', locked);
+            saveSettings();
         }
     });
     
@@ -1974,6 +1982,7 @@ io.sockets.on('connection', function (socket)
         
             videoVotingEnabled = enabled;
             io.sockets.emit('videoVotingSync', enabled);
+            saveSettings();
         }
     });
     
@@ -1986,6 +1995,7 @@ io.sockets.on('connection', function (socket)
         {
             videoVoteMode = enabled;
             console.log("Video vote autoplay changed to: " + enabled);
+            saveSettings();
         }
     });
     
@@ -1998,6 +2008,7 @@ io.sockets.on('connection', function (socket)
         {
             giveMasterToUser = enabled;
             console.log("Give master to user: " + enabled);
+            saveSettings();
         }
     });
     
@@ -2025,6 +2036,7 @@ io.sockets.on('connection', function (socket)
             }
             
             syncSkips();
+            saveSettings();
         }
     });
     
