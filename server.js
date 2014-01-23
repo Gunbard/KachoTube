@@ -906,18 +906,46 @@ io.sockets.on('connection', function (socket)
         return array;
     }
     
-    // Check that user isn't banned or spamming. Validate EVERY message received.
-    // Differentiate between chat messages and server messages
-    // Message types: "chat", "server"
-    // Returm true if check passes, false to drop/ignore message
-    function spammingCheck(msgLength, msgType)
+    /**
+      Check that user isn't banned or spamming. Validate EVERY message received.
+      Differentiate between chat messages and server messages
+      Message types: "chat", "server"
+      @param msgVars Array of message arguments to validate
+      @return true if check passes, false to drop/ignore message
+     */
+    function spammingCheck(msgVars, msgType)
     {   
+        // Malformed message detected
+        if (msgVars != 0 && (!msgVars || msgVars.length == 0))
+        {
+            console.log("Received malformed message from " + username + " [" + ip + "]");
+            socket.disconnect();
+            return;
+        }
+    
         // Disconnect immediately if banned
+        if (objectWithKeyAndValue(banList, 'ip', ip))
+        {
+            sendServerMsgUser("BANNED");
+            socket.disconnect();
+            return;
+        }
         
         // Disconnect immediately if message size is massive
-        if (msgLength > MSG_MAX_SIZE)
+        var messageSize = 0;
+        for (var i = 0; i < msgVars.length; i++)
         {
+            if (msgVars[i])
+            {
+                messageSize += msgVars[i].length;
+            }
+        }
+        
+        if (messageSize > MSG_MAX_SIZE)
+        {
+            console.log("Received Xbox hueg message from " + username + " [" + ip + "]");
             socket.disconnect();
+            return;
         }
         
         var now = new Date();
@@ -965,6 +993,7 @@ io.sockets.on('connection', function (socket)
                     
                     // Mute/warn user or ban if already warned
                     socket.disconnect();
+                    return;
                 }
                 else if (msgCount > SPAM_MSG_THRESH)
                 {
@@ -972,6 +1001,7 @@ io.sockets.on('connection', function (socket)
                     
                     // Disconnect and/or ban
                     socket.disconnect();
+                    return;
                 }
                 
             }
@@ -1469,7 +1499,7 @@ io.sockets.on('connection', function (socket)
     // Message for sending everyone masterUser's current video time
 	socket.on('masterTimeSync', function (time) 
     {
-        spammingCheck(time.length, "");
+        spammingCheck([time], "");
     
         // Validation
         if (validUser() && isFloat(time) && (isMasterUser() || isAdmin()))
@@ -1487,7 +1517,7 @@ io.sockets.on('connection', function (socket)
     // Message for sending everyone guestMasterUser's current video time
 	socket.on('guestMasterTimeSync', function (time) 
     {
-        spammingCheck(time.length, "");
+        spammingCheck([time], "");
     
         // Validation
         if (validUser() && isFloat(time))
@@ -1505,7 +1535,7 @@ io.sockets.on('connection', function (socket)
     // Message for updating everyone's chat with a message
 	socket.on('chatSync', function (text) 
     {
-        spammingCheck(text.length, "chat"); 
+        spammingCheck([text], "chat"); 
 
         if (validUser())
         {   
@@ -1570,7 +1600,7 @@ io.sockets.on('connection', function (socket)
     // Message for state change of playerTimeSync
     socket.on('playerStateChange', function (state) 
     {
-        spammingCheck(state.length, "");
+        spammingCheck([state], "");
     
         if (validUser() && (isMasterUser() || isAdmin()))
         {
@@ -1609,7 +1639,7 @@ io.sockets.on('connection', function (socket)
     // Message for adding a video to the playlist
  	socket.on('addVideo', function (url) 
     {
-        spammingCheck(url.length, "");        
+        spammingCheck([url], "");        
      
         if (videoList.length >= MAX_VIDEOS)
         {
@@ -1692,7 +1722,7 @@ io.sockets.on('connection', function (socket)
     // Message for requesting a name change
     socket.on('requestNameChange', function (newName)
     {
-        spammingCheck(newName.length, "");
+        spammingCheck([newName], "");
         
         if (validUser())
         {
@@ -1744,7 +1774,7 @@ io.sockets.on('connection', function (socket)
     // Message for setting current video from master
     socket.on('masterVideoIdSync', function (videoId)
     {
-        spammingCheck(videoId.length, "");
+        spammingCheck([videoId], "");
     
         if (validUser() && (isMasterUser() || isAdmin()))
         {
@@ -1757,7 +1787,7 @@ io.sockets.on('connection', function (socket)
     // Message for sending a video change message from master
     socket.on('masterVideoSync', function (videoId)
     {
-        spammingCheck(videoId.length, "");
+        spammingCheck([videoId], "");
         
         if (validUser() && (isMasterUser() || isAdmin()))
         {
@@ -1771,8 +1801,7 @@ io.sockets.on('connection', function (socket)
     // Message for updating the video list when a video is moved
     socket.on('videoListMove', function (index1, index2)
     {
-        var totalSize = index1.length + index2.length;
-        spammingCheck(totalSize, "");
+        spammingCheck([index1, index2], "");
     
         if (validUser() && (isMasterUser() || isAdmin()))
         {
@@ -1789,7 +1818,7 @@ io.sockets.on('connection', function (socket)
     // Message for updating the video list when master deletes a video
     socket.on('deleteVideo', function (videoIndex)
     {
-        spammingCheck(videoIndex.length, "");
+        spammingCheck([videoIndex], "");
         
         if (validUser() && (isMasterUser() || isAdmin()))
         {
@@ -1917,7 +1946,7 @@ io.sockets.on('connection', function (socket)
     // Message for changing the master user
     socket.on('masterUserPassOff', function (user)
     {
-        spammingCheck(user.length, "");
+        spammingCheck([user], "");
 
         if (validUser() && (isMasterUser() || isAdmin() || isMod()))
         {
@@ -1939,7 +1968,7 @@ io.sockets.on('connection', function (socket)
     // Message for toggling a video vote
     socket.on('toggleVideoVote', function (videoId)
     {
-    	spammingCheck(videoId.length, "");
+    	spammingCheck([videoId], "");
 
        if (validUser() && videoVotingEnabled)
        {
@@ -1950,7 +1979,7 @@ io.sockets.on('connection', function (socket)
     // Message for enabling/disabling skipping
     socket.on('toggleSkippingEnabled', function (enabled)
     {
-        spammingCheck(enabled.length, "");
+        spammingCheck([enabled], "");
         
         if (validUser() && (isMasterUser() || isAdmin()) && skippingEnabled == !enabled)
         {
@@ -1964,7 +1993,7 @@ io.sockets.on('connection', function (socket)
     // Message for enabling/disabling playlist lock
     socket.on('togglePlaylistLocked', function (locked)
     {
-        spammingCheck(locked.length, "");
+        spammingCheck([locked], "");
         
         if (validUser() && (isMasterUser() || isAdmin()) && playlistLocked == !locked)
         {
@@ -1978,7 +2007,7 @@ io.sockets.on('connection', function (socket)
     // Message for enabling/disabling video voting
     socket.on('toggleVideoVoting', function (enabled)
     {
-        spammingCheck(enabled.length, "");
+        spammingCheck([enabled], "");
         
         if (validUser() && (isMasterUser() || isAdmin()) && videoVotingEnabled == !enabled)
         {
@@ -1992,7 +2021,7 @@ io.sockets.on('connection', function (socket)
     // Message for enabling/disabling video vote autoplaying
     socket.on('toggleVideoVoteAutoplay', function (enabled)
     {
-        spammingCheck(enabled.length, "");
+        spammingCheck([enabled], "");
         
         if (validUser() && (isMasterUser() || isAdmin()) && videoVoteMode == !enabled)
         {
@@ -2005,7 +2034,7 @@ io.sockets.on('connection', function (socket)
     // Message for allowing normal users to be master users
     socket.on('toggleNormalUserMaster', function (enabled)
     {
-        spammingCheck(enabled.length, "");
+        spammingCheck([enabled], "");
         
         if (validUser() && (isMasterUser() || isAdmin()) && giveMasterToUser == !enabled)
         {
@@ -2018,7 +2047,7 @@ io.sockets.on('connection', function (socket)
     // Message for enabling/disabling skipping
     socket.on('updateSkipSettings', function (usePercent, skipValue)
     {
-        spammingCheck(usePercent.length + skipValue.length, "");
+        spammingCheck([usePercent, skipValue], "");
         
         if (validUser() && (isMasterUser() || isAdmin()))
         {
@@ -2046,7 +2075,7 @@ io.sockets.on('connection', function (socket)
     // Message for booting a user
     socket.on('bootUser', function (name)
     {
-        spammingCheck(name.length, "");
+        spammingCheck([name], "");
         
         if (validUser() && ((isMasterUser() || isAdmin()) || isMod()))
         {
@@ -2078,7 +2107,7 @@ io.sockets.on('connection', function (socket)
     // Message for banning a user
     socket.on('banUser', function (name, reason, banLength)
     {
-        spammingCheck(name.length + reason.length + banLength.length, "");
+        spammingCheck([name, reason, banLength], "");
         
         if (validUser() && (isAdmin() || isMod()))
         {   
@@ -2116,7 +2145,7 @@ io.sockets.on('connection', function (socket)
     // Message for modding a user, mod requires trip
     socket.on('modUser', function (trip)
     {
-        spammingCheck(trip.length, "");
+        spammingCheck([trip], "");
         
         if (validUser() && (isAdmin() || isMod()))
         {
@@ -2139,7 +2168,7 @@ io.sockets.on('connection', function (socket)
     // Message for unbanning a user
     socket.on('unbanUser', function (ip)
     {
-        spammingCheck(ip.length, "");
+        spammingCheck([ip], "");
         
         if (validUser() && isAdmin())
         {
@@ -2150,7 +2179,7 @@ io.sockets.on('connection', function (socket)
     // Message for unmodding a user
     socket.on('unmodUser', function (trip)
     {
-        spammingCheck(trip.length, "");
+        spammingCheck([trip], "");
         
         if (validUser() && (isAdmin() || isMod()))
         {
