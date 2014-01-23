@@ -6,7 +6,11 @@ var server = http.createServer(app);
 var io = require('socket.io').listen(server);
 var fs = require('fs');                         // For file I/O
 var crypto = require("crypto");                 // For tripcode generation
-var serverPort = 8880;                          // Default server port
+var serverPort = 80;                            // Default port
+
+console.log("Listening on port " + serverPort);
+server.listen(serverPort);
+io.set('log level', 1); // Log warnings and errors only
 
 // PLAYLIST API
 //http://gdata.youtube.com/feeds/api/playlists/[ID without PL]/?v=2&alt=json
@@ -102,7 +106,6 @@ var modList         = ["Imaweiner!asdf", "asdfsdf!what", "lel!RqCi8E"];
 // Mod: take master from user, boot
 // Admin: ban, take master from mod, mod/de-mod
                    
-
 var userCount           = 0;
 var masterUser          = "";
 var masterUserId        = "";
@@ -150,7 +153,6 @@ fs.exists('savedSettings.txt', function (exists)
                     giveMasterToUser = oldData.giveMasterToUser;
                     videoVoteMode = oldData.videoVoteMode;
                     videoByVoteThresh = oldData.videoByVoteThresh;
-                    serverPort = oldData.serverPort;
                 }
             }
         });
@@ -174,7 +176,7 @@ fs.exists('savedModList.txt', function (exists)
                 var oldData = JSON.parse(data);
                 if (oldData.length > 0)
                 {
-					modList = oldData;
+                    modList = oldData;
                 }
             }
         });
@@ -198,7 +200,7 @@ fs.exists('savedBanList.txt', function (exists)
                 var oldData = JSON.parse(data);
                 if (oldData.length > 0)
                 {
-					banList = oldData;
+                    banList = oldData;
                 }
             }
         });
@@ -286,9 +288,6 @@ function generateTrip(str)
     console.log("Generated trip " + trip);
     return trip;
 }
-
-server.listen(serverPort);
-io.set('log level', 1); // Log warnings and errors only
 
 io.sockets.on('connection', function (socket) 
 {
@@ -463,7 +462,6 @@ io.sockets.on('connection', function (socket)
     {
         var settings = 
         {
-            "serverPort": serverPort,
             "skipUsePercent": skipUsePercent,
             "skipsNeeded": skipsNeeded,
             "skipPercent": skipPercent,
