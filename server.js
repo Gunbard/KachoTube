@@ -1,14 +1,12 @@
 var express = require('express');               // For something I can't remember
 var request = require('request');               // For video validation    
-var app = express();                            
+var app = express();                            // For routes
 var http = require('http');
 var server = http.createServer(app);
 var io = require('socket.io').listen(server);
 var fs = require('fs');                         // For file I/O
 var crypto = require("crypto");                 // For tripcode generation
-
-server.listen(8880);
-io.set('log level', 1);                         // Log warnings and errors only
+var serverPort = 8880;                          // Default server port
 
 // PLAYLIST API
 //http://gdata.youtube.com/feeds/api/playlists/[ID without PL]/?v=2&alt=json
@@ -127,61 +125,6 @@ var videoVoteMode       = true;     // Votes affect what video plays next
 var videoByVoteThresh   = 2;        // Mininum number of votes needed
 var commandTimer;
 
-// Formats a date string. Expects a UTC date and will convert to local automatically.
-function timestamp(date)
-{
-    date           += " UTC";
-    var dateObj 	= new Date(date);
-    var day 		= dateObj.getDate();
-    var month 		= dateObj.getMonth() + 1;
-    var year 		= dateObj.getFullYear();
-    var hours		= dateObj.getHours();
-    var minutes		= dateObj.getMinutes();
-    var seconds		= dateObj.getSeconds();
-    var suffix		= "AM";
-    
-    if (minutes < 10)
-    {
-        minutes = "0" + minutes;
-    }
-    
-    if (seconds < 10)
-    {
-        seconds = "0" + seconds;
-    }
-    
-    if (hours >= 12)
-    {
-        suffix = "PM";
-        hours = hours - 12;
-    }
-    
-    if (hours == 0)
-    {
-        hours = 12;
-    }
-    
-    var str = hours + ":" + minutes + ":" + seconds + " " + suffix;
-    
-    return str;
-}
-
-// Escape html tags
-function htmlEscape(str) 
-{
-    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-// Generates a unique tripcode from a string
-function generateTrip(str)
-{
-    var MD5 = crypto.createHash("MD5");
-    MD5.update(str);
-    var trip = MD5.digest("base64").slice(0, 6);
-    console.log("Generated trip " + trip);
-    return trip;
-}
-
 // Reload settings if found
 fs.exists('savedSettings.txt', function (exists) 
 {
@@ -207,6 +150,7 @@ fs.exists('savedSettings.txt', function (exists)
                     giveMasterToUser = oldData.giveMasterToUser;
                     videoVoteMode = oldData.videoVoteMode;
                     videoByVoteThresh = oldData.videoByVoteThresh;
+                    serverPort = oldData.serverPort;
                 }
             }
         });
@@ -287,6 +231,64 @@ fs.exists('savedPlaylist.txt', function (exists)
     }
 });
 
+
+// Formats a date string. Expects a UTC date and will convert to local automatically.
+function timestamp(date)
+{
+    date           += " UTC";
+    var dateObj 	= new Date(date);
+    var day 		= dateObj.getDate();
+    var month 		= dateObj.getMonth() + 1;
+    var year 		= dateObj.getFullYear();
+    var hours		= dateObj.getHours();
+    var minutes		= dateObj.getMinutes();
+    var seconds		= dateObj.getSeconds();
+    var suffix		= "AM";
+    
+    if (minutes < 10)
+    {
+        minutes = "0" + minutes;
+    }
+    
+    if (seconds < 10)
+    {
+        seconds = "0" + seconds;
+    }
+    
+    if (hours >= 12)
+    {
+        suffix = "PM";
+        hours = hours - 12;
+    }
+    
+    if (hours == 0)
+    {
+        hours = 12;
+    }
+    
+    var str = hours + ":" + minutes + ":" + seconds + " " + suffix;
+    
+    return str;
+}
+
+// Escape html tags
+function htmlEscape(str) 
+{
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Generates a unique tripcode from a string
+function generateTrip(str)
+{
+    var MD5 = crypto.createHash("MD5");
+    MD5.update(str);
+    var trip = MD5.digest("base64").slice(0, 6);
+    console.log("Generated trip " + trip);
+    return trip;
+}
+
+server.listen(serverPort);
+io.set('log level', 1); // Log warnings and errors only
 
 io.sockets.on('connection', function (socket) 
 {
@@ -459,20 +461,21 @@ io.sockets.on('connection', function (socket)
     
     function saveSettings()
     {
-		var settings = 
-		{
-			"skipUsePercent": skipUsePercent,
-			"skipsNeeded": skipsNeeded,
-			"skipPercent": skipPercent,
-			"skippingEnabled": skippingEnabled,
-			"playlistLocked": playlistLocked,
-			"videoVotingEnabled": videoVotingEnabled,
-			"giveMasterToUser": giveMasterToUser,
-			"videoVoteMode": videoVoteMode,
-			"videoByVoteThresh": videoByVoteThresh
-		};
-		
-		fs.writeFile("savedSettings.txt", JSON.stringify(settings), function (err) 
+        var settings = 
+        {
+            "serverPort": serverPort,
+            "skipUsePercent": skipUsePercent,
+            "skipsNeeded": skipsNeeded,
+            "skipPercent": skipPercent,
+            "skippingEnabled": skippingEnabled,
+            "playlistLocked": playlistLocked,
+            "videoVotingEnabled": videoVotingEnabled,
+            "giveMasterToUser": giveMasterToUser,
+            "videoVoteMode": videoVoteMode,
+            "videoByVoteThresh": videoByVoteThresh
+        };
+        
+        fs.writeFile("savedSettings.txt", JSON.stringify(settings), function (err) 
         {
             if (err) 
             {
