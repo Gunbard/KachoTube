@@ -735,34 +735,44 @@ io.sockets.on('connection', function (socket)
         
         sendServerMsgAll("\"" + oldName + "\" is now \"" + username + "\"");
         
-        if (oldName == masterUser)
+        if (giveMasterToUser)
         {
-            masterUser = username;
-            guestMasterUser = "";
-            io.sockets.emit('masterUserSync', masterUser);
-            sendRoomSettings(masterUser);
+            // Restore master user
+            if (oldName == masterUser)
+            {
+                masterUser = username;
+                guestMasterUser = "";
+                io.sockets.emit('masterUserSync', masterUser);
+                sendRoomSettings(masterUser);
+            }
+        }
+        else
+        {
+            // Give master if mod and no master
+            if (masterUser.length == 0 && userType == USER_TYPE.mod)
+            {
+               masterUser = username;
+                masterUserId = id;
+                guestMasterUser = "";
+                console.log("masterUser set to " + masterUser);
+                
+                // Tell/remind everyone who the masterUser is
+                io.sockets.emit('masterUserSync', masterUser);
+                sendRoomSettings(masterUser); 
+            }
+            // Restore guest master user
+            else if (oldName == guestMasterUser)
+            {
+                guestMasterUser = username;
+                io.sockets.emit('guestMasterUserSync', guestMasterUser);
+            }
+            else
+            {
+                findGuestMasterUser();
+            }
         }
         
-        if (oldName == guestMasterUser)
-        {
-            guestMasterUser = username;
-            io.sockets.emit('guestMasterUserSync', guestMasterUser);
-        }
-        
-        // Set mods as master user
-        if (masterUser == "" && !giveMasterToUser && userType == USER_TYPE.mod)
-        {
-            masterUser = username;
-            masterUserId = id;
-            guestMasterUser = "";
-            console.log("masterUser set to " + masterUser);
-            
-            // Tell/remind everyone who the masterUser is
-            io.sockets.emit('masterUserSync', masterUser);
-            sendRoomSettings(masterUser);
-        }
-        
-        syncUserList();
+        syncUserList(); 
     }
     
 
