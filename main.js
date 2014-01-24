@@ -2131,15 +2131,22 @@ function generatePlaylistItem(index)
     var $vidAddedBy = $('<SPAN>').attr({class: "video-addedBy"});
     $vidAddedBy.append('added by ' + videoPlaylist[index].addedBy);
     
-    $newListItem.append($number);
-    $newListItem.append($vidTitle);
-    $newListItem.append($playingIndicator);
-    $newListItem.append($dragger);
-    $newListItem.append($urlButton);
-    $newListItem.append($vidAddedBy);
-    $newListItem.append($vidDuration);
-    $newListItem.append($videoControls);
-    $newListItem.append($videoVoteControls);
+    var $topRow = $('<DIV>').attr({class: "playlist-item-top-row"});
+    var $bottomRow = $('<DIV>').attr({class: "playlist-item-bottom-row"});
+    
+    $topRow.append($number);
+    $topRow.append($vidTitle);
+    $topRow.append($playingIndicator);
+    
+    $bottomRow.append($dragger);
+    $bottomRow.append($urlButton);
+    $bottomRow.append($vidAddedBy);
+    $bottomRow.append($vidDuration);
+    $bottomRow.append($videoControls);
+    $bottomRow.append($videoVoteControls);
+    
+    $newListItem.append($topRow);
+    $newListItem.append($bottomRow);
     
     $playingIndicator.hide();
     
