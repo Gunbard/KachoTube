@@ -153,7 +153,12 @@ $(function ()
             var whisper = false; 
             var whisperTarget = ""; // A username
             
-            if (message.length > 0)
+            // Remove excess whitespace
+            message.replace(/(\s)+/g, "$1");
+            
+            var content = message.match(/\w/);
+            
+            if (message.length > 0 && content && content.length > 0)
             {
                 socket.emit('chatSync', message);
                 $('#chatInput').val('');

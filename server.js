@@ -1554,8 +1554,11 @@ io.sockets.on('connection', function (socket)
             var now = new Date(); 
 
             text = htmlEscape(text);
+            text.replace(/(\s)+/g, "$1");
             
-            if (text.length == 0 || text.length > CHAT_MSG_MAX_SIZE)
+            var content = text.match(/\w/);
+            
+            if (text.length == 0 || !content || text.length > CHAT_MSG_MAX_SIZE)
             {
                 return;
             }
