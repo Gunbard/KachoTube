@@ -576,14 +576,9 @@ io.sockets.on('connection', function (socket)
         return null;
     }
     
-    // Sends master user current room settings
-    function sendRoomSettings()
+    // Sends user current room settings
+    function sendRoomSettings(name)
     {
-        if (masterUser == "")
-        {
-            return;
-        }
-        
         var settingsData = 
         {
             "settingLockPlaylist":      playlistLocked,
@@ -596,8 +591,8 @@ io.sockets.on('connection', function (socket)
             "settingVideoVoteAutoplay": videoVotingEnabled,
             "settingNormalUserMaster":  giveMasterToUser
         }
-        
-        io.sockets.socket(masterUserId).emit('roomSettingsSync', JSON.stringify(settingsData));
+        var targetName = getUserByName(name);
+        io.sockets.socket(targetName.id).emit('roomSettingsSync', JSON.stringify(settingsData));
     }
     
     // Check if a video is real and will add it to the playlist
@@ -735,6 +730,7 @@ io.sockets.on('connection', function (socket)
         {
             io.sockets.socket(socket.id).emit('banSync', banList);
             io.sockets.socket(socket.id).emit('modSync', modList);
+            sendRoomSettings(username);
         }
         
         sendServerMsgAll("\"" + oldName + "\" is now \"" + username + "\"");
@@ -744,6 +740,7 @@ io.sockets.on('connection', function (socket)
             masterUser = username;
             guestMasterUser = "";
             io.sockets.emit('masterUserSync', masterUser);
+            sendRoomSettings(masterUser);
         }
         
         if (oldName == guestMasterUser)
@@ -762,7 +759,7 @@ io.sockets.on('connection', function (socket)
             
             // Tell/remind everyone who the masterUser is
             io.sockets.emit('masterUserSync', masterUser);
-            sendRoomSettings();
+            sendRoomSettings(masterUser);
         }
         
         syncUserList();
@@ -1445,6 +1442,11 @@ io.sockets.on('connection', function (socket)
         // Tell new guy his new name
         io.sockets.socket(socket.id).emit('nameSync', username);
         
+        // Sync other settings
+        io.sockets.socket(socket.id).emit('skipEnabledSync', skippingEnabled);
+        io.sockets.socket(socket.id).emit('lockPlaylistSync', playlistLocked);
+        io.sockets.socket(socket.id).emit('videoVotingEnabled', videoVotingEnabled);
+        
         // Update skips
         syncSkips();
           
@@ -1475,7 +1477,7 @@ io.sockets.on('connection', function (socket)
             guestMasterUser = "";
             console.log("masterUser set to " + masterUser);
             io.sockets.emit('masterUserSync', masterUser);
-            sendRoomSettings();
+            sendRoomSettings(masterUser);
         }
         else
         {
@@ -2261,7 +2263,10 @@ io.sockets.on('connection', function (socket)
             
             findGuestMasterUser();
             
-            sendRoomSettings();
+            if (masterUser.length > 0)
+            {
+                sendRoomSettings(masterUser);
+            }
         }
         
         syncUserList();
