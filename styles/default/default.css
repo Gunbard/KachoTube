@@ -222,6 +222,9 @@ li.ui-state-default
 .video-title
 {
     width:              340;
+    white-space:        nowrap;
+    overflow:           hidden;
+    text-overflow:      ellipsis; /*For Chrome because it can't into marquee properly*/
 }
 
 .video-number

@@ -40,6 +40,7 @@ var showChatImages = true;
 var showChatVideos = true;
 var userPopupId = -1;
 var imageEmbedOpacity = 0.5;
+var usingChrome = (navigator.userAgent.toLowerCase().indexOf('chrome') > -1);
 
 // Enums
 var USER_TYPE =
@@ -2150,8 +2151,8 @@ function generatePlaylistItem(index)
     
     $playingIndicator.hide();
     
-    // Marquee long video titles
-    if (getTextWidth(videoPlaylist[index].title) >= $vidTitle.width())
+    // Marquee long video titles (except in Chrome, since it gets retarded with them)
+    if (getTextWidth(videoPlaylist[index].title) >= $vidTitle.width() && !usingChrome)
     {
         var $marquee = $('<MARQUEE>').attr({behavior: "alternate", scrollDelay: "200", hspace: "10", scrollAmount: "0"});
         
