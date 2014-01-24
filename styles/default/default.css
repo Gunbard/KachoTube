@@ -196,12 +196,10 @@ li.ui-state-default
     border-right-style: none !important;
 }
 
-.video-title, .video-duration, .video-addedBy, .url-button, .delete-button, .dragger, .video-number, .play-button, .video-controls, .video-voting-controls
+.video-title, .video-duration, .video-addedBy, .url-button, .delete-button, .dragger, .video-number, .play-button, .video-controls, .video-voting-controls, .playing-indicator
 {
     display:            inline-block;
     text-align:         center;
-    height:             20;
-    font-size:          14;
     resize:             none;
     /*color:              white !important;
     border-style:       solid !important;
@@ -210,13 +208,8 @@ li.ui-state-default
 
 .playing-indicator
 {
-    float:              right;
-    display:            inline-block;
-    text-align:         center;
-    width:              20;
-    height:             20;
-    padding-top:        10;
-    font-size:          16;
+    width:              40;
+    text-align:         right;
 }
 
 .video-title
@@ -229,7 +222,7 @@ li.ui-state-default
 
 .video-number
 {
-    width:              60;
+    width:              40;
 }
 
 .url-button
@@ -250,7 +243,6 @@ li.ui-state-default
 .dragger
 {
     width:              45;
-    height:             20;
     text-align:         center;
 }
 
