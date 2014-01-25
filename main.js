@@ -327,7 +327,7 @@ $(function ()
             
             $masterDisplay.click(function (e) 
             { 
-                if (modUser)
+                if (modUser && myName != masterUser)
                 {
                     // Steal master
                     masterUserPassOff(myName);

@@ -891,10 +891,14 @@ io.sockets.on('connection', function (socket)
     {
         if (userInList(user))
         {
-            console.log("inlist");
             var userData = getUserByName(user);
             if (userData)
             {
+                if (masterUser == userData.name)
+                {
+                    sendServerMsgUser("That user is already master");
+                }
+                
                 masterUser = userData.name;
                 masterUserId = userData.id;
                 guestMasterUser = "";
