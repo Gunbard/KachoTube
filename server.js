@@ -6,11 +6,6 @@ var server = http.createServer(app);
 var io = require('socket.io').listen(server);
 var fs = require('fs');                         // For file I/O
 var crypto = require("crypto");                 // For tripcode generation
-var serverPort = 80;                            // Default port
-
-console.log("Listening on port " + serverPort);
-server.listen(serverPort);
-io.set('log level', 1); // Log warnings and errors only
 
 // PLAYLIST API
 //http://gdata.youtube.com/feeds/api/playlists/[ID without PL]/?v=2&alt=json
@@ -102,31 +97,52 @@ var modList         = ["Imaweiner!asdf", "asdfsdf!what", "lel!RqCi8E"];
 
 // PRIVS
 // User: standard user, can add to unlocked playlist
-// MasterUser: can manipulate playlist, video
-// Mod: take master from user, boot
-// Admin: ban, take master from mod, mod/de-mod
+// MasterUser: can manipulate playlist, video, room settings
+// GuestMasterUser: can manipulate video
+// Mod: take master from user, ban, boot
+// Admin: ban/unban, take master from mod, mod/de-mod, edit room settings
                    
-var userCount           = 0;
-var masterUser          = "";
-var masterUserId        = "";
+var userCount           = 0;        // An auto-incrementing keying counter for unique user names
+var masterUser          = "";       // Name of the masterUser
+var masterUserId        = "";       // Socket id of the masterUser
 var guestMasterUser     = "";       // Guest master only provides sync-related info
-var masterTime          = 0;
+var masterTime          = 0;        // MasterUser's current video time in seconds
 var currentVideo        = "";       // Id of video
-var streamSource        = "";
-var videoIsStream       = false;
-var masterless          = false;    // aka TV mode
-var paused              = false;
-var validatedVideos     = 0;
-var skipUsePercent      = false;
+var streamSource        = "";       // Two letter id for source of current video
+var videoIsStream       = false;    // If the video is a stream or not
+var masterless          = false;    // aka TV mode -- TODO?
+var paused              = false;    // Whether master's video is paused
+var validatedVideos     = 0;        // Keep track of how many videos still need to be validated
+var commandTimer;                   // Interval timer for checking for local command files
+
+// =====DEFAULT SERVER CONFIGURATION========//
+var serverPort          = 80;       // Default port
+var skipUsePercent      = false;    // Use % of users to determine skips needed
 var skipsNeeded         = 1;        // Set to 0 to ignore skips   
-var skipPercent         = 66;
-var skippingEnabled     = true;
-var playlistLocked      = false;
-var videoVotingEnabled  = true;
+var skipPercent         = 66;       // The % of users that need to skip
+var skippingEnabled     = true;     // Allow user skipping
+var playlistLocked      = false;    // Allow users to add videos to playlist
+var videoVotingEnabled  = true;     // Allow users to vote on videos in playlist
 var giveMasterToUser    = true;     // Allow any user to be master
 var videoVoteMode       = true;     // Votes affect what video plays next
 var videoByVoteThresh   = 2;        // Mininum number of votes needed
-var commandTimer;
+// =====END SERVER CONFIGURATION============//
+
+// Overrides default settings from data loaded from local file
+function updateSettings(data)
+{
+    var oldData         = JSON.parse(data);
+    skipUsePercent      = oldData.skipUsePercent;
+    skipsNeeded         = oldData.skipsNeeded;
+    skipPercent         = oldData.skipPercent;
+    skippingEnabled     = oldData.skippingEnabled;
+    playlistLocked      = oldData.playlistLocked;
+    videoVotingEnabled  = oldData.videoVotingEnabled;
+    giveMasterToUser    = oldData.giveMasterToUser;
+    videoVoteMode       = oldData.videoVoteMode;
+    videoByVoteThresh   = oldData.videoByVoteThresh;
+    serverPort          = oldData.serverPort;
+}
 
 // Reload settings if found
 fs.exists('savedSettings.txt', function (exists) 
@@ -141,19 +157,7 @@ fs.exists('savedSettings.txt', function (exists)
             }
             else if (data.length > 0)
             {
-                var oldData = JSON.parse(data);
-                if (oldData.length > 0)
-                {
-                    skipUsePercent = oldData.skipUsePercent;
-                    skipsNeeded = oldData.skipsNeeded;
-                    skipPercent = oldData.skipPercent;
-                    skippingEnabled = oldData.skippingEnabled;
-                    playlistLocked = oldData.playlistLocked;
-                    videoVotingEnabled = oldData.videoVotingEnabled;
-                    giveMasterToUser = oldData.giveMasterToUser;
-                    videoVoteMode = oldData.videoVoteMode;
-                    videoByVoteThresh = oldData.videoByVoteThresh;
-                }
+                updateSettings(data);
             }
         });
         console.log("Saved settings found and loaded");
@@ -233,6 +237,10 @@ fs.exists('savedPlaylist.txt', function (exists)
     }
 });
 
+// START SERVER!
+console.log("Listening on port " + serverPort);
+server.listen(serverPort);
+io.set('log level', 1); // Log warnings and errors only
 
 // Formats a date string. Expects a UTC date and will convert to local automatically.
 function timestamp(date)
@@ -462,15 +470,16 @@ io.sockets.on('connection', function (socket)
     {
         var settings = 
         {
-            "skipUsePercent": skipUsePercent,
-            "skipsNeeded": skipsNeeded,
-            "skipPercent": skipPercent,
-            "skippingEnabled": skippingEnabled,
-            "playlistLocked": playlistLocked,
-            "videoVotingEnabled": videoVotingEnabled,
-            "giveMasterToUser": giveMasterToUser,
-            "videoVoteMode": videoVoteMode,
-            "videoByVoteThresh": videoByVoteThresh
+            "skipUsePercent":       skipUsePercent,
+            "skipsNeeded":          skipsNeeded,
+            "skipPercent":          skipPercent,
+            "skippingEnabled":      skippingEnabled,
+            "playlistLocked":       playlistLocked,
+            "videoVotingEnabled":   videoVotingEnabled,
+            "giveMasterToUser":     giveMasterToUser,
+            "videoVoteMode":        videoVoteMode,
+            "videoByVoteThresh":    videoByVoteThresh,
+            "serverPort":           serverPort
         };
         
         fs.writeFile("savedSettings.txt", JSON.stringify(settings), function (err) 
