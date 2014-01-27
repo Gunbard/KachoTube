@@ -94,7 +94,7 @@ $(function ()
     
     // Make thumbnail popup follow mouse    
     $(document).mousemove(function(e){
-        $('#thumbnailPopup').offset({left:e.pageX-180,top:e.pageY+20});    
+        $('#thumbnailPopup').offset({left:e.pageX-180,top:e.pageY-360});    
     });
        
     var timeDiffSelect = $('#syncTimeDiff');
@@ -2281,7 +2281,7 @@ function generatePlaylistItem(index)
         $('#thumbnailPopup').append($thumbnail);
        
         hoverTimeout = setTimeout(function() {
-            $('#thumbnailPopup').show().offset({left:e.pageX-180,top:e.pageY+20}).fadeTo(1, 0.8);
+            $('#thumbnailPopup').show().offset({left:e.pageX-180,top:e.pageY-360}).fadeTo(1, 0.8);
         }, 1000);
     }, function() {
         $(this).css('cursor','auto');
