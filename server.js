@@ -1499,20 +1499,17 @@ io.sockets.on('connection', function (socket)
             masterUserId = id;
             guestMasterUser = "";
             console.log("masterUser set to " + masterUser);
-            io.sockets.emit('masterUserSync', masterUser);
             sendRoomSettings(masterUser);
         }
-        else
+        else if (!giveMasterToUser)
         {
-            if (guestMasterUser.length == 0)
+            if (guestMasterUser == "")
             {
                 findGuestMasterUser();
             }
-            else
-            {
-                io.sockets.emit('guestMasterUserSync', guestMasterUser);
-            }
         }
+        
+        io.sockets.emit('masterUserSync', masterUser);
     }
     
     console.log(username + " connected");

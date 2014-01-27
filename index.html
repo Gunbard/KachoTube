@@ -31,11 +31,29 @@
             
             <DIV Class = "text-outline" Id = "videoTitle"></DIV>
             
+            <!-- Video player -->
             <DIV Id = "NNDOverlay"></DIV>
             <DIV Class = "drop-shadow" Id = "videoDivContainer">
                 <DIV Id = "videoDiv"></DIV>
             </DIV>
 
+            <!-- Chat -->
+            <DIV Id = "chatContainer">
+                <DIV Class = "drop-shadow" Id = "chatInfoContainer">
+                     <SPAN Id = "username">Name</SPAN>
+                     <SPAN Id = "totalUsersContainer">Viewers: <SPAN Id = "totalUsers"></SPAN></SPAN>
+                </DIV>
+                
+                <DIV Class = "drop-shadow" Id = "chatList"></DIV>
+                <DIV Class = "drop-shadow" Id = "userList"></DIV>
+               
+                <DIV Class = "drop-shadow" Id = "chatInputContainer">
+                    <INPUT Type = "Text" Id = "chatInput" MaxLength = "200"> 
+                    <INPUT Type ="button" Id = "openTinypicButton" Value = "TinyPic" OnClick ="openTinypic();" Title = "Open TinyPic plugin. Chat can display TinyPic URLs.">
+                </DIV>
+            </DIV>
+            
+            <!-- Playlist -->
             <DIV Id = "playlistStuff">
                 
                 <DIV Class = "drop-shadow" Id = "playlistControls">
@@ -64,20 +82,11 @@
                     
                 </DIV>
                 
-                <SPAN Class = "window-title text-outline" Style = "margin-top:125; margin-left:-485">Playlist</SPAN>
+                <SPAN Class = "window-title text-outline" Style = "margin-top:120; margin-left:-670">Playlist</SPAN>
                 <DIV Class = "drop-shadow" Id = "videoList"></DIV>
             </DIV>
             
-            <DIV Id = "chatContainer">
-                <DIV Class = "drop-shadow" Id = "chatList"></DIV>
-                <DIV Class = "drop-shadow" Id = "userList"></DIV>
-                <DIV Class = "drop-shadow" Id = "chatInputContainer">
-                    <SPAN Id = "username">Name</SPAN>
-                    <INPUT Type = "Text" Id = "chatInput" MaxLength = "200">
-                    <INPUT Type ="button" Id = "openTinypicButton" Value = "TinyPic" OnClick ="openTinypic();" Title = "Open TinyPic plugin. Chat can display TinyPic URLs."> <SPAN Id = "totalUsersContainer">Viewers: <SPAN Id = "totalUsers"></SPAN></SPAN>
-                </DIV>
-            </DIV>
-            
+            <!-- WIP: Fun area -->
             <DIV Id = "funZoneContainer">
                 <DIV Class = "drop-shadow" Id = "serverMessageContainer">
                     <SPAN Class = "window-title text-outline" Style = "margin-left: -6; margin-top: -20">Server Messages</SPAN>
@@ -86,6 +95,7 @@
                 <DIV Class = "drop-shadow" Id = "funContainer"></DIV>
             </DIV>
             
+            <!-- Footer -->
             <DIV Class = "text-outline" Id = "footer">
                 There's a footer here.<BR><BR>
             </DIV>

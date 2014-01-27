@@ -68,7 +68,7 @@ a:Hover
 {
     resize:             vertical;
     width:              100%;
-    height:             80;
+    height:             165;
     float:              left;
     overflow:           auto;
     /*border-style:       solid;
@@ -116,7 +116,7 @@ a:Hover
 
 #playlistStuff
 {
-    width:              510;
+    width:              695;
     height:             440;
     float:              left;
     border-style:       solid;
@@ -127,7 +127,7 @@ a:Hover
 #playlistControls
 {
     display:            inline-block;
-    width:              460;
+    width:              640;
     float:              left;
     text-align:         center;
 }
@@ -149,9 +149,9 @@ a:Hover
 
 #videoList
 {
-    resize:             vertical;
+    /*resize:             vertical;*/
     overflow:           auto;
-    width:              460;
+    width:              640;
     height:             265;
 }
 
@@ -214,7 +214,7 @@ li.ui-state-default
 
 .video-title
 {
-    width:              340;
+    width:              520;
     white-space:        nowrap;
     overflow:           hidden;
     text-overflow:      ellipsis; /*For Chrome because it can't into marquee properly*/
@@ -253,7 +253,7 @@ li.ui-state-default
 
 .video-addedBy
 {
-    width:              150;
+    width:              340;
     font-size:          12;
 }
 
@@ -435,19 +435,20 @@ li.ui-state-default
 
 #chatContainer
 {
-    float:              left;
+    float:              right;
     border-style:       solid;
     border-width:       0;
     border-color:       white;
-    width:              690;
+    width:              505;
+    height:             435;
 }
 
 #chatList
 {
-    resize:             vertical;
+    /*resize:             vertical;*/
     overflow:           auto;
-    width:              440;
-    height:             220;
+    width:              290;
+    height:             239;
     padding:            0;
     float:              left;
     
@@ -464,25 +465,42 @@ li.ui-state-default
 
 #userList
 {
-    resize:             vertical;
+    float:              right;
+    /*resize:             vertical;*/
     overflow:           auto;
     text-align:         center;
-    width:              150;
-    height:             220;
+    width:              115;
+    height:             239;
     padding:            0;
-    float:              left;
+    font-size:          12;
 }
 
 #chatInputContainer
 {
     float:              left;
     text-align:         center;
-    width:              640;
+    width:              455;
+}
+
+#chatInfoContainer
+{
+    float:              left;
+    width:              455;
+}
+
+#username
+{
+    display:            inline-block;
+    text-align:         center;
+    width:              70%;
 }
 
 #totalUsersContainer
 {
-    margin-left:        24;
+    display:            inline-block;
+    text-align:         right;
+    width:              25%;
+
 }
 
 input[type=text]
@@ -497,7 +515,7 @@ input[type=text]
 
 #chatInput
 {
-    min-width:          50%;
+    width:              75%;
 }
 
 .chat-name
@@ -520,7 +538,8 @@ input[type=button]
     font-family:        inherit;
 }
 
-#chatList, #userList, #videoDivContainer, #videoList, #iframePopup, #saveVidPopup, #loadVidPopup, #chatInputContainer, #playlistControls, #serverMessageContainer, #settingsPopup, #roomSettingsPopup, #banner, #userPopup, #funContainer, #cpPopup, #banUserPopup
+/* TODO: Refactor to use a class */
+.styled-window, #chatList, #userList, #videoDivContainer, #videoList, #iframePopup, #saveVidPopup, #loadVidPopup, #chatInputContainer, #chatInfoContainer, #playlistControls, #serverMessageContainer, #settingsPopup, #roomSettingsPopup, #banner, #userPopup, #funContainer, #cpPopup, #banUserPopup
 {
     border-style:           solid; 
     border-width:           25px; 
