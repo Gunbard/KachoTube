@@ -322,7 +322,7 @@ $(function ()
                 
                 userSettingsCheck();
                 
-                openPopup($(this).offset().left + 20, $(this).offset().top, '#userPopup');
+                openPopup($(this).offset().left - 200, $(this).offset().top, '#userPopup');
             });
             
             $masterDisplay.click(function (e) 
@@ -1730,10 +1730,7 @@ function openTinypic()
     showTinypicPlugin();
     
     // Show popup
-    var left = $('#videoList').offset().left;
-    var top = $('#videoList').offset().top;
-
-    openPopup(left, top, '#iframePopup');
+    openPopup('50%', '50%', '#iframePopup');
 }
 
 // Shows the mini search popup
@@ -1777,10 +1774,7 @@ function openSearch()
     $searchBar.after($searchButton);
 
     // Show popup
-    var left = $('#videoList').offset().left;
-    var top = $('#videoList').offset().top;
-
-    openPopup(left, top, '#iframePopup');
+    openPopup('50%', '50%', '#iframePopup');
 }
 
 // Performs an ajax vidoe search and adds results to the popup

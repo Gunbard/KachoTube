@@ -307,11 +307,15 @@ li.ui-state-default
 #iframePopup
 {
     position:           absolute;
+    top:                50%;
+    left:               50%;
     clear:              both;
     background-color:   rgba(0, 0, 0, 0.8);
     display:            none;
     width:              480;
     height:             420;
+    margin-left:        -240;
+    margin-top:         -210;
     cursor:             auto;
     text-align:         center;
 }
