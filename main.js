@@ -415,7 +415,6 @@ $(function ()
     socket.on('masterUserSync', function (user)
     {
         masterUser = user;
-        guestMasterUser = "";
         //var masterUserDiv = document.getElementById("masteruser");
         //masterUserDiv.innerHTML = masterUser;
         

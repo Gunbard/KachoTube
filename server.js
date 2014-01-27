@@ -1402,7 +1402,7 @@ io.sockets.on('connection', function (socket)
     // Picks a random user to be a guest master user
     function findGuestMasterUser()
     {
-        if (userList.length == 0 || guestMasterUser.length > 0 || !giveMasterToUser)
+        if (userList.length == 0 || guestMasterUser.length > 0 || giveMasterToUser)
         {
             return;
         }
@@ -1501,12 +1501,9 @@ io.sockets.on('connection', function (socket)
             console.log("masterUser set to " + masterUser);
             sendRoomSettings(masterUser);
         }
-        else if (!giveMasterToUser)
+        else if (guestMasterUser == "" && !giveMasterToUser)
         {
-            if (guestMasterUser == "")
-            {
-                findGuestMasterUser();
-            }
+            findGuestMasterUser();
         }
         
         io.sockets.emit('masterUserSync', masterUser);
