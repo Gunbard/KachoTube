@@ -1035,6 +1035,9 @@ function changeVideo(videoId, source)
     
     if (source != "yt" && source != "dm")
     {
+        // Hide playing indicator
+        $('.playing-indicator').hide();
+        
         // Don't need to do anything else for streams
         return;
     }
@@ -1622,7 +1625,7 @@ function loadPlayerAPI(newSource, videoId)
         var embed = "<iframe id = \"videoPlayer\" width=\"100%\" height=\"100%\" src=\"http://www.ustream.tv/embed/" + videoId + "?v=3&wmode=transparent&autoplay=true\" scrolling=\"no\" frameborder=\"0\" style=\"border: 0px none transparent;\"></iframe>";
         
         // Change title
-        $('#videoTitle').html("UStream Live");
+        updateTitle("UStream Live");
         
         $('body').append(embed);
     }
@@ -1633,7 +1636,7 @@ function loadPlayerAPI(newSource, videoId)
         swfobject.embedSWF("http://cdn.livestream.com/chromelessPlayer/v20/playerapi.swf?channel=" + videoId + "&clip=&time=&wmode=o&autoPlay=true", "videoDiv", "100%", "100%", "9", null, null, params, atts);
         
         // Change title
-        $('#videoTitle').html("Livestream Live"); 
+        updateTitle("Livestream Live"); 
     }
     else if (newSource == "tw")
     {
@@ -1642,7 +1645,7 @@ function loadPlayerAPI(newSource, videoId)
         swfobject.embedSWF("http://www.twitch.tv/widgets/live_embed_player.swf?channel=" + videoId, "videoDiv", "100%", "100%", "9", null, null, params, atts);
         
         // Change title
-        $('#videoTitle').html("Twitch.tv Live");
+        updateTitle("Twitch.tv Live");
     }
      
     $('#videoDivContainer').append($('#videoPlayer'));
