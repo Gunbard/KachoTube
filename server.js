@@ -1704,7 +1704,7 @@ io.sockets.on('connection', function (socket)
         var sourceType;
         var ytIdMatch = url.match(/(\?v=([a-zA-Z0-9_-]{11}))/);
         var dmIdMatch = url.match(/video\/([^_]+)/);
-        var usIdMatch = url.match(/ustream.tv\/channel\/(\d+)/);
+        var usIdMatch = url.match(/ustream.tv\/embed\/(\d+)/);
         var lsIdMatch = url.match(/livestream.com\/(\w+)/);
         var twIdMatch = url.match(/twitch.tv\/(\w+)/);
         
@@ -1740,9 +1740,9 @@ io.sockets.on('connection', function (socket)
             return;
         }
         
-        if (validUser() && sourceType && !checkDupeVideo(videoId))
+        if (validUser() && sourceType)
         {
-            if (sourceType != "us" && sourceType != "ls" && sourceType != "tw")
+            if (!checkDupeVideo(videoId) && sourceType != "us" && sourceType != "ls" && sourceType != "tw")
             {
                 var vidInfo = [];
                 vidInfo.push({id: videoId, source: sourceType});
@@ -1751,7 +1751,7 @@ io.sockets.on('connection', function (socket)
             else
             {
                 // Auto load streams, but check for masterUser
-                if (validUser() && (isMasterUser() || isAdmin()))
+                if (isMasterUser() || isAdmin())
                 {
                     videoIsStream = true;
                     currentVideo = videoId;

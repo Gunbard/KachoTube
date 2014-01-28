@@ -648,7 +648,7 @@ $(function ()
     // Message for syncing just video id from server
     socket.on('videoSync', function (videoId, source)
     {   
-        changeVideo(videoId);
+        changeVideo(videoId, source);
     });
 
     // Message for deleting a video from the playlist
@@ -732,7 +732,7 @@ $(function ()
     // Message for changing to specific video from master
     socket.on('videoChangeSync', function (videoId)
     {
-        changeVideo(videoId);
+        changeVideo(videoId, "");
     });
 
     // Message for enabling/disabling skip button
@@ -1013,7 +1013,7 @@ function serverChangeVideo(index)
 }
 
 // Change to specific video
-function changeVideo(videoId)
+function changeVideo(videoId, source)
 {
     if (currentVideo == "")
     {        
@@ -1022,20 +1022,24 @@ function changeVideo(videoId)
         playerHeight = parseInt($('#videoDivContainer').css('height'));
         $('#NNDOverlay').css({width: playerWidth, height: playerHeight});
     }
-
-    var index = indexById(videoId);
-    var source = videoPlaylist[index].source;
     
     // Switch player API, if necessary
     if (source != APImode)
     {
-        loadPlayerAPI(source, videoId);    
+        loadPlayerAPI(source, videoId);
     }
     else
     {
         videoPlayer.loadVideoById(videoId);
     }
     
+    if (source != "yt" && source != "dm")
+    {
+        // Don't need to do anything else for streams
+        return;
+    }
+    
+    var index = indexById(videoId);
     currentVideo = videoId;
     serverVideo = currentVideo;
     updateTitle(videoPlaylist[index].title);
@@ -1626,12 +1630,10 @@ function loadPlayerAPI(newSource, videoId)
     {
         var params = { wmode: "opaque", scale: "exactFit"};
         var atts = { id: "videoPlayer" };
-        swfobject.embedSWF("http://cdn.livestream.com/grid/LSPlayer.swf?channel=" + videoId + "&clip=&time=&wmode=o&autoplay=true", "videoDiv", "100%", "100%", "9", null, null, params, atts);
+        swfobject.embedSWF("http://cdn.livestream.com/chromelessPlayer/v20/playerapi.swf?channel=" + videoId + "&clip=&time=&wmode=o&autoPlay=true", "videoDiv", "100%", "100%", "9", null, null, params, atts);
         
         // Change title
-        $('#videoTitle').html("Livestream Live");
-        
-        $('body').append(embed);
+        $('#videoTitle').html("Livestream Live"); 
     }
     else if (newSource == "tw")
     {
