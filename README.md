@@ -63,13 +63,25 @@ alt="Kacho in action"/></a>
      * Saves playlist and reloads on server start
      * Saves list of mods and bans and reloads on server start
 
+### Configuration
+* To add an administrator (important) you will need to generate a tripcode from the server itself
+  * Run and connect to the server
+  * Open the settings (the icon with 3 gears above the playlist)
+  * Generate a tripcode in the format "yourName#yourSecretKey"
+  * Copy the full name
+  * Create a file in same directory where server.js is named "admins.txt"
+  * Paste your tripcode in this format: `["yourName!tripcode"]`
+  * Save and restart the server
+
+This file will be loaded every time on server start
+
 ###To deploy
 * Clone project somewhere
 * Install node.js using your favorite package manager or from the website
   * Installing node.js should also install its package manager, npm
-* "cd" to cloned project directory
-* "npm install express request socket.io"
-* "node server.js"
+* `cd /path/to/KachoTube`
+* `npm install express request socket.io`
+* `node server.js`
 
 Your room will be running on port 80 by default.
 

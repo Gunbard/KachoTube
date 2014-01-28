@@ -87,13 +87,13 @@ var videoVotes		= {};
 var chatLog         = [];
 
 // ip list {ip: user.ip, lastName: user.username, banDate: now, expiration: length (int days), reason: reason}
-var banList         = [{ip: '1234', lastName: 'someone', banDate: '', expiration: '', reason: 'idgaf'}];
+var banList         = [];
 
 // list of tripcodes
-var adminList       = ["Gunbard!eGTll4"];
+var adminList       = [];
 
 // list of tripcodes
-var modList         = ["Imaweiner!asdf", "asdfsdf!what", "lel!RqCi8E"];
+var modList         = [];
 
 // PRIVS
 // User: standard user, can add to unlocked playlist
@@ -143,6 +143,31 @@ function updateSettings(data)
     videoByVoteThresh   = oldData.videoByVoteThresh;
     serverPort          = oldData.serverPort;
 }
+
+// Load admins
+fs.exists('admins.txt', function (exists) 
+{
+    if (exists)
+    {
+        fs.readFile('admins.txt', 'utf-8', function (err, data) 
+        {
+            if (err)
+            {
+                console.log(err);
+            }
+            else if (data.length > 0)
+            {
+                var oldData = JSON.parse(data);
+                if (oldData.length > 0)
+                {
+                    adminList = oldData;
+                }
+            }
+        });
+        console.log("Loaded admin list");
+    }
+});
+
 
 // Reload settings if found
 fs.exists('savedSettings.txt', function (exists) 
