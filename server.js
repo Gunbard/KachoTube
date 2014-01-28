@@ -626,7 +626,10 @@ io.sockets.on('connection', function (socket)
             "settingNormalUserMaster":  giveMasterToUser
         }
         var targetName = getUserByName(name);
-        io.sockets.socket(targetName.id).emit('roomSettingsSync', JSON.stringify(settingsData));
+        if (targetName)
+        {
+            io.sockets.socket(targetName.id).emit('roomSettingsSync', JSON.stringify(settingsData));
+        }
     }
     
     // Check if a video is real and will add it to the playlist
@@ -2270,7 +2273,8 @@ io.sockets.on('connection', function (socket)
         
         var foundNewMaster = false;
         
-        // Need to find a new masterUser if old one left
+        // Need to find a new masterUser or guestMasterUser if old one left
+        // TODO: Refactor this mess
         if (!userInList(masterUser))
         {
             if (userList.length > 0)
@@ -2294,6 +2298,12 @@ io.sockets.on('connection', function (socket)
                     masterUserId = userList[0].id;
                     guestMasterUser = "";
                 }
+                else
+                {
+                    masterUser = "";
+                    masterUserId = "";
+                    guestMasterUser = "";
+                }
             }
             else
             {
@@ -2304,11 +2314,13 @@ io.sockets.on('connection', function (socket)
             
             io.sockets.emit('masterUserSync', masterUser);
             
-            findGuestMasterUser();
-            
-            if (masterUser.length > 0)
+            if (masterUser != "")
             {
                 sendRoomSettings(masterUser);
+            }
+            else
+            {
+                findGuestMasterUser();
             }
         }
         

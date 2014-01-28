@@ -215,7 +215,7 @@ $(function ()
     socket.on('playerTimeSync', function (time) 
     {
         // Don't sync if I am the masterUser
-        if (myName != masterUser && myName != guestMasterUser)
+        if (myName != masterUser || (masterUser != "" && myName != guestMasterUser))
         {
             //var timeDiv = document.getElementById("masterTime");
             //timeDiv.innerHTML = time;
@@ -915,7 +915,7 @@ $(function ()
 // Event listener for when video changes state
 function onPlayerStateChange(state)
 {
-    if (myName == masterUser && state >= PLAYER_STATE_TYPE.finished && state <= PLAYER_STATE_TYPE.paused)
+    if (myName == masterUser)
     {
         // Pass to server
         socket.emit('playerStateChange', state);
@@ -926,9 +926,9 @@ function onPlayerStateChange(state)
 function onPlayerError(error)
 {
     // Doesn't matter what error, just request the next video
-    if (myName == masterUser || superUser)
+    if (myName == masterUser)
     {
-    
+        onPlayerStateChange(PLAYER_STATE_TYPE.finished);
     }
 }
 
@@ -1001,7 +1001,7 @@ function serverChangeVideo(index)
 {
     var vidId = videoPlaylist[index].id;
     var vidSrc = videoPlaylist[index].source;
-    if (myName == masterUser && currentVideo != vidId)
+    if ((myName == masterUser || superUser) && currentVideo != vidId)
     {    
         socket.emit('masterVideoSync', vidId);
     }
@@ -1347,7 +1347,7 @@ function openLoadPopup()
 function sendPlaylistSaveData()
 {
     var playlistSrc = $('#playlistLoad').val();
-    if (myName == masterUser && $('#playlistLoad').val())
+    if ((myName == masterUser || superUser) && $('#playlistLoad').val())
     {
         var urls = playlistSrc.match(/(\?v=([a-zA-Z0-9_-]{11}))|(video\/([^\W|_]+))/g);
         
@@ -1482,7 +1482,7 @@ function showRoomSettings()
 // Clears the playlist 
 function clearPlaylist()
 {
-    if (confirm("Are you sure you want to clear the playlist? (Cannot undo unless you saved it beforehand)") && myName == masterUser)
+    if (confirm("Are you sure you want to clear the playlist? (Cannot undo unless you saved it beforehand)") && (myName == masterUser || superUser))
     {
         socket.emit('clearVideoList');
     }
@@ -1492,7 +1492,7 @@ function clearPlaylist()
 // Cleans the playlist 
 function cleanPlaylist()
 {
-    if (confirm("Are you sure you want to clean the playlist? (Cannot undo)") && myName == masterUser)
+    if (confirm("Are you sure you want to clean the playlist? (Cannot undo)") && (myName == masterUser || superUser))
     {
         socket.emit('cleanVideoList');
     }
