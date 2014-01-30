@@ -492,7 +492,7 @@ li.ui-state-default
     width:              455;
 }
 
-#username
+#usernameContainer
 {
     display:            inline-block;
     text-align:         center;

@@ -96,6 +96,21 @@ $(function ()
     $(document).mousemove(function(e){
         $('#thumbnailPopup').offset({left:e.pageX-180,top:e.pageY-360});    
     });
+    
+    // Add events for changing user name
+    $('#username').click(function ()
+    {
+        $(this).hide();
+        $('#changeNameInput').show();
+        $('#changeNameClose').show();
+    });
+    
+    $('#changeNameClose').click(function ()
+    {
+        $(this).hide();
+        $('#changeNameInput').hide();
+        $('#username').show();
+    });
        
     var timeDiffSelect = $('#syncTimeDiff');
     timeDiffSelect.change(function () 
@@ -175,6 +190,7 @@ $(function ()
             {
                 socket.emit('requestNameChange', message);
                 $('#changeNameInput').val('');
+                $('#changeNameClose').click();
             }
         }
     });

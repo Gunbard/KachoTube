@@ -40,8 +40,12 @@
             <!-- Chat -->
             <DIV Id = "chatContainer">
                 <DIV Class = "drop-shadow" Id = "chatInfoContainer">
-                     <SPAN Id = "username">Name</SPAN>
-                     <SPAN Id = "totalUsersContainer">Viewers: <SPAN Id = "totalUsers"></SPAN></SPAN>
+                    <DIV Id = "usernameContainer">
+                        <SPAN Id = "username" Class = "clickable" Title = "Click to change">Name</SPAN>
+                        <INPUT Type = "Text" Id = "changeNameInput" Title = "Tripcode how-to:&#10;yourName#yourSecretWord" Style = "display: none;">
+                        <SPAN Id = "changeNameClose" Class = "clickable fa fa-times fa-lg" Style = "display: none;"></SPAN>
+                    </DIV>
+                    <SPAN Id = "totalUsersContainer">Viewers: <SPAN Id = "totalUsers"></SPAN></SPAN>
                 </DIV>
                 
                 <DIV Class = "drop-shadow" Id = "chatList"></DIV>
@@ -127,7 +131,6 @@
             <SPAN Class = 'fa fa-bars fa-lg popup-gripper'></SPAN><SPAN Class = 'popup-title'>Settings</SPAN><SPAN Class = "clickable fa fa-times-circle fa-lg" Id = "closeSettings"></SPAN>
             
             <DIV Id = "settingsDiv">
-                Change name: <INPUT Type = "Text" Id = "changeNameInput" Title = "Tripcode how-to:&#10;yourName#yourSecretWord"><BR> 
                 <LABEL For = "syncTimeDiff">Sync within </LABEL>
                 <SELECT Name = "syncTimeDiff" Id = "syncTimeDiff">
                     <OPTION>2 seconds</OPTION>
