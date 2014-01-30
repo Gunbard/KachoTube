@@ -1798,6 +1798,12 @@ io.sockets.on('connection', function (socket)
                 return;
             }
             
+            if (newName.match(/user/g))
+            {
+                sendServerMsgUser("Your name cannot start with that")
+                return;
+            }
+            
             if (newName.match(/#/g))
             {
                 var split = newName.split("#");
