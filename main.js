@@ -62,6 +62,8 @@ google.load("swfobject", "2.1");
 // Page finished loading
 $(function () 
 {    
+    serverMsg("Connecting...", 99999, 99999);
+
     // Attempt to load saved settings
     loadSettings();
     
