@@ -748,9 +748,9 @@ $(function ()
 
 
     // Message for changing to specific video from master
-    socket.on('videoChangeSync', function (videoId)
+    socket.on('videoChangeSync', function (videoId, source)
     {
-        changeVideo(videoId, "");
+        changeVideo(videoId, source);
     });
 
     // Message for enabling/disabling skip button
@@ -1064,6 +1064,7 @@ function changeVideo(videoId, source)
     currentVideo = videoId;
     serverVideo = currentVideo;
     updateTitle(videoPlaylist[index].title);
+    APImode = source;
     
     // Set vote button display
     var $voteButton = $('.video-item#' + index + ' .video-vote-button');
@@ -1082,7 +1083,7 @@ function changeVideo(videoId, source)
     setPlayingIndicator();
 }
 
-// Go to next video in playlist -- DEPRECATED
+// Go to next video in playlist -- DEPRECATED: Use changeVideo()
 function nextVideo()
 {
     var currentVidIndex = indexById(currentVideo);

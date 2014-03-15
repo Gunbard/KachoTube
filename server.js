@@ -850,10 +850,11 @@ io.sockets.on('connection', function (socket)
     // Send everyone the id of the video to immediately change to on the playlist
     function sendVideoChange(videoId)
     {
+        var index = indexById(videoId);
+
         // Reset votes, if any
         if (videoVotes[videoId])
         {
-            var index = indexById(videoId);
             if (index > -1)
             {
                 delete videoVotes[videoId];
@@ -871,7 +872,8 @@ io.sockets.on('connection', function (socket)
             }
         }
         
-        io.sockets.emit('videoChangeSync', videoId);
+        var source = videoList[index].source;
+        io.sockets.emit('videoChangeSync', videoId, source);
     }
     
     // Send everyone the id of master's current video 
