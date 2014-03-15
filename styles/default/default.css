@@ -306,7 +306,7 @@ li.ui-state-default
 
 #iframePopup
 {
-    position:           absolute;
+    position:           fixed;
     top:                50%;
     left:               50%;
     clear:              both;
