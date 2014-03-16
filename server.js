@@ -1750,7 +1750,7 @@ io.sockets.on('connection', function (socket)
                 vidInfo.push({id: videoId, source: sourceType});
                 validateVideo(vidInfo);
             }
-            else
+            else if (sourceType != "yt" && sourceType != "dm")
             {
                 // Auto load streams, but check for masterUser
                 if (isMasterUser() || isAdmin())
