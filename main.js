@@ -103,7 +103,7 @@ $(function ()
     $('#username').click(function ()
     {
         $(this).hide();
-        $('#changeNameInput').show();
+        $('#changeNameInput').val($(this).text()).show();
         $('#changeNameClose').show();
     });
     
