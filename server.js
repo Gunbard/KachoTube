@@ -7,6 +7,13 @@ var io = require('socket.io').listen(server);
 var fs = require('fs');                         // For file I/O
 var crypto = require("crypto");                 // For tripcode generation
 
+// Socket.io config
+io.configure(function()
+{
+    // Force websockets instead of XHR polling
+    io.set("transports", ["websocket"]);
+});
+
 // PLAYLIST API
 //http://gdata.youtube.com/feeds/api/playlists/[ID without PL]/?v=2&alt=json
 //Ex: 51A29C846A005F0A
